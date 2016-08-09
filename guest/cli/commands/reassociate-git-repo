@@ -4,23 +4,27 @@
 #
 
 if [ ! -d "${WPLIB_BOX_ORIGINAL_GIT_DIR}" ]; then
-    echo "WARNING: There is no WPLib Box .git directory (${WPLIB_BOX_ORIGINAL_GIT_DIR}) to reassociate."
-    echo
-    echo "Cannot continue."
-    echo
-    exit
+
+    echo_if_not_quiet "$*" "=There is no original WPLib Box .git directory (${WPLIB_BOX_ORIGINAL_GIT_DIR}) to reassociate."
+    return
+
 fi
 
 if [ -d "${WPLIB_BOX_SAVE_GIT_DIR}" ]; then
-    echo "WARNING: There is already a Git Save directory (${WPLIB_BOX_SAVE_GIT_DIR}); delete to reassociate."
-    echo "You MAY need to delete from your host computer's command line."
-    echo
-    echo "Cannot continue."
-    echo
-    exit
+
+    echo_if_not_quiet "$*" "=There is already a Git Save directory (${WPLIB_BOX_SAVE_GIT_DIR}); delete to reassociate.\nYou MAY need to delete FROM your host computer's command line."
+    return
+
 fi
 
-mv "${WPLIB_BOX_GIT_DIR}" "${WPLIB_BOX_SAVE_GIT_DIR}"
-mv "${WPLIB_BOX_ORIGINAL_GIT_DIR}/${WPLIB_BOX_FLAG_FILE}" "${WPLIB_BOX_FLAG_FILEPATH}"
-mv "${WPLIB_BOX_ORIGINAL_GIT_DIR}" "${WPLIB_BOX_GIT_DIR}"
+#
+# Move .git to .save.git
+#
+mv "${WPLIB_BOX_GIT_DIR}" "${WPLIB_BOX_SAVE_GIT_DIR}" 2> /dev/null
 
+#
+# Move .wplib-box.git to .git
+#
+mv "${WPLIB_BOX_ORIGINAL_GIT_DIR}" "${WPLIB_BOX_GIT_DIR}" 2> /dev/null
+
+echo_if_not_quiet "$*" "=The WPLib Box Git repository has been reassociated and the prior .git directory has been renamed to ${WPLIB_BOX_SAVE_GIT_DIR} (assuming there was one.)"

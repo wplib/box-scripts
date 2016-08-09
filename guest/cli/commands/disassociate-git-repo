@@ -3,46 +3,36 @@
 # Disassociate the github.com/wplib/wplib-box repo with this project
 #
 
+remotes=
 
-if [ ! -f "${WPLIB_BOX_FLAG_FILEPATH}" ]; then
-    if [ "$1" == "no-errors" ]; then
-        exit
-    fi
-    echo "There is no flag file (${WPLIB_BOX_FLAG_FILEPATH}); cannot disassociate WPLib Box Git repo."
-    echo "Maybe it was already disassociated?"
-    echo
-    echo "Cannot continue."
-    echo
-    exit
+if [[ remotes == *"git@github.com:wplib/wplib-box.git"* ]]; then
+
+    echo_if_not_quiet "$*" "=This is not a WPLib Box Git repository. Maybe it was already disassociated?"
+    return
+
 fi
 
 if [ -d "${WPLIB_BOX_ORIGINAL_GIT_DIR}" ]; then
-    if [ "$1" == "no-errors" ]; then
-        exit
-    fi
-    echo "The box already has a saved WPLib Box Git directory (${WPLIB_BOX_ORIGINAL_GIT_DIR})."
-    echo "Maybe it was already disassociated?"
-    echo
-    echo "Cannot continue."
-    echo
-    exit
+
+    echo_if_not_quiet "$*" "=The directory "${WPLIB_BOX_ORIGINAL_GIT_DIR}" exists. Maybe it was already disassociated?"
+    return
+
 fi
 
-if [ ! -d "${WPLIB_BOX_GIT_DIR}" ]; then
-    if [ "$1" == "no-errors" ]; then
-        exit
-    fi
-    echo "The box has no Git directory (${WPLIB_BOX_GIT_DIR})! Cannot disassociate."
-    echo
-    echo "Cannot continue."
-    echo
-    exit
-fi
+#
+# Change to /vagrant
+#
+cd "${WPLIB_BOX_DIR}" 2> /dev/null
 
-cd "${WPLIB_BOX_DIR}"
+#
+# Move .git to .wplib-box.git
+#
+mv "${WPLIB_BOX_GIT_DIR}" "${WPLIB_BOX_ORIGINAL_GIT_DIR}" 2> /dev/null
 
-mv "${WPLIB_BOX_GIT_DIR}" "${WPLIB_BOX_ORIGINAL_GIT_DIR}"
-mv "${WPLIB_BOX_FLAG_FILEPATH}" "${WPLIB_BOX_ORIGINAL_GIT_DIR}"
-rm -rf "${WPLIB_BOX_GIT_DIR}"
-git init
+#
+# Create a new repo!
+#
+git init 2> /dev/null
+
+echo_if_not_quiet "$*" "=The WPLib Box Git repository was disassociated."
 
