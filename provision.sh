@@ -3,7 +3,7 @@
 # WPLib Box Provision Script
 #
 
-if [ -d /vagrant/scripts && "$1" != "--force" ]; then
+if [[ -d /vagrant/scripts && "$1" != "--force" ]]; then
 
     echo -e "\t"
     echo "NOTICE! ============>"
