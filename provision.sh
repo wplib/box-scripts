@@ -20,15 +20,6 @@ if [[ -d /vagrant/scripts && "$1" != "--force" ]]; then
 
 else
 
-    if [ -d /vagrant/scripts ]; then
-
-        source /vagrant/scripts/guest/cli/includes/functions
-        backupdir=$(next_backup_file "/vagrant/scripts")
-        mv /vagrant/scripts "${backupdir}"
-        echo "The existing /vagrant/scripts folder was renamed ${backupdir}. You may delete if it you do not need it."
-
-    fi
-
     #
     #  Install Box CLI
     #
