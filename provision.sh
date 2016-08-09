@@ -3,20 +3,20 @@
 # WPLib Box Provision Script
 #
 
-if [ -d /vagrant/scripts ]; then
+if [ -d /vagrant/scripts && "$1" != "--force" ]; then
 
-    echo
+    echo -e "\t"
     echo "NOTICE! ============>"
-    echo
+    echo -e "\t"
     echo "The /scripts/ folder has already been installed. To reprovision"
     echo "WPLib Box please rename or delete the /scripts/ folder then run:"
-    echo
+    echo -e "\t"
     echo -e "\tvagrant reload --provision"
-    echo
+    echo -e "\t"
     echo "Or, if that fails, just try running:"
-    echo
+    echo -e "\t"
     echo -e "\tvagrant up"
-    echo
+    echo -e "\t"
 
 else
 
