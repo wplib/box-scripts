@@ -20,6 +20,14 @@ if [[ -d /vagrant/scripts && "$1" != "--force" ]]; then
 
 else
 
+    if [[ ! -d /vagrant/scripts && -d /tmp/box-scripts ]]; then
+        #
+        #  If this is the initial provisioning then the scripts
+        #  will still be in /tmp/box-scripts. Move them over.
+        #
+        mv /tmp/box-scripts /vagrant/scripts
+    fi
+
     #
     #  Install Box CLI
     #
