@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#
+# Backup the database to /vagrant/sql/current.sql
+#
+# Save the prior backup (if exists) to /vagrant/sql/previous.sql
+# If /vagrant/sql/previous.sql save to /vagrant/sql/previous.2.sql, and so on.
+#
+
+dbfile="/vagrant/sql/current.sql"
+bakfile="/vagrant/sql/previous"
+
+#
+# Check to see if we need to save a prior backup
+#
+if [[ -f "${dbfile}" ]]  ; then
+
+    #
+    # Now check to see if the default prior backup exists
+    # Continue checking until we find a workable filename
+    #
+    test="${bakfile}.sql"
+    until [ ! -f "${test}" ]; do
+        counter=$((counter))
+        let counter++
+        test="${bakfile}${counter}.sql"
+    done
+    bakfile="${test}"
+
+    #
+    # Okay, we can now save the prior backup.
+    #
+    echo_if_not_quiet "$*", "=Saving Prior Backup as ${bakfile}..."
+    cp "${dbfile}" "${bakfile}"
+
+fi
+
+echo_if_not_quiet "$*", "=Backing up database to ${dbfile}..."
+
+mkdir -p /vagrant/sql
+
+mysqldump -u wordpress -pwordpress wordpress > ${dbfile}
+
+
+
+
+
