@@ -1,4 +1,4 @@
-#License for github.com/wplib/box-cli
+#License for github.com/wplib/box-scripts
 
 Box Scripts for WPLib Box is free to use with absolutely no warranty.
 
