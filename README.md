@@ -1,4 +1,4 @@
-#Box CLI for the WPLib Box Guest O/S
+#Box Scripts for the WPLib Box
 
 
 ## Installation
