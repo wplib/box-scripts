@@ -1,5 +1,52 @@
 #!/usr/bin/env bash
 
+
+#
+# Returns a filename that does not exist given an existing filename.
+#
+# $1 - The backup file, e.g.  /vagrant/sql/backup.sql
+#
+# Outputs: The new file name in the form of {previous}{n}.{ext} where:
+#
+#       {previous} - Root filename for backup, e.g. /vagrant/sql/backup
+#       {n}        - Ordinal position for prior backups, e.g. 1, 2, 3, etc
+#       {ext}      - The file extension, e.g. sql
+#
+# Usage:  newbakfile=$(next_backup_file "${file_to_backup}")
+#
+function next_backup_file() {
+    bakfile="$1"
+
+    #
+    # Get the file extension if there is one
+    # See: http://stackoverflow.com/a/965072/102699
+    #
+    ext=".${bakfile##*.}"
+    if [[ "." == "${ext}" || "${ext}" == ".${bakfile}" ]]; then
+        ext=""
+    fi
+
+
+    #
+    # Get the filepath sans extension
+    # See: http://stackoverflow.com/a/965072/102699
+    #
+    bakfile="${bakfile%.*}"
+
+    #
+    # Now check to see if the default prior backup exists
+    # Continue checking until we find a workable filename
+    #
+    test="${bakfile}${ext}"
+    until [ ! -e "${test}" ]; do
+        counter=$((counter))
+        let counter++
+        test="${bakfile}${counter}${ext}"
+    done
+    echo "${test}"
+}
+
+
 function is_quiet() {
     if [[ "$1" == *"--quiet"* ]]; then
         echo "true"
