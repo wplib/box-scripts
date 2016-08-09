@@ -34,5 +34,12 @@ mv "${WPLIB_BOX_GIT_DIR}" "${WPLIB_BOX_ORIGINAL_GIT_DIR}" 2> /dev/null
 #
 git init 2> /dev/null
 
+#
+# Remove /vagrant/watchers from .gitignore
+# See http://stackoverflow.com/a/13188531/102699
+#
+grep -v "/vagrant/watchers" .gitignore > /tmp/.gitignore.tmp
+mv /tmp/.gitignore.tmp .gitignore
+
 echo_if_not_quiet "$*" "=The WPLib Box Git repository was disassociated."
 
