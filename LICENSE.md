@@ -8,4 +8,4 @@ Although we strong believe in open-source software, we choose this approach _at 
 to protect ourselves against a [WooCommercing](https://yoast.com/open-source-forking-branding/) 
 of our project while we are still early and trying to build our brand.
 
-Copyright 2016 NewClarity Consulting LLC, All Rights Reserved Worldwide/
+Copyright 2016 NewClarity Consulting LLC, All Rights Reserved Worldwide
