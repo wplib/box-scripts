@@ -6,39 +6,31 @@
 # If /vagrant/sql/previous.sql save to /vagrant/sql/previous.2.sql, and so on.
 #
 
-dbfile="/vagrant/sql/current.sql"
-bakfile="/vagrant/sql/previous"
+bakfile="/vagrant/sql/current.sql"
 
 #
 # Check to see if we need to save a prior backup
 #
-if [[ -f "${dbfile}" ]]  ; then
+if [[ -f "${bakfile}" ]]  ; then
 
     #
-    # Now check to see if the default prior backup exists
-    # Continue checking until we find a workable filename
+    # Get an unused backup file name
     #
-    test="${bakfile}.sql"
-    until [ ! -f "${test}" ]; do
-        counter=$((counter))
-        let counter++
-        test="${bakfile}${counter}.sql"
-    done
-    bakfile="${test}"
+    priorfile=$(next_backup_file "/vagrant/sql/previous.sql")
 
     #
     # Okay, we can now save the prior backup.
     #
-    echo_if_not_quiet "$*", "=Saving Prior Backup as ${bakfile}..."
-    cp "${dbfile}" "${bakfile}"
+    echo_if_not_quiet "$*", "=Saving Prior Backup as ${priorfile}..."
+    cp "${bakfile}" "${priorfile}"
 
 fi
 
-echo_if_not_quiet "$*", "=Backing up database to ${dbfile}..."
+echo_if_not_quiet "$*", "=Backing up database to ${bakfile}..."
 
 mkdir -p /vagrant/sql
 
-mysqldump -u wordpress -pwordpress wordpress > ${dbfile}
+mysqldump -u wordpress -pwordpress wordpress > ${bakfile}
 
 
 
