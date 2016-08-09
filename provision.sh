@@ -20,6 +20,14 @@ if [[ -d /vagrant/scripts && "$1" != "--force" ]]; then
 
 else
 
+    if [ -d /vagrant/scripts ]; then
+
+        backupdir=$(next_backup_file "/vagrant/scripts")
+        mv /vagrant/scripts "${backupdir}"
+        echo "The existing /vagrant/scripts folder was renamed ${backupdir}. You may delete if it you do not need it."
+
+    fi
+
     #
     #  Install Box CLI
     #
@@ -60,6 +68,6 @@ else
     #echo "Enabling File Watchers..."
     #box enable-file-watchers --quiet
 
-    echo "Congratulations! WPLib Box is now installed!"
+    echo "Congratulations! WPLib Box is now installed."
 
 fi
