@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+source "${WPLIB_BOX_INCLUDES_DIR}/set-cli-processvm" $1
+source "${WPLIB_BOX_INCLUDES_DIR}/set-web-processvm" $1
+

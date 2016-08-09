@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+echo
+echo WPLib Box CLI Usage:
+echo
+echo "  - box <command>"
+echo
+echo WPLib Box CLI Commands:
+echo
+for file in $WPLIB_BOX_COMMANDS_DIR/*; do
+    if [ -f "${file}" ]; then
+        basename=$(basename "$file")
+        echo "   - ${basename}"
+    fi
+done
+echo
+echo IMPORTANT!  These commands WILL BE CHANGING in a future release of WPLib Box. Be warned!
+echo

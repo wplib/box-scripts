@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+#
+# Disassociate the github.com/wplib/wplib-box repo with this project
+#
+
+
+if [ ! -f "${WPLIB_BOX_FLAG_FILEPATH}" ]; then
+    if [ "$1" == "no-errors" ]; then
+        exit
+    fi
+    echo "There is no flag file (${WPLIB_BOX_FLAG_FILEPATH}); cannot disassociate WPLib Box Git repo."
+    echo "Maybe it was already disassociated?"
+    echo
+    echo "Cannot continue."
+    echo
+    exit
+fi
+
+if [ -d "${WPLIB_BOX_ORIGINAL_GIT_DIR}" ]; then
+    if [ "$1" == "no-errors" ]; then
+        exit
+    fi
+    echo "The box already has a saved WPLib Box Git directory (${WPLIB_BOX_ORIGINAL_GIT_DIR})."
+    echo "Maybe it was already disassociated?"
+    echo
+    echo "Cannot continue."
+    echo
+    exit
+fi
+
+if [ ! -d "${WPLIB_BOX_GIT_DIR}" ]; then
+    if [ "$1" == "no-errors" ]; then
+        exit
+    fi
+    echo "The box has no Git directory (${WPLIB_BOX_GIT_DIR})! Cannot disassociate."
+    echo
+    echo "Cannot continue."
+    echo
+    exit
+fi
+
+cd "${WPLIB_BOX_DIR}"
+
+mv "${WPLIB_BOX_GIT_DIR}" "${WPLIB_BOX_ORIGINAL_GIT_DIR}"
+mv "${WPLIB_BOX_FLAG_FILEPATH}" "${WPLIB_BOX_ORIGINAL_GIT_DIR}"
+rm -rf "${WPLIB_BOX_GIT_DIR}"
+git init
+

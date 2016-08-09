@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+echo "Flushing Redis Cache..."
+
+redis-cli flushall > /dev/null
+

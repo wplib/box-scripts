@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# @todo: http://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
+#
+
+source /vagrant/scripts/guest/cli/includes/functions
+source /vagrant/scripts/guest/cli/includes/constants
+
+if [ "$1" == "" ]; then
+    export WPLIB_BOX_COMMAND="help"
+else
+    export WPLIB_BOX_COMMAND="$1"
+fi
+
+command_file="${WPLIB_BOX_COMMANDS_DIR}/${WPLIB_BOX_COMMAND}"
+
+if [ "${WPLIB_BOX_COMMAND}" == "help" ]; then
+    source "${command_file}"
+    echo
+    exit
+fi
+
+if [ ! -f "${command_file}" ]; then
+    echo
+    echo "Command not found: $1"
+    echo
+    exit
+fi
+
+echo_if_not_quiet "$*" "*Running $1..."
+initial_dir=$(pwd)
+source "${command_file}" "$2" "$3" "$4" "$5"
+cd "${initial_dir}"
+echo_if_not_quiet "$*" "*Done."

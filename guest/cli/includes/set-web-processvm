@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+echo
+echo "Setting Web Process VM to $1..."
+echo
+
+
+function editfile {
+    sudo sed -i "s/$1/$2/" "$3"
+}
+
+function delfile {
+    if [ -f "$1.bak" ]; then
+        sudo rm "$1.bak" > /dev/null 2>&1
+    fi;
+}
+
+conf_file="/etc/nginx/sites-available/default"
+
+editfile "php5.6" "$1" "$conf_file"
+delfile "$conf_file"
+
+editfile "php7.0" "$1" "$conf_file"
+delfile "$conf_file"
+
+sudo service "$1-fpm" restart
+sudo service nginx restart

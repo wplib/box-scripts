@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+#
+# Enable object caching for Redis using WP Redis plugin
+#
+
+exit_if_wp_not_installed "enable object caching."
+
+object_cache_file_root="${WPLIB_BOX_WP_CONTENT_DIR}/object-cache"
+object_cache_file="${object_cache_file_root}.php"
+disabled_object_cache_file="${object_cache_file_root}.disabled.php"
+
+if [ -f "${object_cache_file}" ]; then
+    exit_if_no_force_option "$*" "object-cache-file ${object_cache_file} already exists."
+fi
+
+rm "${object_cache_file}" 2> /dev/null
+
+if [ -f "${disabled_object_cache_file}" ]; then
+    mv "${disabled_object_cache_file}" "${object_cache_file}"
+    echo_if_not_quiet "$*" "=Object cache re-enabled.\nObject cache file ${object_cache_file} restored."
+else
+    plugin_dir="${WPLIB_BOX_MU_PLUGINS_DIR}/wp-redis"
+    if [ ! -d "${plugin_dir}" ]; then
+        plugin_dir="${WPLIB_BOX_PLUGINS_DIR}/wp-redis"
+        if [ ! -d "${plugin_dir}" ]; then
+            box download-plugin wp-redis 0.5.0 "$1" --quiet
+        fi
+    fi
+
+    if [ -f "${object_cache_file}" ]; then
+        exit_if_no_force_option "$1" "object-cache-file ${object_cache_file} already exists."
+    fi
+
+    cp "${plugin_dir}/object-cache.php" "${object_cache_file}"
+
+    echo_if_not_quiet "$*" "=Object cache file ${object_cache_file} installed."
+fi

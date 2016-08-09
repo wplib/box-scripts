@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+if [ "${WPLIB_BOX_WP_CONTENT_DIR}" == "/var/www/content" ]; then
+
+    echo_if_not_quiet "$*" "=WordPress directory structure is already in 'Skeleton' layout."
+
+else
+
+    cd /var/www
+
+    mkdir wp
+    mv wp-admin/ wp/
+    mv wp-includes/ wp/
+    mv wp-content/ content/
+
+    sed -i "s#/wp-blog-header.php#/wp/wp-blog-header.php#" index.php
+
+    mv *.* wp
+    mv wp/index.php .
+    mv wp/wp-config.php .
+    mv wp/wp-config-local.php .
+
+    echo_if_not_quiet "$*" "=WordPress directory structure now set to 'Skeleton' layout."
+
+fi
+

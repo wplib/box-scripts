@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#
+# Enable object caching for Redis using WP Redis plugin
+#
+
+echo_if_not_quiet "$*" "^Enabling File Watchers..."
+
+#
+# This will not be needed after https://github.com/wplib/wplib-box/issues/150
+#
+screen=$(screen -v 2>&1)
+if [ "${screen:0:6}" != "Screen" ]; then
+    echo_if_not_quiet "$*" "*Installing screen..."
+    sudo apt-get install screen 2> /dev/null
+fi
+
+#
+# This will not be needed after https://github.com/wplib/wplib-box/issues/147
+#
+jq=$(jq --version 2>&1)
+if [ "${jq:0:10}" != "jq version" ]; then
+    echo_if_not_quiet "$*" "*Installing jq..."
+    sudo apt-get install jq 2> /dev/null
+fi
+
+source "${WPLIB_BOX_INCLUDES_DIR}/kill-screens" mirror-files
+screen -d -m -S "mirror-files" "${WPLIB_BOX_INCLUDES_DIR}/mirror-files"
+
+source "${WPLIB_BOX_INCLUDES_DIR}/kill-screens" watch-files
+screen -d -m -S "watch-files" "${WPLIB_BOX_INCLUDES_DIR}/watch-files"
+
+echo_if_not_quiet "$*" "*File Watcher Enabled."

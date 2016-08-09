@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# Add lines to .gitignore to ignore composed files.
+#
+gitignore="${WPLIB_BOX_DIR}/.gitignore"
+added=$(grep "/www/\*" $gitignore)
+if [ "" == "${added}" ]; then
+    echo_if_not_quiet "$*" "=Appending to ${gitignore}..."
+    echo /www/* >> $gitignore
+    echo !/www/content/ >> $gitignore
+    echo /www/content/* >> $gitignore
+    echo !/www/content/mu-plugins >> $gitignore
+    echo /www/content/mu-plugins/* >> $gitignore
+    echo !/www/content/plugins >> $gitignore
+    echo /www/content/plugins/* >> $gitignore
+    echo !/www/content/themes >> $gitignore
+    echo /www/content/theme/* >> $gitignore
+else
+    echo_if_not_quiet "$*" "=Nothing to append to ${gitignore}."
+fi

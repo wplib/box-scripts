@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+
+function is_quiet() {
+    if [[ "$1" == *"--quiet"* ]]; then
+        echo "true"
+        return
+    fi
+    echo "false"
+}
+
+function is_wp_installed() {
+    if [ "" == "${WPLIB_BOX_WP_CONTENT_DIR}" ]; then
+        echo "true"
+        return
+    fi
+    echo "false"
+}
+
+#
+# Generate output if -q|--quiet not in a string passed as $1.
+#
+# $1 - Always "$*", e.g. string containing parameters passed to the calling script
+# $2 - String to echo if not quiet. Prefix string w/"=", "^", "&" or "=" to effect before and after echos.
+#
+function echo_if_not_quiet() {
+    if [ "true" != $(is_quiet "$1") ]; then
+        regex="s/\\\n/\n/g"
+        control=${2:0:1}
+        message=${2:1}
+        case "${control}" in
+            "^")
+                echo "${message}" | sed "${regex}"
+                echo
+                ;;
+            "*")
+                echo
+                echo "${message}" | sed "${regex}"
+                echo
+                ;;
+            "=")
+                echo "${message}" | sed "${regex}"
+                ;;
+            "&")
+                echo
+                echo "${message}" | sed "${regex}"
+                ;;
+            *)
+                echo
+                echo "CODING ERROR:"
+                echo "Your message for echo_if_not_quiet() does not begin with one of: ^, *, = or &."
+                echo
+                ;;
+        esac
+    fi
+}
+
+function exit_if_wp_not_installed() {
+    if [ "true" == $(is_wp_installed) ]; then
+        echo "WordPress in not installed. Cannot $1."
+        echo
+        how_to_install_wp
+        exit
+    fi
+}
+
+#
+# Check the "--force" option. If not set, output error message
+#
+# $1 - Always "$*", e.g. string containing parameters passed to the calling script
+# $2 - Error message or optionally output
+#
+
+function exit_if_no_force_option() {
+    if [[ "$1" != *"--force"* ]]; then
+        echo "ERROR: $2. Cannot continue."
+        echo
+        echo -e "\tUse --force to force continue."
+        echo
+        exit
+    fi
+}
+
+function find_wp_content_dir() {
+    if [ -d "${WPLIB_BOX_WEB_ROOT_DIR}/content" ]; then
+        echo "${WPLIB_BOX_WEB_ROOT_DIR}/content"
+        return
+    fi
+
+    if [ -d "${WPLIB_BOX_WEB_ROOT_DIR}/wp-content" ]; then
+        echo "${WPLIB_BOX_WEB_ROOT_DIR}/wp-content"
+        return
+    fi
+}
+
+function find_wp_plugins_dir() {
+    content_dir=$(find_wp_content_dir)
+    echo "${content_dir}/plugins"
+}
+
+function find_wp_mu_plugins_dir() {
+    content_dir=$(find_wp_content_dir)
+    echo "${content_dir}/mu-plugins"
+}
+
+function how_to_install_wp() {
+    echo "Download and install WordPress from the web,"
+    echo
+    echo -e "\tOR"
+    echo
+    echo "To install from a newly cloned WPLib Box repo use Composer FROM your HOST computer:"
+    echo
+    echo -e "\tcomposer install"
+    echo
+    echo If you are unfamiliar with Composer you can find installations instructions at one of:
+    echo
+    echo -e "\thttps://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx"
+    echo
+    echo -e "\thttps://getcomposer.org/doc/00-intro.md#installation-windows"
+    echo
+    echo On Mac or Linux be sure to remember to move composer.phar to /usr/local/bin:
+    echo
+    echo -e "\tmv composer.phar /usr/local/bin/composer"
+    echo
+}
+

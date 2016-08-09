@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+echo_if_not_quiet "$*" "=Installing WordPress..."
+
+composer

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+source "${WPLIB_BOX_COMMANDS_DIR}/set-cli-processvm" php7.0
