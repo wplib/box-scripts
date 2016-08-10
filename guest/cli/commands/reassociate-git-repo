@@ -28,9 +28,9 @@ mv "${WPLIB_BOX_GIT_DIR}" "${WPLIB_BOX_SAVE_GIT_DIR}" 2> /dev/null
 mv "${WPLIB_BOX_ORIGINAL_GIT_DIR}" "${WPLIB_BOX_GIT_DIR}" 2> /dev/null
 
 #
-# Add /vagrant/watchers to .gitignore if not already there.
+# Add /watchers to .gitignore if not already there.
 #
 grep -q -F "/watchers" "${WPLIB_BOX_DIR}/.gitignore" || echo "/watchers" >> ${WPLIB_BOX_DIR}/.gitignore
 
 
-echo_if_not_quiet "$*" "=The WPLib Box Git repository has been reassociated and the prior .git directory has been renamed to ${WPLIB_BOX_SAVE_GIT_DIR} (assuming there was one.)"
+echo_if_not_quiet "$*" "=The WPLib Box Git repository has been reassociated and/nthe prior .git directory has been renamed to ${WPLIB_BOX_SAVE_GIT_DIR}/n(assuming there was one.)"
