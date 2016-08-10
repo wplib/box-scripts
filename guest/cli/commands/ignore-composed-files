@@ -6,6 +6,7 @@ gitignore="${WPLIB_BOX_DIR}/.gitignore"
 added=$(grep "/www/\*" $gitignore)
 if [ "" == "${added}" ]; then
     echo_if_not_quiet "$*" "=Appending to ${gitignore}..."
+    echo -e "\t" >> $gitignore
     echo /www/* >> $gitignore
     echo !/www/content/ >> $gitignore
     echo /www/content/* >> $gitignore
