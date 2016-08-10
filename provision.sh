@@ -37,6 +37,12 @@ else
     sudo ln -s /vagrant/scripts/guest/cli/box /usr/local/bin/box
 
     #
+    #  Enable Tab Completion
+    #˚
+    echo "Enabling Tab Completion for 'box' command..."
+    box enable-tab-completion --quiet
+
+    #
     #  Disassociate the cloned Git repo and initialize a new repo.
     #
     echo "Disassociating WPLib Box Git repo..."
