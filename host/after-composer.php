@@ -2,6 +2,7 @@
 
 $www_root = dirname( dirname( __DIR__ ) ) . '/www';
 
+
 $actions = array(
     "delete" => array(
         "wp/wp-config-sample.php",
