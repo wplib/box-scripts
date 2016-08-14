@@ -1,5 +1,44 @@
 #!/usr/bin/env bash
 
+#
+# Outputs the file extension given a file name
+#
+# $1 - String
+#
+# Usage: string=$(to_lowercase "FOO.BAR")
+#   Result: $string ==> "foo.bar"
+#
+#
+function to_lowercase() {
+    echo "${1,,}"
+}
+
+#
+# Outputs the file extension given a file name
+#
+# $1 - Filename
+#
+# Usage: extension=$(file_extension "foo.bar")
+#   Result: $extension ==> "bar"
+#
+#
+function file_extension() {
+    echo "${1##*.}"
+}
+
+#
+# Outputs the base filename given a full filename
+# Base filename means no path and no extension
+#
+# $1 - Filename
+#
+# Usage: basename=$(file_basename "foo/bar.bar")
+#   Result: $extension ==> "bar"
+#
+function file_basename() {
+    filename=$(basename "$1")
+    echo "${filename%.*}"
+}
 
 #
 # Returns a filename that does not exist given an existing filename.
@@ -21,8 +60,8 @@ function next_backup_file() {
     # Get the file extension if there is one
     # See: http://stackoverflow.com/a/965072/102699
     #
-    ext=".${bakfile##*.}"
-    if [[ "." == "${ext}" || "${ext}" == ".${bakfile}" ]]; then
+    ext=$(file_extension "${bakfile}")
+    if [[ "" == "${ext}" || "${ext}" == "${bakfile}" ]]; then
         ext=""
     fi
 
@@ -37,15 +76,22 @@ function next_backup_file() {
     # Now check to see if the default prior backup exists
     # Continue checking until we find a workable filename
     #
-    test="${bakfile}${ext}"
+    test="${bakfile}.${ext}"
     until [ ! -e "${test}" ]; do
         counter=$((counter))
         let counter++
-        test="${bakfile}${counter}${ext}"
+        test="${bakfile}${counter}.${ext}"
     done
     echo "${test}"
 }
 
+function is_dry_run() {
+    if [[ "$1" == *"--dry-run"* ]]; then
+        echo "true"
+        return
+    fi
+    echo "false"
+}
 
 function is_quiet() {
     if [[ "$1" == *"--quiet"* ]]; then
@@ -76,20 +122,20 @@ function echo_if_not_quiet() {
         message=${2:1}
         case "${control}" in
             "^")
-                echo "${message}" | sed "${regex}"
+                echo -e "${message}" | sed "${regex}"
                 echo
                 ;;
             "*")
                 echo
-                echo "${message}" | sed "${regex}"
+                echo -e "${message}" | sed "${regex}"
                 echo
                 ;;
             "=")
-                echo "${message}" | sed "${regex}"
+                echo -e "${message}" | sed "${regex}"
                 ;;
             "&")
                 echo
-                echo "${message}" | sed "${regex}"
+                echo -e "${message}" | sed "${regex}"
                 ;;
             *)
                 echo
