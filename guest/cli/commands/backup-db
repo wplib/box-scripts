@@ -2,11 +2,26 @@
 #
 # Backup the database to /vagrant/sql/current.sql
 #
+#
+# Usage: box import-db {dump_file} [--echo-filename] [--quiet]
+#
+#   Result ==> Imports from /vagrant/sql/{dump_file}.sql
+#
+#   --echo-filename - Echos the backed-up filename
+#   --quiet - Omits status messages
+#   --dry-run - Do everything except actually run it
+#
 # Save the prior backup (if exists) to /vagrant/sql/previous.sql
 # If /vagrant/sql/previous.sql save to /vagrant/sql/previous.2.sql, and so on.
 #
 
 bakfile="/vagrant/sql/current.sql"
+
+if [ "true" == $(is_dry_run "$*") ]; then
+    dryrun=1
+else
+    dryrun=0
+fi
 
 #
 # Check to see if we need to save a prior backup
@@ -22,15 +37,36 @@ if [[ -f "${bakfile}" ]]  ; then
     # Okay, we can now save the prior backup.
     #
     echo_if_not_quiet "$*", "=Saving Prior Backup as ${priorfile}..."
-    cp "${bakfile}" "${priorfile}"
+
+    if [ $dryrun -eq 0 ]; then
+        cp "${bakfile}" "${priorfile}"
+    fi
 
 fi
 
 echo_if_not_quiet "$*", "=Backing up database to ${bakfile}..."
 
-mkdir -p /vagrant/sql
+if [ $dryrun -eq 0 ]; then
 
-mysqldump -u wordpress -pwordpress wordpress > ${bakfile}
+    mkdir -p /vagrant/sql
+
+    mysqldump -u wordpress -pwordpress wordpress > ${bakfile}
+
+    result="$?"
+
+    if [ "${result}" != "0" ]; then
+
+        echo_if_not_quiet "$*", "=mysqldump error (${result})"
+        return
+    fi
+
+fi
+
+if [[ "$*" == *"--echo-filename"* ]]; then
+
+    echo "${bakfile}"
+
+fi
 
 
 
