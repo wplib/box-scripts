@@ -37,8 +37,11 @@ bakfile=$(box backup-db --quiet --echo-filename --dry-run)
 
 if [ "${bakfile}" == "${importfile}" ]; then
 
-    echo_if_not_quiet "$*", "^\tERROR:  The default backup filename is '$1'."
-    echo_if_not_quiet "$*", "=\tCannot backup before import thus cannot continue."
+    echo_if_not_quiet "$*", "=\tERROR: Cannot backup '$1' because the"
+    echo_if_not_quiet "$*", "=\t       default backup filename is '$1'"
+    echo_if_not_quiet "$*", "^\t       thus cannot backup before import."
+    echo_if_not_quiet "$*", "=\t       Rename ${importfile} to "
+    echo_if_not_quiet "$*", "=\t       bypass this check and allow import."
     return
 
 fi
