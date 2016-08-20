@@ -18,8 +18,8 @@ function to_lowercase() {
 #
 # $1 - Filename
 #
-# Usage: extension=$(file_extension "foo.bar")
-#   Result: $extension ==> "bar"
+# Usage: extension=$(file_extension "foo/bar.baz")
+#   Result: $extension ==> "baz"
 #
 #
 function file_extension() {
@@ -32,8 +32,8 @@ function file_extension() {
 #
 # $1 - Filename
 #
-# Usage: basename=$(file_basename "foo/bar.bar")
-#   Result: $extension ==> "bar"
+# Usage: basename=$(file_basename "foo/bar.baz")
+#   Result: $basename ==> "bar"
 #
 function file_basename() {
     filename=$(basename "$1")
