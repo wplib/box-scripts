@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export WPLIB_BOX_PHPCLI=$(which php7.0)
+
 export WPLIB_BOX_DIR="/vagrant"
 export WPLIB_BOX_LOGS_DIR="/vagrant/logs"
 export WPLIB_BOX_WEB_ROOT_DIR="/var/www"
