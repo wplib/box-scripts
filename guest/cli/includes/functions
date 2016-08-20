@@ -102,7 +102,7 @@ function is_quiet() {
 }
 
 function is_wp_installed() {
-    if [ "" == "${WPLIB_BOX_WP_CONTENT_DIR}" ]; then
+    if [ "" == "${WPLIB_BOX_CONTENT_DIR}" ]; then
         echo "true"
         return
     fi
