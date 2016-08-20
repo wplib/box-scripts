@@ -1,6 +1,31 @@
 #!/usr/bin/env bash
 
 #
+# Reads the config file /vagrant/.wplib.box.json and returns a value
+#
+# $1 - String
+# $2 - String Optional if "require" then error if not there.
+#
+# Usage: git_url=$(read_config ".path.test.git_url")
+#   Result: $git_url ==> "ssh://..."
+#
+#
+function read_config() {
+    require="$2"
+    property=$(cat "${WPLIB_BOX_CONFIG_FILE}" | jq --raw-output "$1")
+    if [ "null" == "${property}" ]; then
+        if [ "require" == "${require}" ]; then
+            echo -e "\tERROR:"
+            echo -e "\tThe config file ${WPLIB_BOX_CONFIG_FILE} does"
+            echo -e "\tnot have a value for ${property}."
+            return 1
+        fi
+    else
+        echo "${property}";
+    fi
+}
+
+#
 # Outputs the file extension given a file name
 #
 # $1 - String
@@ -18,8 +43,8 @@ function to_lowercase() {
 #
 # $1 - Filename
 #
-# Usage: extension=$(file_extension "foo.bar")
-#   Result: $extension ==> "bar"
+# Usage: extension=$(file_extension "foo/bar.baz")
+#   Result: $extension ==> "baz"
 #
 #
 function file_extension() {
@@ -32,8 +57,8 @@ function file_extension() {
 #
 # $1 - Filename
 #
-# Usage: basename=$(file_basename "foo/bar.bar")
-#   Result: $extension ==> "bar"
+# Usage: basename=$(file_basename "foo/bar.baz")
+#   Result: $basename ==> "bar"
 #
 function file_basename() {
     filename=$(basename "$1")
@@ -102,7 +127,7 @@ function is_quiet() {
 }
 
 function is_wp_installed() {
-    if [ "" == "${WPLIB_BOX_WP_CONTENT_DIR}" ]; then
+    if [ "" == "${WPLIB_BOX_CONTENT_DIR}" ]; then
         echo "true"
         return
     fi
@@ -173,6 +198,18 @@ function exit_if_no_force_option() {
     fi
 }
 
+function find_composer_vendor_dir() {
+    if [ -d "${WPLIB_BOX_WEB_ROOT_DIR}/vendor" ]; then
+        echo "${WPLIB_BOX_WEB_ROOT_DIR}/vendor"
+        return
+    fi
+
+    if [ -d "${WPLIB_BOX_DIR}/vendor" ]; then
+        echo "${WPLIB_BOX_DIR}/vendor"
+        return
+    fi
+}
+
 function find_wp_content_dir() {
     if [ -d "${WPLIB_BOX_WEB_ROOT_DIR}/content" ]; then
         echo "${WPLIB_BOX_WEB_ROOT_DIR}/content"
@@ -214,5 +251,60 @@ function how_to_install_wp() {
     echo
     echo -e "\tmv composer.phar /usr/local/bin/composer"
     echo
+}
+
+function delete_exclude_items() {
+    root_dir="$1"
+	index=0
+	while :; do
+	    item_to_exclude=$(read_config ".deployment.exclude[${index}]")
+	    if [ "" == "${item_to_exclude}" ]; then
+	        break
+        fi
+	    item_to_exclude="${root_dir}/${item_to_exclude}"
+	    if [[ ! -f "${item_to_exclude}" &&  ! -d "${item_to_exclude}" ]];then
+	        echo "NOTICE: ${item_to_exclude} is in exclude list in ${WPLIB_BOX_CONFIG_FILE} but does not exist on disk."
+	    else
+	        basename=$(basename "${item_to_exclude}")
+	        echo_if_not_quiet "$*", "=Deleting ${basename}..."
+	        rm -rf "${item_to_exclude}"
+	    fi
+	    index=$(( $index+1 ))
+	done
+
+}
+
+#
+# Echos the substring after a character
+#
+# $1 - String
+# $2 - Character
+#
+# Usage: vendor_dir=$(substring_after "www/vendor" "/")
+#   Result: $vendor_dir ==> "vendor"
+#
+#
+function substring_after() {
+    string="$1"
+    character="$2"
+    echo "${string#*${character}}"
+}
+
+#
+# Runs Git commands, quietly, unless they fail
+#
+# See http://stackoverflow.com/a/8944284/102699
+#
+function quiet_git() {
+    stdout=$(tempfile)
+    stderr=$(tempfile)
+
+    if ! git "$@" </dev/null >$stdout 2>$stderr; then
+        cat $stderr >&2
+        rm -f $stdout $stderr
+        return 1
+    fi
+
+    rm -f $stdout $stderr
 }
 

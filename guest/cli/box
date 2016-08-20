@@ -20,15 +20,29 @@ if [ "${WPLIB_BOX_COMMAND}" == "help" ]; then
     exit
 fi
 
-if [ ! -f "${command_file}" ]; then
-    echo
-    echo -e "\tCommand not found: $1"
-    echo
-    exit
+if [ -f "${command_file}" ]; then
+    command_type="bash"
+else
+    if [ -f "${command_file}.php" ]; then
+        command_type="php"
+    else
+        echo
+        echo -e "\tCommand not found: $1"
+        echo
+        exit
+    fi
 fi
 
 echo_if_not_quiet "$*" "*Running $1..."
 initial_dir=$(pwd)
-source "${command_file}" "$2" "$3" "$4" "$5"
+case "${command_type}" in
+   "bash")
+        source "${command_file}" "$2" "$3" "$4" "$5"
+        ;;
+   "php")
+
+        /usr/bin/php7.0 "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args "${WPLIB_BOX_COMMAND}" "$2" "$3" "$4" "$5"
+        ;;
+esac
 cd "${initial_dir}"
 echo_if_not_quiet "$*" "*Done."
