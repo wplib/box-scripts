@@ -22,7 +22,7 @@ fi
 
 if [ ! -f "${command_file}" ]; then
     echo
-    echo "Command not found: $1"
+    echo -e "\tCommand not found: $1"
     echo
     exit
 fi
