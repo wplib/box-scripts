@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo_if_not_quiet "$*" "Flushing Redis Cache..."
+echo_if_not_quiet "$*" "=Flushing Redis Cache..."
 
 redis-cli flushall > /dev/null
 
