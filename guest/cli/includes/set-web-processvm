@@ -23,5 +23,4 @@ delfile "$conf_file"
 editfile "php7.0" "$1" "$conf_file"
 delfile "$conf_file"
 
-sudo service "$1-fpm" restart
-sudo service nginx restart
+sudo service nginx reload
