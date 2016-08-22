@@ -12,12 +12,12 @@
 #
 function read_config() {
     require="$2"
-    property=$(cat "${WPLIB_BOX_CONFIG_FILE}" | jq --raw-output "$1")
-    if [ "null" == "${property}" ]; then
+    property=$(cat "${WPLIB_BOX_CONFIG_FILE}" | jq --raw-output "$1"  2>/dev/null)
+    if [[ "null" == "${property}" || "" == "${property}" ]]; then
         if [ "require" == "${require}" ]; then
-            echo -e "\tERROR:"
-            echo -e "\tThe config file ${WPLIB_BOX_CONFIG_FILE} does"
-            echo -e "\tnot have a value for ${property}."
+            printf "\tERROR:\n"
+            echo -e "\tThe config file ${WPLIB_BOX_CONFIG_FILE}\n"
+            echo -e "\tdoes not have a value for $1.\n"
             return 1
         fi
     else

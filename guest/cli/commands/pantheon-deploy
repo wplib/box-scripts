@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
 
-git_url=$(read_config .hosts)
-
 deploy_host="$1"
+
+project_name=$(read_config ".project.name" "require")
+if [ "" == "${project_name}" ]; then
+    echo -e "\tERROR: The config file wplib.box.json does not have a .project.name or is not a valid JSON file."
+    echo -e "\t"
+    return
+fi
 
 if [ "" == "${deploy_host}" ]; then
     echo -e "\tERROR: You must specify a target host to deploy TO:"
@@ -22,11 +27,6 @@ if [ "" == "${deploy_host}" ]; then
         index=$(( $index+1 ))
     done
     echo -e "\t"
-    return
-fi
-
-project_name=$(read_config ".project.name" "require")
-if [ "" == "${project_name}" ]; then
     return
 fi
 
@@ -92,6 +92,8 @@ cp -RP "${WPLIB_BOX_VENDOR_DIR}/" "${build_dir}/vendor"
 #
 echo_if_not_quiet "$*" "=Stripping Git submodule references..."
 find "${build_dir}" -name .git | xargs rm -fr
+find "${build_dir}" -name .gitignore | xargs rm -fr
+find "${build_dir}" -name .gitattributes | xargs rm -fr
 
 #
 # Remove these. We do not need these on a hosted site.
@@ -155,6 +157,7 @@ echo_if_not_quiet "$*" "=Pushing files for ${project_name} to ${deploy_host} at 
 # Ensure this is already set
 #
 quiet_git config --global push.default simple
+
 #
 # Push our changes back to Panethon
 #
