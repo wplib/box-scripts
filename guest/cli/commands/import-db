@@ -9,7 +9,20 @@
 #   --echo - Echos the backed-up filename
 #   --quiet - Omits
 
-importfile="$1"
+# see: http://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
+while [[ $# -gt 1 ]]
+do
+opt="$1"
+
+case $opt in
+  -i|--import-file)
+  importfile="$2"
+  shift
+  ;;
+esac
+shift
+done
+
 
 if [ 'sql' != $(to_lowercase $(file_extension "${importfile}")) ]; then
     #
