@@ -43,13 +43,21 @@ fi
 
 echo_if_not_quiet "$*" "^Deploying to the ${target_domain} ${deploy_host} server at Pantheon..."
 
+
+echo_if_not_quiet "$*" "=Deleting any prior deploy remnants..."
+
+#
+# Clean up before creating new ones.
+#
+rm -rf /tmp/wplib.box.deploy-*/
+
 #
 # Create temporary directories to work in
 # See Method # 2 Use of $$ variable:
 #  - http://www.cyberciti.biz/tips/shell-scripting-bash-how-to-create-temporary-random-file-name.html
 #
-clone_dir="/tmp/deploy-clone.$$.dir"
-build_dir="/tmp/deploy-build.$$.dir"
+clone_dir="/tmp/wplib.box.deploy-clone.$$.dir"
+build_dir="/tmp/wplib.box.deploy-build.$$.dir"
 
 #
 # First clone the site from our repo on Pantheon
@@ -124,10 +132,10 @@ cd "${build_dir}"
 # Delete directories that Pantheon Reserves
 #
 echo_if_not_quiet "$*" "=Deleting all upload directories that Pantheon-reserves..."
-rm -rf ""${build_dir}/sites/default/files"
-rm -rf ""${build_dir}/wp-content/uploads"
-rm -rf ""${build_dir}/web/sites/default/files"
-rm -rf ""${build_dir}/web/wp-content/uploads"
+rm -rf "${build_dir}/sites/default/files"
+rm -rf "${build_dir}/wp-content/uploads"
+rm -rf "${build_dir}/web/sites/default/files"
+rm -rf "${build_dir}/web/wp-content/uploads"
 
 echo_if_not_quiet "$*" "=Staging all files for commit..."
 #
@@ -172,9 +180,3 @@ quiet_git config --global push.default simple
 #
 quiet_git push
 
-echo_if_not_quiet "$*" "=Cleaning up..."
-#
-# Clean up
-#
-rm -rf "${clone_dir}"
-rm -rf "${build_dir}"
