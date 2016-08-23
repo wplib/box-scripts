@@ -120,6 +120,15 @@ cd "${build_dir}"
 #
 #git status
 
+#
+# Delete directories that Pantheon Reserves
+#
+echo_if_not_quiet "$*" "=Deleting all upload directories that Pantheon-reserves..."
+rm -rf ""${build_dir}/sites/default/files"
+rm -rf ""${build_dir}/wp-content/uploads"
+rm -rf ""${build_dir}/web/sites/default/files"
+rm -rf ""${build_dir}/web/wp-content/uploads"
+
 echo_if_not_quiet "$*" "=Staging all files for commit..."
 #
 # Add any changes to staging
