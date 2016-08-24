@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Installs node and bower dependencies and compiles assets.
+#
+# Usage: box build-dependencies
+#
+
+echo "Installing and updating dependencies..."
+cd WPLIB_BOX_DIR
+sudo npm install && bower install
+
+echo "Compiling dependencies..."
+grunt build
+
+
