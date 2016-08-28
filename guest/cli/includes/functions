@@ -89,6 +89,11 @@ function show_user_var() {
     fi
 }
 
+function read_user_config() {
+    read_config "$1" "$2" "${WPLIB_BOX_USER_CONFIG}"
+}
+
+#
 # Reads the config file /vagrant/.wplib.box.json and returns a value
 #
 # $1 - String
