@@ -89,6 +89,57 @@ function show_user_var() {
     fi
 }
 
+
+#
+# Reads the config file /vagrant/.wplib.box.json and returns a value
+#
+# $1 - String The json file to update
+# $2 - String The JQ selector
+# $3 - String The value to assign the JQ selector
+#
+# Usage: set_json_file_var /home/vagrant/wplib.box.json ".user" "Luke Skywalker"
+#
+#   Result: /home/vagrant/wplib.box.json ==> "{ "user" : "Luke Skywalker" }
+#
+#
+function set_json_file_var() {
+
+    echo_if_not_quiet "$*" "=Setting $1 = '$2' in $3..."
+
+    if [ "" == "$1" ]; then
+        echo
+        echo "You must specify a JSON file name as the 3rd argument when calling set_json_file_var()."
+        echo
+        return 1
+    fi
+
+    if [ "" == "$1" ]; then
+        echo
+        echo "You must specify a JQ selector as the 1st argument when calling set_json_file_var()."
+        echo
+        return 2
+    fi
+
+    if [ "" == "$2" ]; then
+        echo
+        echo "You must specify a value to assign the JQ selector as the 2nd argument when calling set_json_file_var()."
+        echo
+        return 3
+    fi
+
+    if [ ! -f "$1" ]; then
+        echo_if_not_quiet "$*" "=Creating new $1..."
+        echo "{}" > "$1" || return $?
+    fi
+
+    tmpfile=$(mktemp /tmp/new-json-file.XXXXXX)
+
+    filter="$2 = \"$3\""
+    jq "${filter}" "$1" >$tmpfile || return $?
+    mv "${tmpfile}" "$1"  || return $?
+
+}
+
 function read_user_config() {
     read_config "$1" "$2" "${WPLIB_BOX_USER_CONFIG}"
 }
