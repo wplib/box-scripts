@@ -82,11 +82,22 @@ echo_if_not_quiet "$*" "=Copying content directories from dev..."
 #
 cp -RP "${WPLIB_BOX_CONTENT_DIR}/" "${build_dir}/wp-content" || return ?*
 
-echo_if_not_quiet "$*" "=Copying vendor directories from dev..."
 #
 # If there is a /vendor directory, don't forget it
 #
-cp -RP "${WPLIB_BOX_VENDOR_DIR}/" "${build_dir}/vendor" || return ?*
+if [[ -d "${WPLIB_BOX_VENDOR_DIR}" ]]; then
+    echo_if_not_quiet "$*" "=Copying vendor directories from dev..."
+    cp -RP "${WPLIB_BOX_VENDOR_DIR}/" "${build_dir}/vendor" || return ?*
+fi
+
+#
+# If there is a /pantheon.yaml, don't forget it
+#
+if [] -f "${WPLIB_BOX_DIR}/pantheon.yaml" ]]; then
+    echo_if_not_quiet "$*" "=Copying pantheon.yaml from dev..."
+    cp "${WPLIB_BOX_DIR}/pantheon.yaml" "${build_dir}/pantheon.yaml"
+fi
+
 
 #
 # Strip .git "submodules"
