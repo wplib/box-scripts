@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 
-error=0
 deploy_host="$1"
-
 project_name=$(read_config "project.name" "require")
 if [ "" == "${project_name}" ]; then
     echo -e "\tERROR: The config file wplib.box.json does not have a .project.name or is not a valid JSON file."
     echo -e "\t"
-    return
+    return 2
 fi
 
 if [ "" == "${deploy_host}" ]; then
@@ -27,18 +25,17 @@ if [ "" == "${deploy_host}" ]; then
         index=$(( $index+1 ))
     done
     echo -e "\t"
-    return
+    return 3
 fi
-
 target_domain=$(read_config "project.target_domain" "require")
 if [ "" == "${target_domain}" ]; then
-    return
+    return 4
 fi
 
 selector=".hosts.${deploy_host}.git_url"
 git_url=$(read_config "${selector}" "require")
 if [ "" == "${git_url}" ]; then
-    return
+    return 5
 fi
 
 echo_if_not_quiet "$*" "^Deploying to the ${target_domain} ${deploy_host} server at Pantheon..."
