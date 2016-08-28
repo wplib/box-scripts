@@ -66,6 +66,29 @@ function default() {
     fi
 }
 
+#
+# Example
+#
+#       box show-user-var "email"
+#
+function show_user_var() {
+
+    if [ "" == "$1" ]; then
+        echo
+        echo "You must specify a property for the box's user when calling show_user_var."
+        echo
+        return 1
+    fi
+
+    var="$1"
+    value=$(read_user_config "${var}") || return $?
+    if [ "" == "${value}" ]; then
+        echo "The user.$1 is EMPTY."
+    else
+        echo "The user.$1 is: ${value}."
+    fi
+}
+
 # Reads the config file /vagrant/.wplib.box.json and returns a value
 #
 # $1 - String
