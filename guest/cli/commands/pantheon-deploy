@@ -55,66 +55,68 @@ build_dir="/tmp/deploy-build.$$.dir"
 # First clone the site from our repo on Pantheon
 #
 echo_if_not_quiet "$*" "=Cloning from ${deploy_host}'s Git repo..."
-git clone "${git_url}" "${clone_dir}"
+
+git clone "${git_url}" "${clone_dir}" || return $?
 
 #
 # Clone the pristine Pantheon Upstream
 #
 echo_if_not_quiet "$*" "&Cloning from the pantheon-systems/WordPress Git repo..."
-git clone https://github.com/pantheon-systems/WordPress "${build_dir}"
-cd "${build_dir}"
+git clone https://github.com/pantheon-systems/WordPress "${build_dir}" || return $?
+cd "${build_dir}" || return ?*
 
 
 echo_if_not_quiet "$*" "&Cleaning the pantheon-systems/WordPress Git repo..."
 #
 # Erase the .git that points to Pantheon's pristine Upstream repo
 #
-rm -rf "${build_dir}/.git"
+rm -rf "${build_dir}/.git" || return ?*
 #
 # Rip out it's content directory
 #
-rm -rf "${build_dir}/wp-content"
+rm -rf "${build_dir}/wp-content" || return ?*
 
 
-echo_if_not_quiet "$*" "=Copying content and vendor directories from dev..."
+echo_if_not_quiet "$*" "=Copying content directories from dev..."
 #
 # Replace with our content directory
 #
-cp -RP "${WPLIB_BOX_CONTENT_DIR}/" "${build_dir}/wp-content"
+cp -RP "${WPLIB_BOX_CONTENT_DIR}/" "${build_dir}/wp-content" || return ?*
 
+echo_if_not_quiet "$*" "=Copying vendor directories from dev..."
 #
 # If there is a /vendor directory, don't forget it
 #
-cp -RP "${WPLIB_BOX_VENDOR_DIR}/" "${build_dir}/vendor"
+cp -RP "${WPLIB_BOX_VENDOR_DIR}/" "${build_dir}/vendor" || return ?*
 
 #
 # Strip .git "submodules"
 #
-echo_if_not_quiet "$*" "=Stripping Git submodule references..."
-find "${build_dir}" -name .git | xargs rm -fr
-find "${build_dir}" -name .gitignore | xargs rm -fr
-find "${build_dir}" -name .gitattributes | xargs rm -fr
+echo_if_not_quiet "$*" "&Stripping Git submodule references..."
+find "${build_dir}" -name .git | xargs rm -fr || return ?*
+find "${build_dir}" -name .gitignore | xargs rm -fr || return ?*
+find "${build_dir}" -name .gitattributes | xargs rm -fr || return ?*
 
 #
 # Remove these. We do not need these on a hosted site.
 #
-echo_if_not_quiet "$*" "&Removing items to exclude from ${build_dir}/..."
-delete_exclude_items "${build_dir}"
+echo_if_not_quiet "$*" "=Removing items to exclude from ${build_dir}/..."
+delete_exclude_items "${build_dir}" || return ?*
 
 #
 # Remove anything that is in the "require-dev" category
 #
 echo_if_not_quiet "$*" "&Removing \"require-dev\" items from ${build_dir}/..."
-$WPLIB_BOX_PHPCLI "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args remove-composer-require-dev "${build_dir}"
+$WPLIB_BOX_PHPCLI "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args remove-composer-require-dev "${build_dir}" || return ?*
 
 
 #
 # Now get the Pantheon repo's .git dir and make it our own
 #
 echo_if_not_quiet "$*" "&Copying over .git directory from source..."
-mv "${clone_dir}/.git" "${build_dir}"
+mv "${clone_dir}/.git" "${build_dir}" || return ?*
 
-cd "${build_dir}"
+cd "${build_dir}" || return ?*
 #
 # So we can view after the fact
 #
@@ -124,21 +126,21 @@ cd "${build_dir}"
 # Delete directories that Pantheon Reserves
 #
 echo_if_not_quiet "$*" "=Deleting all upload directories that Pantheon-reserves..."
-rm -rf "${build_dir}/sites/default/files"
-rm -rf "${build_dir}/wp-content/uploads"
-rm -rf "${build_dir}/web/sites/default/files"
-rm -rf "${build_dir}/web/wp-content/uploads"
+rm -rf "${build_dir}/sites/default/files" || return ?*
+rm -rf "${build_dir}/wp-content/uploads" || return ?*
+rm -rf "${build_dir}/web/sites/default/files" || return ?*
+rm -rf "${build_dir}/web/wp-content/uploads" || return ?*
 
 echo_if_not_quiet "$*" "=Staging all files for commit..."
 #
 # Add any changes to staging
 #
-quiet_git add --all .
+quiet_git add --all . || return ?*
 
 #
 # Add any changes to staging
 #
-quiet_git add -u
+quiet_git add -u || return ?*
 
 #
 # So we can view after the fact
@@ -149,13 +151,13 @@ echo_if_not_quiet "$*" "=Committing all files to prepare for deployment..."
 #
 # Merge in any changes
 #
-quiet_git commit -m "Merging in changes for deployment"
+quiet_git commit -m "Merging in changes for deployment" || return ?*
 
 #
 # Now do a pull, just in case.
 # It should be up to date though.
 #
-quiet_git pull --commit --no-edit --no-ff --verbose
+quiet_git pull --commit --no-edit --no-ff --verbose || return ?*
 
 #
 # So we can view after the fact
@@ -165,16 +167,17 @@ echo_if_not_quiet "$*" "=Pushing files for ${project_name} to ${deploy_host} at 
 #
 # Ensure this is already set
 #
-quiet_git config --global push.default simple
+quiet_git config --global push.default simple || return ?*
 
 #
 # Push our changes back to Panethon
 #
-quiet_git push
+quiet_git push || return ?*
 
 echo_if_not_quiet "$*" "=Cleaning up..."
 #
 # Clean up
 #
-rm -rf "${clone_dir}"
-rm -rf "${build_dir}"
+rm -rf "${clone_dir}" || return ?*
+rm -rf "${build_dir}" || return ?*
+
