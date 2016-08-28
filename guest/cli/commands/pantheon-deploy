@@ -3,7 +3,7 @@
 
 deploy_host="$1"
 
-project_name=$(read_config ".project.name" "require")
+project_name=$(read_config "project.name" "require")
 if [ "" == "${project_name}" ]; then
     echo -e "\tERROR: The config file wplib.box.json does not have a .project.name or is not a valid JSON file."
     echo -e "\t"
@@ -19,7 +19,7 @@ if [ "" == "${deploy_host}" ]; then
     echo -e "\t"
     index=0
     while :; do
-        host=$(read_config ".hosts | keys[$index]" )
+        host=$(read_config "hosts | keys[$index]" )
         if [ "" == "${host}" ]; then
             break
         fi
@@ -30,7 +30,7 @@ if [ "" == "${deploy_host}" ]; then
     return
 fi
 
-target_domain=$(read_config ".project.target_domain" "require")
+target_domain=$(read_config "project.target_domain" "require")
 if [ "" == "${target_domain}" ]; then
     return
 fi

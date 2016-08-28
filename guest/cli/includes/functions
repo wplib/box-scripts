@@ -6,13 +6,15 @@
 # $1 - String
 # $2 - String Optional if "require" then error if not there.
 #
-# Usage: git_url=$(read_config ".path.test.git_url")
+# Usage: git_url=$(read_config "path.test.git_url")
 #   Result: $git_url ==> "ssh://..."
 #
 #
 function read_config() {
     require="$2"
     config_file=$(default "$3" "${WPLIB_BOX_CONFIG}")
+
+    property=$(cat "${config_file}" | jq --raw-output ".$1"  2>/dev/null)
     if [[ "null" == "${property}" || "" == "${property}" ]]; then
         if [ "require" == "${require}" ]; then
             printf "\tERROR:\n"
@@ -257,7 +259,7 @@ function delete_exclude_items() {
     root_dir="$1"
 	index=0
 	while :; do
-	    item_to_exclude=$(read_config ".deployment.exclude[${index}]")
+	    item_to_exclude=$(read_config "deployment.exclude[${index}]")
 	    if [ "" == "${item_to_exclude}" ]; then
 	        break
         fi
