@@ -131,7 +131,7 @@ rm -rf "${build_dir}/wp-content/uploads" || return ?*
 rm -rf "${build_dir}/web/sites/default/files" || return ?*
 rm -rf "${build_dir}/web/wp-content/uploads" || return ?*
 
-echo_if_not_quiet "$*" "=Staging all files for commit..."
+echo_if_not_quiet "$*" "^Staging all files for commit..."
 #
 # Add any changes to staging
 #
@@ -181,3 +181,4 @@ echo_if_not_quiet "$*" "=Cleaning up..."
 rm -rf "${clone_dir}" || return ?*
 rm -rf "${build_dir}" || return ?*
 
+echo_if_not_quiet "$*" "&Done."

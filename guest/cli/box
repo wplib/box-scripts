@@ -48,12 +48,10 @@ case "${command_type}" in
         ;;
 esac
 cd "${initial_dir}"
-
-if [ $error -eq 0 ]; then
-    echo "The '$1' command completed."
-    echo_if_not_quiet "$*" "*Done."
+if [[ $error -eq 0 ]]; then
+    echo_if_not_quiet "$*" "*The '$1' command completed without error."
 else
     echo -e "\t"
-    echo "The '$1' command completed, but with errors."
+    echo "The '$1' command terminated WITH ERRORS."
     echo -e "\t"
 fi
