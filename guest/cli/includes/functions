@@ -140,6 +140,16 @@ function set_json_file_var() {
 
 }
 
+
+#
+# Reads the user config file /home/vagrant/.wplib.box.json and echos a value
+#
+# $1 - String
+# $2 - String Optional if "require" then error if not there.
+#
+# Usage: username=$(read_config "name")
+#   Result: $username ==> "Luke Skywalker"
+#
 function read_user_config() {
     read_config "$1" "$2" "${WPLIB_BOX_USER_CONFIG}"
 }
