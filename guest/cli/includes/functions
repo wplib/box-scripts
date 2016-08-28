@@ -294,7 +294,7 @@ function delete_exclude_items() {
 	    else
 	        basename=$(basename "${item_to_exclude}")
 	        echo_if_not_quiet "$*", "=Deleting ${basename}..."
-	        rm -rf "${item_to_exclude}"
+	        rm -rf "${item_to_exclude}" || return ?*
 	    fi
 	    index=$(( $index+1 ))
 	done
@@ -327,9 +327,12 @@ function quiet_git() {
     stderr=$(tempfile)
 
     if ! git "$@" </dev/null >$stdout 2>$stderr; then
+        # Capture the error
+        error=$?
+        # Output the error messages to stderr
         cat $stderr >&2
         rm -f $stdout $stderr
-        return 1
+        return $error
     fi
 
     rm -f $stdout $stderr
