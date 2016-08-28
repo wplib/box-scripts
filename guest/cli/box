@@ -35,14 +35,25 @@ fi
 
 echo_if_not_quiet "$*" "*Running $1..."
 initial_dir=$(pwd)
+error=0
 case "${command_type}" in
    "bash")
         source "${command_file}" "$2" "$3" "$4" "$5"
+        error=$?
         ;;
    "php")
 
         /usr/bin/php7.0 "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args "${WPLIB_BOX_COMMAND}" "$2" "$3" "$4" "$5"
+        error=$?
         ;;
 esac
 cd "${initial_dir}"
-echo_if_not_quiet "$*" "*Done."
+
+if [ $error -eq 0 ]; then
+    echo "The '$1' command completed."
+    echo_if_not_quiet "$*" "*Done."
+else
+    echo -e "\t"
+    echo "The '$1' command completed, but with errors."
+    echo -e "\t"
+fi
