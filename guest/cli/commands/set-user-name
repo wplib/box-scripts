@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# Usage:
+#
+#       $1 - Name of box user
+#
+# Example
+#
+#       box set-user-name "Luke Skywalker"
+#
+
+echo_if_not_quiet "$*" "=Setting user.email = '$1'..."
+set_user_var "name" "$1" --quiet || return $?
+git config --global user.name "$1" || return $?
+
+
