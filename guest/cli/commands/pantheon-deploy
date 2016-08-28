@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-
+error=0
 deploy_host="$1"
 
 project_name=$(read_config "project.name" "require")
