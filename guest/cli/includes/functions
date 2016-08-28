@@ -12,11 +12,11 @@
 #
 function read_config() {
     require="$2"
-    property=$(cat "${WPLIB_BOX_CONFIG_FILE}" | jq --raw-output "$1"  2>/dev/null)
+    config_file=$(default "$3" "${WPLIB_BOX_CONFIG}")
     if [[ "null" == "${property}" || "" == "${property}" ]]; then
         if [ "require" == "${require}" ]; then
             printf "\tERROR:\n"
-            echo -e "\tThe config file ${WPLIB_BOX_CONFIG_FILE}\n"
+            echo -e "\tThe config file ${config_file}\n"
             echo -e "\tdoes not have a value for $1.\n"
             return 1
         fi
@@ -263,7 +263,7 @@ function delete_exclude_items() {
         fi
 	    item_to_exclude="${root_dir}/${item_to_exclude}"
 	    if [[ ! -f "${item_to_exclude}" &&  ! -d "${item_to_exclude}" ]];then
-	        echo "NOTICE: ${item_to_exclude} is in exclude list in ${WPLIB_BOX_CONFIG_FILE} but does not exist on disk."
+	        echo "NOTICE: ${item_to_exclude} is in exclude list in ${WPLIB_BOX_CONFIG} but does not exist on disk."
 	    else
 	        basename=$(basename "${item_to_exclude}")
 	        echo_if_not_quiet "$*", "=Deleting ${basename}..."

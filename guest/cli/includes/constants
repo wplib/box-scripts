@@ -29,4 +29,4 @@ export WPLIB_BOX_VENDOR_DIR=$(find_composer_vendor_dir)
 
 export WPLIB_BOX_SQL_DIR="/vagrant/sql"
 export WPLIB_BOX_COMPOSER_FILE="/vagrant/composer.json"
-export WPLIB_BOX_CONFIG_FILE="/vagrant/wplib.box.json"
+export WPLIB_BOX_CONFIG="/vagrant/wplib.box.json"
