@@ -70,5 +70,5 @@ else
     echo -e "\t"
 fi
 
-check_updates_available "$*"
+#check_updates_available "$*"
 
