@@ -6,11 +6,13 @@
 source /vagrant/scripts/guest/cli/includes/functions
 source /vagrant/scripts/guest/cli/includes/constants
 
-if [[ "$1" != "set-user-name" && "$1" != "set-user-email" ]];then
-
-    verify_user_config || error=1
-
-fi
+#
+#
+#if [[ "$1" != "set-user-name" && "$1" != "set-user-email" ]];then
+#
+#    verify_user_config || error=1
+#
+#fi
 
 if [ "" == "${error}" ];then
 

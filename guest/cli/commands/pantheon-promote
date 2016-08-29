@@ -6,6 +6,8 @@
 #       $2 String A message for the tag
 #
 
+verify_user_config || error=1
+
 target_domain=$(read_config "project.target_domain" "require")
 if [ "" == "${target_domain}" ]; then
     return 2
