@@ -17,6 +17,60 @@ function max() {
     done <<< "$(echo -e "$1")"
     echo $max
 }
+
+#
+# First clone the site from our repo on Pantheon
+#
+# Usage:
+#
+#       $1 - String Git URL to clone
+#       $1 - String Directory to clone into
+#
+#
+function ensure_git_clone() {
+    git_url="$1"
+    clone_dir="$2"
+
+    if [ "" == "$1" ]; then
+        echo
+        echo -e "\tERROR: You must specify a Git URL to clone as 1st parameter of ensure_git_clone()."
+        echo
+        return 1
+    fi
+
+    if [ "" == "$2" ]; then
+        echo
+        echo -e "\tERROR: You must specify a directory to clone into as 2nd parameter of ensure_git_clone()."
+        echo
+        return 2
+    fi
+
+    if [[ -d "$2" && ! -d "$2/.git" ]]; then
+        echo
+        echo -e "\tERROR: $2"
+        echo -e "\t       exists but does not contain a Git repo. Cannot continue."
+        echo
+        return 3
+    fi
+
+    echo_if_not_quiet "$*" "=Cloning "${git_url}" to ${clone_dir}..."
+
+    if [ ! -d "${clone_dir}" ]; then
+
+        git clone "${git_url}" "${clone_dir}" || return $?
+
+    else
+
+        cd "${clone_dir}"
+
+        # Set repo to match remote origin/master
+        git fetch origin || return $?
+        git reset --hard origin/master > /dev/null || return $?
+
+    fi
+}
+
+#
 # Verify that a User Config exists.  If not, output how-to-fix message and return 1
 #
 function verify_user_config() {
