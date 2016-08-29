@@ -1,6 +1,22 @@
 #!/usr/bin/env bash
 
 #
+# Usage
+#   $1 String Space separated list of numbers
+#
+# Echos
+#   Maximum number
+#
+# See:
+#   http://stackoverflow.com/a/16854326/102699
+#
+function max() {
+    max=0
+    while read num; do
+        ((num > max)) && max=$num
+    done <<< "$(echo -e "$1")"
+    echo $max
+}
 # Verify that a User Config exists.  If not, output how-to-fix message and return 1
 #
 function verify_user_config() {
