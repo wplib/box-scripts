@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#
+# Example
+#
+#       box show-user-email
+#
+show_user_var "name"

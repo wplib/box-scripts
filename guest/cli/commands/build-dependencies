@@ -5,6 +5,9 @@
 # Usage: box build-dependencies
 #
 
+echo "Not yet implemented"
+exit
+
 echo "Installing and updating dependencies..."
 cd WPLIB_BOX_DIR
 sudo npm install && bower install
