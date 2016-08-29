@@ -1,0 +1,22 @@
+server {
+    listen 80;
+    listen 443 ssl;
+	server_name {{server_name}};
+
+	root /box/sites/{{server_name}};
+
+	index index.php;
+
+	include global/restrictions.conf;
+
+	# Additional rules go here.
+    ssl_certificate /etc/nginx/certs/devcert.crt;
+    ssl_certificate_key /etc/nginx/certs/devcert.key;
+
+    # Specify which FPM socket to use for this host
+    set $sock {{process_vm}}.sock;
+
+	# Only include one of the files below.
+	include global/wordpress.conf;
+	#include global/multisite-subdirectory.conf
+}
