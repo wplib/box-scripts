@@ -5,7 +5,7 @@
 #
 function check_updates_available() {
 
-    if [[ "$*" != ~"--ignore-updates"~ ]];then
+    if [[ "$1" != *"--ignore-update"* ]];then
 
         latest_local=$(git log -1 | grep commit | cut -d" " -f2)
         remote_url=$(git remote -v show | grep "(fetch)" | cut -f 2 | cut -d" " -f1)

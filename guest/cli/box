@@ -12,7 +12,7 @@ if [[ "$1" != "set-user-name" && "$1" != "set-user-email" ]];then
 
 fi
 
-check_updates_available
+check_updates_available "$*" || error=2
 
 if [ "" == "${error}" ];then
 
