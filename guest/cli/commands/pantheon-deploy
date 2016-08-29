@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
+#
+# Usage
+#
+#       $1 String ID for host to deploy to as definded in /vagrant/wplib.box.json.
+#       $2 Optional String Commit message for Pantheon.  Defaults to "Merging in changes for deployment"
+#
+#
 
 deploy_host="$1"
+
+commit_message=$(default "$2" "Merging in changes for deployment");
 
 project_name=$(read_config "project.name" "require")
 if [ "" == "${project_name}" ]; then
@@ -161,7 +170,7 @@ echo_if_not_quiet "$*" "=Committing all files to prepare for deployment..."
 #
 # Merge in any changes
 #
-quiet_git commit -m "Merging in changes for deployment" || return ?*
+quiet_git commit -m "${commit_message}" || return ?*
 
 #
 # Now do a pull, just in case.
