@@ -38,8 +38,7 @@ if [ "" == "${deploy_host}" ]; then
     return 2
 fi
 
-selector="hosts.${deploy_host}.git_url"
-git_url=$(read_config "${selector}" "require")
+git_url=$(read_config "deployment.git_url" "require")
 if [ "" == "${git_url}" ]; then
     echo -e "\tERROR: The config file wplib.box.json does not have a ${selector}."
     echo -e "\t"
