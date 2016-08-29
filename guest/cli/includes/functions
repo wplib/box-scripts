@@ -12,12 +12,9 @@ function check_updates_available() {
         latest_remote=$(git ls-remote --heads "${remote_url}" | grep "refs/heads/master" | cut --fields 1)
         if [[ "${latest_local}" != "${latest_remote}" ]]; then
             echo
-            echo -e "\tYour box scripts directory needs updating."
+            echo -e "\tNOTICE: Your box scripts directory needs updating."
             echo -e "\tTo update simply run git pull in ${WPLIB_BOX_SCRIPTS_DIR}."
             echo
-            echo -e "\tTo bypass this warning us the '--ignore-update' switch."
-            echo
-            return 1
         fi
 
     fi
