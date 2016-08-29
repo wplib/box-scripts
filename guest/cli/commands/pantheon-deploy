@@ -43,8 +43,7 @@ if [ "" == "${target_domain}" ]; then
     return 4
 fi
 
-selector="hosts.${deploy_host}.git_url"
-git_url=$(read_config "${selector}" "require")
+git_url=$(read_config "deployment.git_url" "require")
 if [ "" == "${git_url}" ]; then
     return 5
 fi
@@ -56,34 +55,41 @@ echo_if_not_quiet "$*" "^Deploying to the ${target_domain} ${deploy_host} server
 # See Method # 2 Use of $$ variable:
 #  - http://www.cyberciti.biz/tips/shell-scripting-bash-how-to-create-temporary-random-file-name.html
 #
-clone_dir="/tmp/deploy-clone.$$.dir"
+clone_dir="${HOME}/build/${target_domain}/pantheon-clone"
+upstream_dir="${HOME}/build/pantheon-upstream"
 build_dir="/tmp/deploy-build.$$.dir"
 
 #
-# First clone the site from our repo on Pantheon
+# Clone the site from our repo on Pantheon
 #
 echo_if_not_quiet "$*" "=Cloning from ${deploy_host}'s Git repo..."
-
-git clone "${git_url}" "${clone_dir}" || return $?
+ensure_git_clone "${git_url}" "${clone_dir}" || return $?
 
 #
 # Clone the pristine Pantheon Upstream
 #
-echo_if_not_quiet "$*" "&Cloning from the pantheon-systems/WordPress Git repo..."
-git clone https://github.com/pantheon-systems/WordPress "${build_dir}" || return $?
-cd "${build_dir}" || return ?*
+echo_if_not_quiet "$*" "&Cloning from the Pantheon upstream Git repo..."
+git clone https://github.com/pantheon-systems/WordPress "${upstream_dir}" || return $?
+cp "${upstream_dir}" "${build_dir}" || return ?*
 
+#
+# Copy the pristine upstream to the build dir
+#
+echo_if_not_quiet "$*" "&Copying the Pantheon upstream to local build dir..."
+git clone https://github.com/pantheon-systems/WordPress "${upstream_dir}" || return $?
+cd -R "${upstream_dir}" || return ?*
 
 echo_if_not_quiet "$*" "&Cleaning the pantheon-systems/WordPress Git repo..."
+
 #
 # Erase the .git that points to Pantheon's pristine Upstream repo
 #
 rm -rf "${build_dir}/.git" || return ?*
+
 #
 # Rip out it's content directory
 #
 rm -rf "${build_dir}/wp-content" || return ?*
-
 
 echo_if_not_quiet "$*" "=Copying content directories from dev..."
 #
@@ -107,7 +113,6 @@ if [] -f "${WPLIB_BOX_DIR}/pantheon.yaml" ]]; then
     cp "${WPLIB_BOX_DIR}/pantheon.yaml" "${build_dir}/pantheon.yaml"
 fi
 
-
 #
 # Strip .git "submodules"
 #
@@ -127,7 +132,6 @@ delete_exclude_items "${build_dir}" || return ?*
 #
 echo_if_not_quiet "$*" "&Removing \"require-dev\" items from ${build_dir}/..."
 $WPLIB_BOX_PHPCLI "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args remove-composer-require-dev "${build_dir}" || return ?*
-
 
 #
 # Now get the Pantheon repo's .git dir and make it our own
@@ -197,7 +201,6 @@ echo_if_not_quiet "$*" "=Cleaning up..."
 #
 # Clean up
 #
-rm -rf "${clone_dir}" || return ?*
 rm -rf "${build_dir}" || return ?*
 
 echo_if_not_quiet "$*" "&Done."
