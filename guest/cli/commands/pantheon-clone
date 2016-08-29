@@ -3,19 +3,19 @@
 # Usage
 #
 #       $1 String ID for host to deploy to as definded in /vagrant/wplib.box.json.
-#       $2 Optional String Commit message for Pantheon.  Defaults to "Merging in changes for deployment"
+#       $2 Optional String Directory to clone into.  Default is "pantheon"
 #
 #
 
 deploy_host="$1"
 
-commit_message=$(default "$2" "Merging in changes for deployment");
+clone_dir=$(default "$2" "pantheon")
 
 project_name=$(read_config "project.name" "require")
 if [ "" == "${project_name}" ]; then
     echo -e "\tERROR: The config file wplib.box.json does not have a .project.name or is not a valid JSON file."
     echo -e "\t"
-    return 2
+    return 1
 fi
 
 if [ "" == "${deploy_host}" ]; then
@@ -35,169 +35,29 @@ if [ "" == "${deploy_host}" ]; then
         index=$(( $index+1 ))
     done
     echo -e "\t"
-    return 3
-fi
-
-target_domain=$(read_config "project.target_domain" "require")
-if [ "" == "${target_domain}" ]; then
-    return 4
+    return 2
 fi
 
 selector="hosts.${deploy_host}.git_url"
 git_url=$(read_config "${selector}" "require")
 if [ "" == "${git_url}" ]; then
-    return 5
+    echo -e "\tERROR: The config file wplib.box.json does not have a ${selector}."
+    echo -e "\t"
+    return 3
 fi
 
-echo_if_not_quiet "$*" "^Deploying to the ${target_domain} ${deploy_host} server at Pantheon..."
+if [[ -d "${clone_dir}" || -d "$(pwd)/${clone_dir}" ]]; then
+    echo -e "\tERROR: The directory to clone into already exists: ${clone_dir}."
+    echo -e "\t"
+    return 4
+fi
+
 
 #
-# Create temporary directories to work in
-# See Method # 2 Use of $$ variable:
-#  - http://www.cyberciti.biz/tips/shell-scripting-bash-how-to-create-temporary-random-file-name.html
+# Clone the site from our repo on Pantheon
 #
-clone_dir="/tmp/deploy-clone.$$.dir"
-build_dir="/tmp/deploy-build.$$.dir"
-
-#
-# First clone the site from our repo on Pantheon
-#
-echo_if_not_quiet "$*" "=Cloning from ${deploy_host}'s Git repo..."
+echo_if_not_quiet "$*" "=Cloning ${project_name} from Pantheon ${deploy_host} to directory ${clone_dir}..."
 
 git clone "${git_url}" "${clone_dir}" || return $?
 
-#
-# Clone the pristine Pantheon Upstream
-#
-echo_if_not_quiet "$*" "&Cloning from the pantheon-systems/WordPress Git repo..."
-git clone https://github.com/pantheon-systems/WordPress "${build_dir}" || return $?
-cd "${build_dir}" || return ?*
-
-
-echo_if_not_quiet "$*" "&Cleaning the pantheon-systems/WordPress Git repo..."
-#
-# Erase the .git that points to Pantheon's pristine Upstream repo
-#
-rm -rf "${build_dir}/.git" || return ?*
-#
-# Rip out it's content directory
-#
-rm -rf "${build_dir}/wp-content" || return ?*
-
-
-echo_if_not_quiet "$*" "=Copying content directories from dev..."
-#
-# Replace with our content directory
-#
-cp -RP "${WPLIB_BOX_CONTENT_DIR}/" "${build_dir}/wp-content" || return ?*
-
-#
-# If there is a /vendor directory, don't forget it
-#
-if [[ -d "${WPLIB_BOX_VENDOR_DIR}" ]]; then
-    echo_if_not_quiet "$*" "=Copying vendor directories from dev..."
-    cp -RP "${WPLIB_BOX_VENDOR_DIR}/" "${build_dir}/vendor" || return ?*
-fi
-
-#
-# If there is a /pantheon.yaml, don't forget it
-#
-if [] -f "${WPLIB_BOX_DIR}/pantheon.yaml" ]]; then
-    echo_if_not_quiet "$*" "=Copying pantheon.yaml from dev..."
-    cp "${WPLIB_BOX_DIR}/pantheon.yaml" "${build_dir}/pantheon.yaml"
-fi
-
-
-#
-# Strip .git "submodules"
-#
-echo_if_not_quiet "$*" "&Stripping Git submodule references..."
-find "${build_dir}" -name .git | xargs rm -fr || return ?*
-find "${build_dir}" -name .gitignore | xargs rm -fr || return ?*
-find "${build_dir}" -name .gitattributes | xargs rm -fr || return ?*
-
-#
-# Remove these. We do not need these on a hosted site.
-#
-echo_if_not_quiet "$*" "=Removing items to exclude from ${build_dir}/..."
-delete_exclude_items "${build_dir}" || return ?*
-
-#
-# Remove anything that is in the "require-dev" category
-#
-echo_if_not_quiet "$*" "&Removing \"require-dev\" items from ${build_dir}/..."
-$WPLIB_BOX_PHPCLI "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args remove-composer-require-dev "${build_dir}" || return ?*
-
-
-#
-# Now get the Pantheon repo's .git dir and make it our own
-#
-echo_if_not_quiet "$*" "&Copying over .git directory from source..."
-mv "${clone_dir}/.git" "${build_dir}" || return ?*
-
-cd "${build_dir}" || return ?*
-#
-# So we can view after the fact
-#
-#git status
-
-#
-# Delete directories that Pantheon Reserves
-#
-echo_if_not_quiet "$*" "=Deleting all upload directories that Pantheon-reserves..."
-rm -rf "${build_dir}/sites/default/files" || return ?*
-rm -rf "${build_dir}/wp-content/uploads" || return ?*
-rm -rf "${build_dir}/web/sites/default/files" || return ?*
-rm -rf "${build_dir}/web/wp-content/uploads" || return ?*
-
-echo_if_not_quiet "$*" "^Staging all files for commit..."
-#
-# Add any changes to staging
-#
-quiet_git add --all . || return ?*
-
-#
-# Add any changes to staging
-#
-quiet_git add -u || return ?*
-
-#
-# So we can view after the fact
-#
-#git status
-
-echo_if_not_quiet "$*" "=Committing all files to prepare for deployment..."
-#
-# Merge in any changes
-#
-quiet_git commit -m "${commit_message}" || return ?*
-
-#
-# Now do a pull, just in case.
-# It should be up to date though.
-#
-quiet_git pull --commit --no-edit --no-ff --verbose || return ?*
-
-#
-# So we can view after the fact
-#
-#git status
-echo_if_not_quiet "$*" "=Pushing files for ${project_name} to ${deploy_host} at Pantheon..."
-#
-# Ensure this is already set
-#
-quiet_git config --global push.default simple || return ?*
-
-#
-# Push our changes back to Panethon
-#
-quiet_git push || return ?*
-
-echo_if_not_quiet "$*" "=Cleaning up..."
-#
-# Clean up
-#
-rm -rf "${clone_dir}" || return ?*
-rm -rf "${build_dir}" || return ?*
-
-echo_if_not_quiet "$*" "&Done."
+cd "${clone_dir}"
