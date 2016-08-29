@@ -7,6 +7,8 @@ function check_updates_available() {
 
     if [[ "$1" != *"--ignore-update"* ]];then
 
+        save_dir=$(pwd)
+        cd "${WPLIB_BOX_SCRIPTS_DIR}"
         latest_local=$(git log -1 | grep commit | cut -d" " -f2)
         remote_url=$(git remote -v show | grep "(fetch)" | cut -f 2 | cut -d" " -f1)
         latest_remote=$(git ls-remote --heads "${remote_url}" | grep "refs/heads/master" | cut --fields 1)
@@ -14,8 +16,8 @@ function check_updates_available() {
             echo
             echo -e "\tNOTICE: Your box scripts directory needs updating."
             echo -e "\tTo update simply run git pull in ${WPLIB_BOX_SCRIPTS_DIR}."
-            echo
         fi
+        cd "${save_dir}"
 
     fi
 
