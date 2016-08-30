@@ -7,11 +7,11 @@ function check_updates_available() {
 
     if [[ "$1" != *"--ignore-update"* ]];then
 
-        save_dir=$(pwd)
+        local save_dir=$(pwd)
         cd "${WPLIB_BOX_SCRIPTS_DIR}"
-        latest_local=$(git log -1 | grep commit | cut -d" " -f2)
-        remote_url=$(git remote -v show | grep "(fetch)" | cut -f 2 | cut -d" " -f1)
-        latest_remote=$(git ls-remote --heads "${remote_url}" | grep "refs/heads/master" | cut --fields 1)
+        local latest_local=$(git log -1 | grep commit | cut -d" " -f2)
+        local remote_url=$(git remote -v show | grep "(fetch)" | cut -f 2 | cut -d" " -f1)
+        local latest_remote=$(git ls-remote --heads "${remote_url}" | grep "refs/heads/master" | cut --fields 1)
         if [[ "${latest_local}" != "${latest_remote}" ]]; then
             echo
             echo -e "\tNOTICE: Your box scripts directory needs updating."
@@ -22,7 +22,6 @@ function check_updates_available() {
     fi
 
 }
-
 
 #
 # Usage
@@ -35,7 +34,8 @@ function check_updates_available() {
 #   http://stackoverflow.com/a/16854326/102699
 #
 function max() {
-    max=0
+    local max=0
+    local num
     while read num; do
         ((num > max)) && max=$num
     done <<< "$(echo -e "$1")"
@@ -52,8 +52,8 @@ function max() {
 #
 #
 function ensure_git_clone() {
-    git_url="$1"
-    clone_dir="$2"
+    local git_url="$1"
+    local clone_dir="$2"
 
     if [ "" == "$1" ]; then
         echo
@@ -81,15 +81,15 @@ function ensure_git_clone() {
 
     if [ ! -d "${clone_dir}" ]; then
 
-        git clone "${git_url}" "${clone_dir}" || return $?
+        quiet_git clone "${git_url}" "${clone_dir}" || return $?
 
     else
 
         cd "${clone_dir}"
 
         # Set repo to match remote origin/master
-        git fetch origin || return $?
-        git reset --hard origin/master > /dev/null || return $?
+        quiet_git fetch origin || return $?
+        quiet_git reset --hard origin/master > /dev/null || return $?
 
     fi
 }
@@ -106,20 +106,20 @@ function verify_user_config() {
         echo "{}" > $WPLIB_BOX_USER_CONFIG
     fi
     if [[ "" == $(read_user_config "name") ]]; then
-        missing="name"
-        what="property"
-        action="command"
-        commands="\tbox set-user-name  'Your Full Name'"
+        local missing="name"
+        local what="property"
+        local action="command"
+        local commands="\tbox set-user-name  'Your Full Name'"
     fi
     if [[ "" == $(read_user_config "email") ]]; then
         if [ "" == "${missing}" ];then
-            missing="email"
+            local missing="email"
         else
-            missing="${missing}\n\temail"
+            local missing="${missing}\n\temail"
        fi
-        what="properties"
-        action="commands"
-        commands="${commands}\n\tbox set-user-email 'Your Email Address'"
+        local what="properties"
+        local action="commands"
+        local commands="${commands}\n\tbox set-user-email 'Your Email Address'"
     fi
     if [ "" != "${missing}" ]; then
         echo
@@ -174,8 +174,8 @@ function show_user_var() {
         return 1
     fi
 
-    var="$1"
-    value=$(read_user_config "${var}") || return $?
+    local var="$1"
+    local value=$(read_user_config "${var}") || return $?
     if [ "" == "${value}" ]; then
         echo "The user.$1 is EMPTY."
     else
@@ -255,9 +255,9 @@ function set_json_file_var() {
         echo "{}" > "$1" || return $?
     fi
 
-    tmpfile=$(mktemp /tmp/new-json-file.XXXXXX)
+    local tmpfile=$(mktemp /tmp/new-json-file.XXXXXX)
 
-    filter="$2 = \"$3\""
+    local filter="$2 = \"$3\""
     jq "${filter}" "$1" >$tmpfile || return $?
     mv "${tmpfile}" "$1"  || return $?
 
@@ -289,9 +289,9 @@ function read_user_config() {
 #
 function read_config() {
     require="$2"
-    config_file=$(default "$3" "${WPLIB_BOX_CONFIG}")
+    local config_file=$(default "$3" "${WPLIB_BOX_CONFIG}")
 
-    property=$(cat "${config_file}" | jq --raw-output ".$1"  2>/dev/null)
+    local property=$(cat "${config_file}" | jq --raw-output ".$1"  2>/dev/null)
     if [[ "null" == "${property}" || "" == "${property}" ]]; then
         if [ "require" == "${require}" ]; then
             printf "\tERROR:\n"
@@ -340,7 +340,7 @@ function file_extension() {
 #   Result: $basename ==> "bar"
 #
 function file_basename() {
-    filename=$(basename "$1")
+    local filename=$(basename "$1")
     echo "${filename%.*}"
 }
 
@@ -358,13 +358,13 @@ function file_basename() {
 # Usage:  newbakfile=$(next_backup_file "${file_to_backup}")
 #
 function next_backup_file() {
-    bakfile="$1"
+    local bakfile="$1"
 
     #
     # Get the file extension if there is one
     # See: http://stackoverflow.com/a/965072/102699
     #
-    ext=$(file_extension "${bakfile}")
+    local ext=$(file_extension "${bakfile}")
     if [[ "" == "${ext}" || "${ext}" == "${bakfile}" ]]; then
         ext=""
     fi
@@ -380,7 +380,8 @@ function next_backup_file() {
     # Now check to see if the default prior backup exists
     # Continue checking until we find a workable filename
     #
-    test="${bakfile}.${ext}"
+    local test="${bakfile}.${ext}"
+    local counter
     until [ ! -e "${test}" ]; do
         counter=$((counter))
         let counter++
@@ -421,9 +422,9 @@ function is_wp_installed() {
 #
 function echo_if_not_quiet() {
     if [ "true" != $(is_quiet "$1") ]; then
-        regex="s/\\\n/\n/g"
-        control=${2:0:1}
-        message=${2:1}
+        local regex="s/\\\n/\n/g"
+        local control=${2:0:1}
+        local message=${2:1}
         case "${control}" in
             "^")
                 echo -e "${message}" | sed "${regex}"
@@ -502,12 +503,12 @@ function find_wp_content_dir() {
 }
 
 function find_wp_plugins_dir() {
-    content_dir=$(find_wp_content_dir)
+    local content_dir=$(find_wp_content_dir)
     echo "${content_dir}/plugins"
 }
 
 function find_wp_mu_plugins_dir() {
-    content_dir=$(find_wp_content_dir)
+    local content_dir=$(find_wp_content_dir)
     echo "${content_dir}/mu-plugins"
 }
 
@@ -533,8 +534,10 @@ function how_to_install_wp() {
 }
 
 function delete_exclude_items() {
-    root_dir="$1"
-	index=0
+    local root_dir="$1"
+	local index=0
+	local basename
+	local item_to_exclude
 	while :; do
 	    item_to_exclude=$(read_config "deployment.exclude[${index}]")
 	    if [ "" == "${item_to_exclude}" ]; then
@@ -542,10 +545,10 @@ function delete_exclude_items() {
         fi
 	    item_to_exclude="${root_dir}/${item_to_exclude}"
 	    if [[ ! -f "${item_to_exclude}" &&  ! -d "${item_to_exclude}" ]];then
-	        echo "NOTICE: ${item_to_exclude} is in exclude list in ${WPLIB_BOX_CONFIG} but does not exist on disk."
+	        echo -e "\tNOTICE: ${item_to_exclude} is in exclude list in ${WPLIB_BOX_CONFIG} but does not exist on disk."
 	    else
 	        basename=$(basename "${item_to_exclude}")
-	        echo_if_not_quiet "$*", "=Deleting ${basename}..."
+	        echo_if_not_quiet "$*", "=\tDeleting ${basename} from build directory..."
 	        rm -rf "${item_to_exclude}" || return ?*
 	    fi
 	    index=$(( $index+1 ))
@@ -564,8 +567,8 @@ function delete_exclude_items() {
 #
 #
 function substring_after() {
-    string="$1"
-    character="$2"
+    local string="$1"
+    local character="$2"
     echo "${string#*${character}}"
 }
 
@@ -575,8 +578,8 @@ function substring_after() {
 # See http://stackoverflow.com/a/8944284/102699
 #
 function quiet_git() {
-    stdout=$(tempfile)
-    stderr=$(tempfile)
+    local stdout=$(tempfile)
+    local stderr=$(tempfile)
 
     if ! git "$@" </dev/null >$stdout 2>$stderr; then
         # Capture the error
