@@ -4,7 +4,6 @@ echo
 echo "Setting Web Process VM to $1..."
 echo
 
-
 function editfile {
     sudo sed -i "s/$1/$2/" "$3"
 }
@@ -17,10 +16,17 @@ function delfile {
 
 conf_file="/etc/nginx/sites-available/default"
 
-editfile "php5.6" "$1" "$conf_file"
-delfile "$conf_file"
+if [ -f "/var/run/php/$1.sock" ] || [ -f "/var/run/php/$1-fpm.sock" ]; then
+    editfile "php5.6" "$1" "$conf_file"
+    delfile "$conf_file"
 
-editfile "php7.0" "$1" "$conf_file"
-delfile "$conf_file"
+    editfile "php7.0" "$1" "$conf_file"
+    delfile "$conf_file"
 
-sudo service nginx reload
+    sudo service nginx reload
+
+    return 0
+else
+    echo_if_not_quiet "$*" "=The $1 process is not currently running on this machine!"
+    return 1
+fi
