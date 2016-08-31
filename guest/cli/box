@@ -64,11 +64,12 @@ fi
 
 if [[ $error -eq 0 ]]; then
     echo_if_not_quiet "$*" "*The '$1' command completed without error."
+    exit 0
 else
     echo -e "\t"
     echo "The '$1' command terminated WITH ERRORS."
     echo -e "\t"
+    exit 1
 fi
 
 #check_updates_available "$*"
-
