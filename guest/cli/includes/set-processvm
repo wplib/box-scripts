@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
 source "${WPLIB_BOX_INCLUDES_DIR}/set-cli-processvm" $1
+ret_code1=$?
 source "${WPLIB_BOX_INCLUDES_DIR}/set-web-processvm" $1
+ret_code2=$?
+
+if [ $ret_code1 -eq 0 ] && [ $ret_code2 -eq 0 ]; then
+    return 0
+else
+    return 1
+fi
+
 
