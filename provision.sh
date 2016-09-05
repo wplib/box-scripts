@@ -43,12 +43,6 @@ else
     box enable-tab-completion --quiet
 
     #
-    #  Disassociate the cloned Git repo and initialize a new repo.
-    #
-    echo "Disassociating WPLib Box Git repo..."
-    box disassociate-git-repo --quiet
-
-    #
     #  Enable Object Caching
     #
     echo "Enabling Redis-based Object Caching..."
