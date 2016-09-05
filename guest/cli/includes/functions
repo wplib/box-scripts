@@ -1,23 +1,302 @@
 #!/usr/bin/env bash
 
 #
+# Checks to see if there is a new commit available for this Box Script repo.
+#
+function check_updates_available() {
+
+    if [[ "$1" != *"--ignore-update"* ]];then
+
+        local save_dir=$(pwd)
+        cd "${WPLIB_BOX_SCRIPTS_DIR}"
+        local latest_local=$(git log -1 | grep commit | cut -d" " -f2)
+        local remote_url=$(git remote -v show | grep "(fetch)" | cut -f 2 | cut -d" " -f1)
+        local latest_remote=$(git ls-remote --heads "${remote_url}" | grep "refs/heads/master" | cut --fields 1)
+        if [[ "${latest_local}" != "${latest_remote}" ]]; then
+            echo
+            echo -e "\tNOTICE: Your box scripts directory needs updating."
+            echo -e "\tTo update simply run git pull in ${WPLIB_BOX_SCRIPTS_DIR}."
+        fi
+        cd "${save_dir}"
+
+    fi
+
+}
+
+#
+# Usage
+#   $1 String Space separated list of numbers
+#
+# Echos
+#   Maximum number
+#
+# See:
+#   http://stackoverflow.com/a/16854326/102699
+#
+function max() {
+    local max=0
+    local num
+    while read num; do
+        ((num > max)) && max=$num
+    done <<< "$(echo -e "$1")"
+    echo $max
+}
+
+#
+# First clone the site from our repo on Pantheon
+#
+# Usage:
+#
+#       $1 - String Git URL to clone
+#       $1 - String Directory to clone into
+#
+#
+function ensure_git_clone() {
+    local git_url="$1"
+    local clone_dir="$2"
+
+    if [ "" == "$1" ]; then
+        echo
+        echo -e "\tERROR: You must specify a Git URL to clone as 1st parameter of ensure_git_clone()."
+        echo
+        return 1
+    fi
+
+    if [ "" == "$2" ]; then
+        echo
+        echo -e "\tERROR: You must specify a directory to clone into as 2nd parameter of ensure_git_clone()."
+        echo
+        return 2
+    fi
+
+    if [[ -d "$2" && ! -d "$2/.git" ]]; then
+        echo
+        echo -e "\tERROR: $2"
+        echo -e "\t       exists but does not contain a Git repo. Cannot continue."
+        echo
+        return 3
+    fi
+
+    echo_if_not_quiet "$*" "=Cloning "${git_url}" to ${clone_dir}..."
+
+    if [ ! -d "${clone_dir}" ]; then
+
+        quiet_git clone "${git_url}" "${clone_dir}" || return $?
+
+    else
+
+        cd "${clone_dir}"
+
+        # Set repo to match remote origin/master
+        quiet_git fetch origin || return $?
+        quiet_git reset --hard origin/master > /dev/null || return $?
+
+    fi
+}
+
+#
+# Verify that a User Config exists.  If not, output how-to-fix message and return 1
+#
+function verify_user_config() {
+
+    if [[ ! -f "${WPLIB_BOX_USER_CONFIG}" ]]; then
+        echo "{}" > $WPLIB_BOX_USER_CONFIG
+    fi
+    if [[ "" == $(cat "${WPLIB_BOX_USER_CONFIG}") ]]; then
+        echo "{}" > $WPLIB_BOX_USER_CONFIG
+    fi
+    if [[ "" == $(read_user_config "name") ]]; then
+        local missing="name"
+        local what="property"
+        local action="command"
+        local commands="\tbox set-user-name  'Your Full Name'"
+    fi
+    if [[ "" == $(read_user_config "email") ]]; then
+        if [ "" == "${missing}" ];then
+            local missing="email"
+        else
+            local missing="${missing}\n\temail"
+       fi
+        local what="properties"
+        local action="commands"
+        local commands="${commands}\n\tbox set-user-email 'Your Email Address'"
+    fi
+    if [ "" != "${missing}" ]; then
+        echo
+        echo "Your WPLib Box user config file is missing the ${what}:"
+        echo
+        echo -e "\t${missing}"
+        echo
+        echo "You must run the following two ${action} first:"
+        echo
+        echo -e "${commands}"
+        return 1
+    fi
+    return 0
+}
+
+#
+# Usage:
+#
+#       $1 - Argument passing in that might be empty, e.g. "$1", "$3", etc.
+#       $1 - Default value to echo if $1 is empty
+#
+# Example
+#
+#       username=$(default "$1", "Luke Skywalker")
+#
+function default() {
+
+    if [ "" == "$2" ]; then
+        echo
+        echo "You must specify a default value as the 2nd paramater to default."
+        echo
+        return 1
+    fi
+    if [ "" == "$1" ]; then
+       echo "$2"
+    else
+       echo "$1"
+    fi
+}
+
+#
+# Example
+#
+#       box show-user-var "email"
+#
+function show_user_var() {
+
+    if [ "" == "$1" ]; then
+        echo
+        echo "You must specify a property for the box's user when calling show_user_var."
+        echo
+        return 1
+    fi
+
+    local var="$1"
+    local value=$(read_user_config "${var}") || return $?
+    if [ "" == "${value}" ]; then
+        echo "The user.$1 is EMPTY."
+    else
+        echo "The user.$1 is: ${value}."
+    fi
+}
+
+#
+# Usage:
+#
+#       $1 - What to set e.g. user, email, etc.
+#       $1 - Email of box user
+#
+# Example
+#
+#       box set-box-var ".email" "luke@theforce.org"
+#
+function set_user_var() {
+
+    if [ "" == "$1" ]; then
+        echo
+        echo "You must specify a property for the box's user when calling set_user_var."
+        echo
+        return 1
+    fi
+
+    if [ "" == "$2" ]; then
+        echo
+        echo "You must specify a box user's $1 when calling set-box-user-$1."
+        echo
+        return 2
+    fi
+    echo_if_not_quiet "$*" "=Setting user.$2 = '$2'..."
+
+    set_json_file_var "${WPLIB_BOX_USER_CONFIG}" ".$1" "$2" --quiet || return $?
+}
+
+#
+# Reads the config file /vagrant/.wplib.box.json and returns a value
+#
+# $1 - String The json file to update
+# $2 - String The JQ selector
+# $3 - String The value to assign the JQ selector
+#
+# Usage: set_json_file_var /home/vagrant/wplib.box.json ".user" "Luke Skywalker"
+#
+#   Result: /home/vagrant/wplib.box.json ==> "{ "user" : "Luke Skywalker" }
+#
+#
+function set_json_file_var() {
+
+    echo_if_not_quiet "$*" "=Setting $1 = '$2' in $3..."
+
+    if [ "" == "$1" ]; then
+        echo
+        echo "You must specify a JSON file name as the 3rd argument when calling set_json_file_var()."
+        echo
+        return 1
+    fi
+
+    if [ "" == "$1" ]; then
+        echo
+        echo "You must specify a JQ selector as the 1st argument when calling set_json_file_var()."
+        echo
+        return 2
+    fi
+
+    if [ "" == "$2" ]; then
+        echo
+        echo "You must specify a value to assign the JQ selector as the 2nd argument when calling set_json_file_var()."
+        echo
+        return 3
+    fi
+
+    if [ ! -f "$1" ]; then
+        echo_if_not_quiet "$*" "=Creating new $1..."
+        echo "{}" > "$1" || return $?
+    fi
+
+    local tmpfile=$(mktemp /tmp/new-json-file.XXXXXX)
+
+    local filter="$2 = \"$3\""
+    jq "${filter}" "$1" >$tmpfile || return $?
+    mv "${tmpfile}" "$1"  || return $?
+
+}
+
+
+#
+# Reads the user config file /home/vagrant/.wplib.box.json and echos a value
+#
+# $1 - String
+# $2 - String Optional if "require" then error if not there.
+#
+# Usage: username=$(read_config "name")
+#   Result: $username ==> "Luke Skywalker"
+#
+function read_user_config() {
+    read_config "$1" "$2" "${WPLIB_BOX_USER_CONFIG}"
+}
+
+#
 # Reads the config file /vagrant/.wplib.box.json and returns a value
 #
 # $1 - String
 # $2 - String Optional if "require" then error if not there.
 #
-# Usage: git_url=$(read_config ".path.test.git_url")
+# Usage: git_url=$(read_config "path.test.git_url")
 #   Result: $git_url ==> "ssh://..."
 #
 #
 function read_config() {
     require="$2"
-    property=$(cat "${WPLIB_BOX_CONFIG_FILE}" | jq --raw-output "$1")
-    if [ "null" == "${property}" ]; then
+    local config_file=$(default "$3" "${WPLIB_BOX_CONFIG}")
+
+    local property=$(cat "${config_file}" | jq --raw-output ".$1"  2>/dev/null)
+    if [[ "null" == "${property}" || "" == "${property}" ]]; then
         if [ "require" == "${require}" ]; then
-            echo -e "\tERROR:"
-            echo -e "\tThe config file ${WPLIB_BOX_CONFIG_FILE} does"
-            echo -e "\tnot have a value for ${property}."
+            printf "\tERROR:\n"
+            echo -e "\tThe config file ${config_file}\n"
+            echo -e "\tdoes not have a value for $1.\n"
             return 1
         fi
     else
@@ -61,7 +340,7 @@ function file_extension() {
 #   Result: $basename ==> "bar"
 #
 function file_basename() {
-    filename=$(basename "$1")
+    local filename=$(basename "$1")
     echo "${filename%.*}"
 }
 
@@ -79,13 +358,13 @@ function file_basename() {
 # Usage:  newbakfile=$(next_backup_file "${file_to_backup}")
 #
 function next_backup_file() {
-    bakfile="$1"
+    local bakfile="$1"
 
     #
     # Get the file extension if there is one
     # See: http://stackoverflow.com/a/965072/102699
     #
-    ext=$(file_extension "${bakfile}")
+    local ext=$(file_extension "${bakfile}")
     if [[ "" == "${ext}" || "${ext}" == "${bakfile}" ]]; then
         ext=""
     fi
@@ -101,7 +380,8 @@ function next_backup_file() {
     # Now check to see if the default prior backup exists
     # Continue checking until we find a workable filename
     #
-    test="${bakfile}.${ext}"
+    local test="${bakfile}.${ext}"
+    local counter
     until [ ! -e "${test}" ]; do
         counter=$((counter))
         let counter++
@@ -142,9 +422,9 @@ function is_wp_installed() {
 #
 function echo_if_not_quiet() {
     if [ "true" != $(is_quiet "$1") ]; then
-        regex="s/\\\n/\n/g"
-        control=${2:0:1}
-        message=${2:1}
+        local regex="s/\\\n/\n/g"
+        local control=${2:0:1}
+        local message=${2:1}
         case "${control}" in
             "^")
                 echo -e "${message}" | sed "${regex}"
@@ -223,12 +503,12 @@ function find_wp_content_dir() {
 }
 
 function find_wp_plugins_dir() {
-    content_dir=$(find_wp_content_dir)
+    local content_dir=$(find_wp_content_dir)
     echo "${content_dir}/plugins"
 }
 
 function find_wp_mu_plugins_dir() {
-    content_dir=$(find_wp_content_dir)
+    local content_dir=$(find_wp_content_dir)
     echo "${content_dir}/mu-plugins"
 }
 
@@ -254,20 +534,22 @@ function how_to_install_wp() {
 }
 
 function delete_exclude_items() {
-    root_dir="$1"
-	index=0
+    local root_dir="$1"
+	local index=0
+	local basename
+	local item_to_exclude
 	while :; do
-	    item_to_exclude=$(read_config ".deployment.exclude[${index}]")
+	    item_to_exclude=$(read_config "deployment.exclude[${index}]")
 	    if [ "" == "${item_to_exclude}" ]; then
 	        break
         fi
 	    item_to_exclude="${root_dir}/${item_to_exclude}"
 	    if [[ ! -f "${item_to_exclude}" &&  ! -d "${item_to_exclude}" ]];then
-	        echo "NOTICE: ${item_to_exclude} is in exclude list in ${WPLIB_BOX_CONFIG_FILE} but does not exist on disk."
+	        echo -e "\tNOTICE: ${item_to_exclude} is in exclude list in ${WPLIB_BOX_CONFIG} but does not exist on disk."
 	    else
 	        basename=$(basename "${item_to_exclude}")
-	        echo_if_not_quiet "$*", "=Deleting ${basename}..."
-	        rm -rf "${item_to_exclude}"
+	        echo_if_not_quiet "$*", "=\tDeleting ${basename} from build directory..."
+	        rm -rf "${item_to_exclude}" || return ?*
 	    fi
 	    index=$(( $index+1 ))
 	done
@@ -285,8 +567,8 @@ function delete_exclude_items() {
 #
 #
 function substring_after() {
-    string="$1"
-    character="$2"
+    local string="$1"
+    local character="$2"
     echo "${string#*${character}}"
 }
 
@@ -296,13 +578,16 @@ function substring_after() {
 # See http://stackoverflow.com/a/8944284/102699
 #
 function quiet_git() {
-    stdout=$(tempfile)
-    stderr=$(tempfile)
+    local stdout=$(tempfile)
+    local stderr=$(tempfile)
 
     if ! git "$@" </dev/null >$stdout 2>$stderr; then
+        # Capture the error
+        error=$?
+        # Output the error messages to stderr
         cat $stderr >&2
         rm -f $stdout $stderr
-        return 1
+        return $error
     fi
 
     rm -f $stdout $stderr

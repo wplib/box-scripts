@@ -15,4 +15,4 @@ for file in $WPLIB_BOX_COMMANDS_DIR/*; do
 done
 echo
 echo IMPORTANT!  These commands WILL BE CHANGING in a future release of WPLib Box. Be warned!
-echo
+

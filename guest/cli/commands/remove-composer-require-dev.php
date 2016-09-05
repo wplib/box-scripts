@@ -148,7 +148,7 @@ function remove_composer_require_dev( $root_dir ) {
 				continue;
 			}
 
-			echo_if_not_quiet( "=Deleting {$content_key}..." );
+			echo_if_not_quiet( "=\tDeleting {$content_key} from build directory..." );
 			system( "rm -rf " . escapeshellarg( $item_to_delete ) );
 
 		}

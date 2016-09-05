@@ -6,43 +6,70 @@
 source /vagrant/scripts/guest/cli/includes/functions
 source /vagrant/scripts/guest/cli/includes/constants
 
-if [ "$1" == "" ]; then
-    export WPLIB_BOX_COMMAND="help"
-else
-    export WPLIB_BOX_COMMAND="$1"
-fi
+#
+#
+#if [[ "$1" != "set-user-name" && "$1" != "set-user-email" ]];then
+#
+#    verify_user_config || error=1
+#
+#fi
 
-command_file="${WPLIB_BOX_COMMANDS_DIR}/${WPLIB_BOX_COMMAND}"
+if [ "" == "${error}" ];then
 
-if [ "${WPLIB_BOX_COMMAND}" == "help" ]; then
-    source "${command_file}"
-    echo
-    exit
-fi
-
-if [ -f "${command_file}" ]; then
-    command_type="bash"
-else
-    if [ -f "${command_file}.php" ]; then
-        command_type="php"
+    if [ "$1" == "" ]; then
+        export WPLIB_BOX_COMMAND="help"
     else
-        echo
-        echo -e "\tCommand not found: $1"
+        export WPLIB_BOX_COMMAND="$1"
+    fi
+
+    command_file="${WPLIB_BOX_COMMANDS_DIR}/${WPLIB_BOX_COMMAND}"
+
+    if [ "${WPLIB_BOX_COMMAND}" == "help" ]; then
+        source "${command_file}"
+        check_updates_available "$*"
         echo
         exit
     fi
+
+    if [ -f "${command_file}" ]; then
+        command_type="bash"
+    else
+        if [ -f "${command_file}.php" ]; then
+            command_type="php"
+        else
+            echo
+            echo -e "\tCommand not found: $1"
+            echo
+            exit
+        fi
+    fi
+
+    echo_if_not_quiet "$*" "*Running $1..."
+    initial_dir=$(pwd)
+    error=0
+    case "${command_type}" in
+       "bash")
+            source "${command_file}" "$2" "$3" "$4" "$5"
+            error=$?
+            ;;
+       "php")
+
+            /usr/bin/php7.0 "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args "${WPLIB_BOX_COMMAND}" "$2" "$3" "$4" "$5"
+            error=$?
+            ;;
+    esac
+    cd "${initial_dir}"
+
 fi
 
-echo_if_not_quiet "$*" "*Running $1..."
-initial_dir=$(pwd)
-case "${command_type}" in
-   "bash")
-        source "${command_file}" "$2" "$3" "$4" "$5"
-        ;;
-   "php")
+if [[ $error -eq 0 ]]; then
+    echo_if_not_quiet "$*" "*The '$1' command completed without error."
+    exit 0
+else
+    echo -e "\t"
+    echo "The '$1' command terminated WITH ERRORS."
+    echo -e "\t"
+    exit 1
+fi
 
-        /usr/bin/php7.0 "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args "${WPLIB_BOX_COMMAND}" "$2" "$3" "$4" "$5"
-        ;;
-esac
-cd "${initial_dir}"
-echo_if_not_quiet "$*" "*Done."
+#check_updates_available "$*"

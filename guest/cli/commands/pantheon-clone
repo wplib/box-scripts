@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+#
+# Usage
+#
+#       $1 String ID for host to deploy to as definded in /vagrant/wplib.box.json.
+#       $2 Optional String Directory to clone into.  Default is "pantheon"
+#
+#
+
+verify_user_config || error=1
+
+deploy_host="$1"
+
+clone_dir=$(default "$2" "pantheon")
+
+project_name=$(read_config "project.name" "require")
+if [ "" == "${project_name}" ]; then
+    echo -e "\tERROR: The config file wplib.box.json does not have a .project.name or is not a valid JSON file."
+    echo -e "\t"
+    return 1
+fi
+
+if [ "" == "${deploy_host}" ]; then
+    echo -e "\tERROR: You must specify a target host to deploy TO:"
+    echo -e "\t"
+    echo -e "\t\tbox deploy {host}"
+    echo -e "\t"
+    echo -e "\tWhere {host} is one of:"
+    echo -e "\t"
+    index=0
+    while :; do
+        host=$(read_config "hosts | keys[$index]" )
+        if [ "" == "${host}" ]; then
+            break
+        fi
+        echo -e "\t\t- ${host}"
+        index=$(( $index+1 ))
+    done
+    echo -e "\t"
+    return 2
+fi
+
+git_url=$(read_config "deployment.git_url" "require")
+if [ "" == "${git_url}" ]; then
+    echo -e "\tERROR: The config file wplib.box.json does not have a ${selector}."
+    echo -e "\t"
+    return 3
+fi
+
+if [[ -d "${clone_dir}" || -d "$(pwd)/${clone_dir}" ]]; then
+    echo -e "\tERROR: The directory to clone into already exists: ${clone_dir}."
+    echo -e "\t"
+    return 4
+fi
+
+
+#
+# Clone the site from our repo on Pantheon
+#
+echo_if_not_quiet "$*" "=Cloning ${project_name} from Pantheon ${deploy_host} to directory ${clone_dir}..."
+
+git clone "${git_url}" "${clone_dir}" || return $?
+
+cd "${clone_dir}"
