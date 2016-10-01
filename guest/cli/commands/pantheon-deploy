@@ -2,7 +2,7 @@
 #
 # Usage
 #
-#       $1 String ID for host to deploy to as definded in /vagrant/wplib.box.json.
+#       $1 String ID for host to deploy to as defined in /vagrant/wplib.box.json.
 #       $2 Optional String Commit message for Pantheon.  Defaults to "Merging in changes for deployment"
 #
 #
