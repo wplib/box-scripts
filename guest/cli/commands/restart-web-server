@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# Restart the Web Server.
+#
+# Useful if a long running process or an infinite loop
+#
+
+echo_if_not_quiet "$*", "^Restarting Web Server..."
+
+sudo service nginx restart
+sudo service php5.6-fpm restart
+sudo service php7.0-fpm restart
