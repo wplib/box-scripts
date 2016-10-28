@@ -46,7 +46,7 @@ if [ "${bakfile}" == "${importfile}" ]; then
 
 fi
 
-echo_if_not_quiet "$*", "^Backing up database..."
+echo_if_not_quiet "$*", "=Backing up database..."
 
 bakfile=$(box backup-db --quiet --echo-filename)
 
@@ -64,11 +64,18 @@ if [[ "$*" == *" error "* ]]; then
 
 fi
 
-echo_if_not_quiet "$*", "^Database backed-up to ${bakfile}..."
+echo_if_not_quiet "$*", "^Database backed-up to ${bakfile}."
+
+echo_if_not_quiet "$*", "=Dropping any prior tables..."
+mysql -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
+cat /tmp/mysql-table-list.txt | while read table; do mysql -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"; done
+rm /tmp/mysql-table-list.txt
+echo_if_not_quiet "$*", "^Tables dropped."
 
 echo_if_not_quiet "$*", "=Importing database from ${importfile}..."
+mysql -u wordpress -pwordpress wordpress < ${importfile}  2>&1 | grep -v "Warning:"
+echo_if_not_quiet "$*", "=Database imported."
 
-mysql -u wordpress -pwordpress wordpress < ${importfile}
 
 
 
