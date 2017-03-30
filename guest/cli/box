@@ -3,8 +3,8 @@
 # @todo: http://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
 #
 
-source /vagrant/scripts/guest/cli/includes/functions
-source /vagrant/scripts/guest/cli/includes/constants
+source /box/scripts/guest/cli/includes/functions
+source /box/scripts/guest/cli/includes/constants
 
 #
 #
