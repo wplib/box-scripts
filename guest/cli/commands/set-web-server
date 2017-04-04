@@ -12,7 +12,7 @@ if [ 'apache' == $1 ]; then
     converse='nginx'
 fi
 
-sudo sed -i "s/${converse}/$1/" /etc/supervisor/conf.d/webserver.conf
+sudo sed -i "s/${converse}/$1/" /etc/init/webserver.conf
 
-docker stop ${converse} 2>&1 > /dev/null
-docker start $1 2>&1 > /dev/null
+sudo service webserver stop
+sudo service webserver start
