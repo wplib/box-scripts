@@ -14,5 +14,5 @@ fi
 
 sudo sed -i "s/${converse}/$1/" /etc/supervisor/conf.d/webserver.conf
 
-docker stop ${converse}
-docker start $1
+docker stop ${converse} 2>&1 > /dev/null
+docker start $1 2>&1 > /dev/null
