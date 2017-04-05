@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+echo "Switching database server to $1"
+
+if [ ! "mysql" == "$1" ] && [ ! "mariadb" == "$1" ]; then
+    echo 'You must select either mysql or mariadb'
+    exit 1
+fi
+
+converse="mariadb"
+if [ 'mariadb' == $1 ]; then
+    converse='mysql'
+fi
+
+sudo sed -i "s/${converse}/$1/" /etc/init/database.conf
+mkdir -p /tmp/sql
+exec mysqldump wordpress > /tmp/sql/current.sql
+sudo service database stop
+
+sudo service database start
+exec mysql wordpress < /tmp/sql/current.sql
