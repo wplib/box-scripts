@@ -4,29 +4,20 @@ echo
 echo "Setting Web Process VM to $1..."
 echo
 
-function editfile {
-    sudo sed -i "s/$1/$2/" "$3"
-}
+versions=( 5.6 7.0 7.1 )
 
-function delfile {
-    if [ -f "$1.bak" ]; then
-        sudo rm "$1.bak" > /dev/null 2>&1
-    fi;
-}
+# see https://www.cyberciti.biz/faq/bash-for-loop-array/
+for i in "${versions[@]}"
+do
+    :
+    if [ ! -f "/etc/init/php${1}-fpm.override" ]; then
+        echo 'manual' | sudo tee /etc/init/php${i}-fpm.override 2>&1 > /dev/null
+    fi
 
-conf_file="/etc/nginx/sites-available/default"
+    if [ -f "/var/run/php/php${i}-fpm.pid" ]; then
+        sudo service php${i}-fpm stop
+    fi
+done
 
-if [ -f "/var/run/php/$1.sock" ] || [ -f "/var/run/php/$1-fpm.sock" ]; then
-    editfile "php5.6" "$1" "$conf_file"
-    delfile "$conf_file"
-
-    editfile "php7.0" "$1" "$conf_file"
-    delfile "$conf_file"
-
-    sudo service nginx reload
-
-    return 0
-else
-    echo_if_not_quiet "$*" "=The $1 process is not currently running on this machine!"
-    return 1
-fi
+sudo rm /etc/init/${1}-fpm.override
+sudo service ${1}-fpm start
