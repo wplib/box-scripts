@@ -14,7 +14,7 @@ do
         echo 'manual' | sudo tee /etc/init/php${i}-fpm.override 2>&1 > /dev/null
     fi
 
-    if [ -f "/var/run/php/php${i}-fpm.pid" ]; then
+    if [ -f "/run/php/php${i}-fpm.pid" ]; then
         sudo service php${i}-fpm stop
     fi
 done
