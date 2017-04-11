@@ -14,6 +14,7 @@ fi
 
 sudo sed -i "s/${converse}/$1/" /etc/init/database.conf
 mkdir -p /tmp/sql
+sudo chown -R vagrant:vagrant /tmp/sql
 mysqldump wordpress > /tmp/sql/current.sql
 sudo service database stop
 sleep 5
