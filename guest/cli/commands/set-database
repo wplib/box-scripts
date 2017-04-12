@@ -13,11 +13,11 @@ if [ 'mariadb' == $1 ]; then
 fi
 
 sudo sed -i "s/${converse}/$1/" /etc/init/database.conf
-mkdir -p /tmp/sql
-sudo chown -R vagrant:vagrant /tmp/sql
-mysqldump wordpress > /tmp/sql/current.sql
+mkdir -p ~/sql
+mysqldump wordpress > ~/current.sql
 sudo service database stop
 sleep 5
 sudo service database start
 sleep 10
-mysql wordpress < /tmp/sql/current.sql
+mysql wordpress < ~/current.sql
+rm ~/current.sql
