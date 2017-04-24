@@ -1,7 +1,9 @@
-base="$(jq '.startup.database' < /vagrant/box.json)"
+#!/usr/bin/env bash
+
+database="$(jq '.startup.database' < /vagrant/box.json)"
 webserver="$(jq '.startup.webserver' < /vagrant/box.json)"
 processvm="$(jq '.startup.processvm' < /vagrant/box.json)"
 
-echo $database
-echo $webserver
-echo $processvm
+docker start $database \
+  && docker start $webserver \
+  && docker start $processvm
