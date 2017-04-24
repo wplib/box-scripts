@@ -1,0 +1,7 @@
+base="$(jq '.startup.database' < /vagrant/box.json)"
+webserver="$(jq '.startup.webserver' < /vagrant/box.json)"
+processvm="$(jq '.startup.processvm' < /vagrant/box.json)"
+
+echo $database
+echo $webserver
+echo $processvm
