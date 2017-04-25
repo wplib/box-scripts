@@ -10,5 +10,15 @@ docker start $database \
 if [ "php7.1_fpm" == $processvm ]; then
     sudo service php7.1-fpm start
 else
+    case "$processvm" in
+        php7.0)
+            processvm="php7_fpm"
+            ;;
+
+        php5.6)
+            processvm="php5_fpm"
+            ;;
+    esac
+    
     docker start $processvm
 fi
