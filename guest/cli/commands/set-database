@@ -12,12 +12,12 @@ if [ 'mariadb' == $1 ]; then
     converse='mysql'
 fi
 
-sudo sed -i "s/${converse}/$1/" /etc/init/database.conf
+sudo sed -i "s/${converse}/$1/" /vagrant/box.json
 mkdir -p ~/sql
 mysqldump wordpress > ~/current.sql
-sudo service database stop
+docker stop $converse 2>&1 > /dev/null
 sleep 5
-sudo service database start
+docker start $1 2>&1 > /dev/null
 sleep 10
 mysql wordpress < ~/current.sql
 rm ~/current.sql
