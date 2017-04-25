@@ -4,20 +4,28 @@ echo
 echo "Setting Web Process VM to $1..."
 echo
 
-versions=( 5.6 7.0 7.1 )
+versions=( php5_fpm php7_fpm )
 
 # see https://www.cyberciti.biz/faq/bash-for-loop-array/
 for i in "${versions[@]}"
 do
     :
-    if [ ! -f "/etc/init/php${1}-fpm.override" ]; then
-        echo 'manual' | sudo tee /etc/init/php${i}-fpm.override 2>&1 > /dev/null
-    fi
-
-    if [ -f "/run/php/php${i}-fpm.pid" ]; then
-        sudo service php${i}-fpm stop
+    if [ true == $(docker inspect -f {{.State.Running}} ${i}) ]; then
+        docker stop ${i} 2>&1 > /dev/null
     fi
 done
 
-sudo rm /etc/init/${1}-fpm.override
-sudo service ${1}-fpm start
+if [ -f "/var/run/php/php7.1-fpm.pid" ]; then
+    sudo service php7.1-fpm stop 2>&1 > /dev/null
+fi
+
+if [ "php7.1" == "$1" ]; then
+    sudo service php7.1-fpm start 2>&1 > /dev/null
+else
+    fpm="php7_fpm"
+    if [ "php5.6" == "$1" ]; then
+        fpm="php5_fpm"
+    fi
+
+    docker start $fpm 2>&1 > /dev/null
+fi
