@@ -5,28 +5,29 @@ if [ -f "/vagrant/box.json" ]; then
     processvm="$(jq -r '.startup.processvm' < /vagrant/box.json)"
     object_cache="$(jq -r '.startup.object_cache' < /vagrant/box.json)"
 
-    docker start $database \
-      && docker start $webserver \
-      && docker start $object_cache
+    if [ -z "$database" ]; then
+        database=mysql
+    fi
 
-    if [ "php7.1" == $processvm ]; then
-        sudo service php7.1-fpm start
-    else
-        case "$processvm" in
-            php7.0)
-                processvm="php7_fpm"
-                ;;
+    if [ -z "$webserver" ];  then
+        webserver=nginx
+    fi
 
-            php5.6)
-                processvm="php5_fpm"
-                ;;
-        esac
+    if [ -z "$processvm" ]; then
+        processvm=php7.0
+    fi
 
-        docker start $processvm
+    if [ -z "$object_cache" ]; then
+        object_cache=redis
     fi
 else
-    docker start nginx
-    docker start php7_fpm
-    docker start mysql
-    docker start redis
+    database=mysql
+    webserver=nginx
+    processvm=php7.0
+    object_cache=redis
 fi
+
+box set-database $database
+box set-webserver $webserver
+box set-processvm $processvm
+box set-object-cache $object_cache
