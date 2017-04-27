@@ -3,7 +3,7 @@ if [ -f "/vagrant/[project.json" ]; then
     database="$(jq -r '.startup.database' < /vagrant/project.json)"
     webserver="$(jq -r '.startup.webserver' < /vagrant/project.json)"
     processvm="$(jq -r '.startup.processvm' < /vagrant/project.json)"
-    object_cache="$(jq -r '.startup.object_cache' < /vagrant/project.json)"
+    kvstore="$(jq -r '.startup.kvstore' < /vagrant/project.json)"
 
     if [ -z "$database" ]; then
         database=mysql
@@ -24,12 +24,12 @@ else
     database=mysql
     webserver=nginx
     processvm=php7.0
-    object_cache=redis
+    kvstore=redis
 fi
 
 docker start $database 2>&1 > /dev/null
 docker start $webserver 2>&1 > /dev/null
-docker start $object_cache 2>&1 > /dev/null
+docker start $kvstore 2>&1 > /dev/null
 
 if [ "php7.1" == $processvm ]; then
     if [ ! -f "/var/run/php/php7.1-fpm.pid" ]; then

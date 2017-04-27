@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo "Switching object cache to $1"
+echo "Switching Key/Value Store to $1"
 
 if [ ! "redis" == "$1" ] && [ ! "memcached" == "$1" ]; then
     echo 'You must select either redis or memcached'
