@@ -14,4 +14,4 @@ fi
 
 docker stop $converse 2>&1 > /dev/null \
   && docker start $1 2>&1 > /dev/null \
-  && sudo sudo sed -i "s/${converse}/$1/" /vagrant/box.json
+  && sudo sudo sed -i "s/${converse}/$1/" /vagrant/project.json

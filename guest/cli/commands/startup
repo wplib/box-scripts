@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-if [ -f "/vagrant/box.json" ]; then
-    database="$(jq -r '.startup.database' < /vagrant/box.json)"
-    webserver="$(jq -r '.startup.webserver' < /vagrant/box.json)"
-    processvm="$(jq -r '.startup.processvm' < /vagrant/box.json)"
-    object_cache="$(jq -r '.startup.object_cache' < /vagrant/box.json)"
+if [ -f "/vagrant/[project.json" ]; then
+    database="$(jq -r '.startup.database' < /vagrant/project.json)"
+    webserver="$(jq -r '.startup.webserver' < /vagrant/project.json)"
+    processvm="$(jq -r '.startup.processvm' < /vagrant/project.json)"
+    object_cache="$(jq -r '.startup.object_cache' < /vagrant/project.json)"
 
     if [ -z "$database" ]; then
         database=mysql
