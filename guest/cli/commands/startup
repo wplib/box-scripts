@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 if [ -f "/vagrant/[project.json" ]; then
-    database="$(jq -r '.startup.database' < /vagrant/project.json)"
-    webserver="$(jq -r '.startup.webserver' < /vagrant/project.json)"
-    processvm="$(jq -r '.startup.processvm' < /vagrant/project.json)"
-    kvstore="$(jq -r '.startup.kvstore' < /vagrant/project.json)"
+    database="$(jq -r '.services.database' < /vagrant/project.json)"
+    webserver="$(jq -r '.services.webserver' < /vagrant/project.json)"
+    processvm="$(jq -r '.services.processvm' < /vagrant/project.json)"
+    kvstore="$(jq -r '.services.kvstore' < /vagrant/project.json)"
 
     if [ -z "$database" ]; then
         database=mysql
@@ -17,7 +17,7 @@ if [ -f "/vagrant/[project.json" ]; then
         processvm=php7.0
     fi
 
-    if [ -z "$object_cache" ]; then
+    if [ -z "$kvstore" ]; then
         object_cache=redis
     fi
 else
