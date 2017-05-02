@@ -6,7 +6,7 @@ source "${WPLIB_BOX_INCLUDES_DIR}/set-web-processvm" $1
 ret_code2=$?
 
 if [ $ret_code1 -eq 0 ] && [ $ret_code2 -eq 0 ]; then
-    jq --arg processvm "$1" '.startup.processvm = $processvm' /vagrant/project.json > new.json && mv new.json /vagrant/project.json
+    jq --arg processvm "$1" '.services.processvm = $processvm' /vagrant/project.json > new.json && mv new.json /vagrant/project.json
     return 0
 else
     return 1
