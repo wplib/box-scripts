@@ -18,7 +18,7 @@ if [ -f "/vagrant/[project.json" ]; then
     fi
 
     if [ -z "$kvstore" ]; then
-        object_cache=redis
+        kvstore=redis
     fi
 else
     database=mysql
