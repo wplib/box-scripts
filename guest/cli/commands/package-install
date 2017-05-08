@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 git clone https://github.com/$1 /tmp/package
 
-# http://stackoverflow.com/questions/35005893/how-do-i-convert-json-array-to-bash-array-of-strings-with-jq
-jq -r '.scripts[]' /tmp/package/installable.json | while read script; do
-  sh /tmp/package/scripts/${script}
-done
+sh /tmp/package/scripts/install.sh
 
 if [ -d "/tmp/package" ] ; then
   rm -rf /tmp/package
