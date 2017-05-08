@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-if [ -f "/vagrant/[project.json" ]; then
+if [ -f "/vagrant/project.json" ]; then
     database="$(jq -r '.services.database' < /vagrant/project.json)"
     webserver="$(jq -r '.services.webserver' < /vagrant/project.json)"
     processvm="$(jq -r '.services.processvm' < /vagrant/project.json)"
