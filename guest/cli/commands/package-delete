@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+#Download package
+git clone https://github.com/$1 /tmp/package
+
+#What major type (container, pkg, etc)
+# see http://stackoverflow.com/a/4170409
+type=$(jq -r ".type" /tmp/package/installable.json)
+case "${type%\/*}" in
+  container)
+    source "${WPLIB_BOX_INCLUDES_DIR}/delete-container" /tmp/package/installable.json
+    ;;
+esac
+
+#Write to box configuration for future reference
+
+#Clean up
+if [ -d "/tmp/package" ] ; then
+  rm -rf /tmp/package
+fi

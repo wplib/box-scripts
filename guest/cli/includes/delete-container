@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+if [ -f "$1" ]; then
+    name=$(jq -r ".name" ${1})
+    containername=$(jq -r ".containername" ${1})
+    options=$(jq -r ".options" ${1})
+    container=$(jq -r ".download" ${1})
+    version=$(jq -r ".version" ${1})
+    type=$(jq -r ".type" ${1})
+    subtype=${type#*\/}
+
+    running=$(docker inspect --format="{{.State.Running}}" ${containername})
+    if [ "true" = "${running}" ]; then
+        echo "Stopping ${containername}..."
+        docker stop ${containername}
+    fi
+
+    echo "Removing ${containername} container..."
+    docker rm ${containername} 2>&1 > /dev/null
+    echo "Removing ${container}:${version:-latest} Docker image..."
+    docker rmi ${container}:${version:-latest} 2>&1 > /dev/null
+
+    for command in "${1%\/*}/commands"/*
+    do
+      file=${WPLIB_BOX_COMMANDS_DIR}/${command##*\/}
+      if [ -f ${file} ]; then
+        sudo rm ${file}
+      fi
+    done
+
+   case ${subtype} in
+     webserver)
+       box nginx
+       ;;
+     database)
+       box mysql
+       ;;
+     processvm)
+       box php7.0
+       ;;
+     kvstore)
+       box redis
+       ;;
+    esac
+fi
