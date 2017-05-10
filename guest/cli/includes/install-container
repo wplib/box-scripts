@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+if [ -f "$1" ]; then
+    name=$(jq -r ".name" ${1})
+    containername=$(jq -r ".containername" ${1})
+    options=$(jq -r ".options" ${1})
+    container=$(jq -r ".download" ${1})
+    version=$(jq -r ".version" ${1})
+    type=$(jq -r ".type" ${1})
+    subtype=${type#*\/}
+
+    # Create the docker container
+    echo "Creating container ${containername} from ${container}"
+    docker create ${options} --name ${containername} ${container}:${version}
+
+    # Add the commands to the scripts directory
+    sudo cp "${1%*\/installable.json}/commands"/* ${WPLIB_BOX_COMMANDS_DIR}
+
+    activate="y"
+    read -p "Set ${name} to be default ${subtype}(Y/n)?: " input
+    activate="${input:-$activate}"
+
+    if [ "y" = ${activate} ]; then
+        current=$(jq -r --arg subtype ${subtype} '.services[$subtype]' < /vagrant/project.json)
+        echo "Stopping ${current}..." \
+        && docker stop $current 2>&1 > /dev/null \
+        && echo "Starting ${containername}..." \
+        && docker start ${containername} 2>&1 > /dev/null \
+        && echo "Updating box configuration" \
+        && jq --arg name ${containername} --arg subtype ${subtype} '.services[$subtype] = $name' /vagrant/project.json > /tmp/new.json && mv /tmp/new.json /vagrant/project.json
+    fi
+fi
