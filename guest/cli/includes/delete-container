@@ -9,11 +9,20 @@ if [ -f "$1" ]; then
     type=$(jq -r ".type" ${1})
     subtype=${type#*\/}
 
-    running=$(docker inspect --format="{{.State.Running}}" ${containername})
-    if [ "true" = "${running}" ]; then
-        echo "Stopping ${containername}..."
-        docker stop ${containername}
-    fi
+    case ${subtype} in
+     webserver)
+       source "${WPLIB_BOX_COMMANDS_DIR}/set-webserver" nginx
+       ;;
+     database)
+       source "${WPLIB_BOX_COMMANDS_DIR}/set-database" mysql
+       ;;
+     processvm)
+       source "${WPLIB_BOX_COMMANDS_DIR}/set-processvm" php7.0
+       ;;
+     kvstore)
+       source "${WPLIB_BOX_COMMANDS_DIR}/set-kvstore" redis
+       ;;
+    esac
 
     echo "Removing ${containername} container..."
     docker rm ${containername} 2>&1 > /dev/null
@@ -27,19 +36,4 @@ if [ -f "$1" ]; then
         sudo rm ${file}
       fi
     done
-
-   case ${subtype} in
-     webserver)
-       box nginx
-       ;;
-     database)
-       box mysql
-       ;;
-     processvm)
-       box php7.0
-       ;;
-     kvstore)
-       box redis
-       ;;
-    esac
 fi
