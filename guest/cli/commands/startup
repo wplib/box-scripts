@@ -1,35 +1,18 @@
 #!/usr/bin/env bash
+database="mysql"
+webserver="nginx"
+processvm="php7.0"
+kvstore="redis"
 if [ -f "/vagrant/project.json" ]; then
     database="$(jq -r '.services.database' < /vagrant/project.json)"
     webserver="$(jq -r '.services.webserver' < /vagrant/project.json)"
     processvm="$(jq -r '.services.processvm' < /vagrant/project.json)"
     kvstore="$(jq -r '.services.kvstore' < /vagrant/project.json)"
-
-    if [ -z "$database" ]; then
-        database=mysql
-    fi
-
-    if [ -z "$webserver" ];  then
-        webserver=nginx
-    fi
-
-    if [ -z "$processvm" ]; then
-        processvm=php7.0
-    fi
-
-    if [ -z "$kvstore" ]; then
-        kvstore=redis
-    fi
-else
-    database=mysql
-    webserver=nginx
-    processvm=php7.0
-    kvstore=redis
 fi
 
-docker start $database 2>&1 > /dev/null
-docker start $webserver 2>&1 > /dev/null
-docker start $kvstore 2>&1 > /dev/null
+docker start ${database:-mysql} 2>&1 > /dev/null
+docker start ${webserver:-nginx} 2>&1 > /dev/null
+docker start ${kvstore:-redis} 2>&1 > /dev/null
 
 if [ "php7.1" == $processvm ]; then
     if [ ! -f "/var/run/php/php7.1-fpm.pid" ]; then
