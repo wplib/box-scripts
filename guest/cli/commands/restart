@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if [ -f "/var/run/php/php7.1-fpm.pid" ]; then
+    sudo service php7.1-fpm stop
+fi
+
+sudo service docker restart 2>&1 > /dev/null \
+&& source ${WPLIB_BOX_COMMANDS_DIR}/startup
