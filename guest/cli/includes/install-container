@@ -23,6 +23,11 @@ if [ -f "$1" ]; then
         ;;
     esac
 
+    # Replace spaces in name with _
+    containername=${name// /_}
+    # Convert to lower case
+    containername=${containername,,}_${version//./_}
+    
     # Create the docker container
     echo "Creating container ${containername} from ${container}"
     options="${volume} ${ports}"
