@@ -22,6 +22,8 @@ if [ -f "/tmp/${filename}" ]; then
             ;;
     esac
 
+    # Remove package from project.json
+    jq --arg package ${package} 'del (.packages[$package])' < /vagrant/project.json >> /tmp/project.json && mv /tmp/project.json /vagrant/project.json
     error=0
 else
     echo "Package not found. Specify a GitHub organization/repository name (e.g. wplib/caddy-package)."
