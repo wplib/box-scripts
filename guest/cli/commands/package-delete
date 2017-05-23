@@ -1,20 +1,40 @@
 #!/usr/bin/env bash
 
+package="${1%:*}"
+version=`expr match "${1}" '.*\:\(*\)'`
+version=${version:-master}
+filename=${version}.zip
+directory=/tmp/${package##*\/}-${version}
+
 #Download package
-git clone https://github.com/$1 /tmp/package
+wget https://github.com/${package}/archive/${filename} -O /tmp/${filename}
 
-#What major type (container, pkg, etc)
-# see http://stackoverflow.com/a/4170409
-type=$(jq -r ".type" /tmp/package/installable.json)
-case "${type%\/*}" in
-  container)
-    source "${WPLIB_BOX_INCLUDES_DIR}/delete-container" /tmp/package/installable.json
-    ;;
-esac
+if [ -f "/tmp/${filename}" ]; then
+    unzip /tmp/${filename} -d /tmp
 
-#Write to box configuration for future reference
+    # What major type (container, pkg, etc)
+    # see http://stackoverflow.com/a/4170409
+    type=$(jq -r ".type" ${directory}/installable.json)
+
+    case "${type%\/*}" in
+        container)
+            source "${WPLIB_BOX_INCLUDES_DIR}/delete-container" ${directory}/installable.json
+            ;;
+    esac
+
+    error=0
+else
+    echo "Package not found. Specify a GitHub organization/repository name (e.g. wplib/caddy-package)."
+    error=1
+fi
 
 #Clean up
-if [ -d "/tmp/package" ] ; then
-  rm -rf /tmp/package
+if [ -f "${filename}" ]; then
+    unlink ${filename}
 fi
+
+if [ -d "${directory}" ] ; then
+    rm -rf ${directory}
+fi
+
+return ${error}
