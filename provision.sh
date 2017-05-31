@@ -3,7 +3,7 @@
 # WPLib Box Provision Script
 #
 
-if [[ -d /vagrant/scripts && "$1" != "--force" ]]; then
+if [[ -d /box/scripts && "$1" != "--force" ]]; then
 
     echo -e "\t"
     echo "NOTICE! ============>"
@@ -25,9 +25,9 @@ else
         #  If this is the initial provisioning then the scripts
         #  will still be in /tmp/box-scripts. Move them over.
         #
-        mkdir -p /box
-        mkdir -p /box/scripts
-        mv /tmp/box-scripts /box/scripts
+        sudo mkdir -p /box
+        sudo mkdir -p /box/scripts
+        sudo mv /tmp/box-scripts /box/scripts
     fi
 
     #
