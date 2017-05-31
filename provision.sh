@@ -25,7 +25,9 @@ else
         #  If this is the initial provisioning then the scripts
         #  will still be in /tmp/box-scripts. Move them over.
         #
-        mv /tmp/box-scripts /vagrant/scripts
+        mkdir -p /box
+        mkdir -p /box/scripts
+        mv /tmp/box-scripts /box/scripts
     fi
 
     #
@@ -33,8 +35,8 @@ else
     #
     echo "Installing the \"In-the-Box\" CLI"
     sudo rm -f /usr/local/bin/box
-    sudo chmod +x /vagrant/scripts/guest/cli/box
-    sudo ln -s /vagrant/scripts/guest/cli/box /usr/local/bin/box
+    sudo chmod +x /box/scripts/guest/cli/box
+    sudo ln -s /box/scripts/guest/cli/box /usr/local/bin/box
 
     #
     #  Enable Tab Completion
