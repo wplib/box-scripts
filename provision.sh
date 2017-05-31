@@ -27,7 +27,7 @@ else
         #
         sudo mkdir -p /box
         sudo mkdir -p /box/scripts
-        sudo mv /tmp/box-scripts /box/scripts
+        sudo mv /tmp/box-scripts/* /box/scripts
     fi
 
     #
