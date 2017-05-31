@@ -20,7 +20,7 @@ if [[ -d /vagrant/scripts && "$1" != "--force" ]]; then
 
 else
 
-    if [[ ! -d /vagrant/scripts && -d /tmp/box-scripts ]]; then
+    if [[ ! -d /box/scripts && -d /tmp/box-scripts ]]; then
         #
         #  If this is the initial provisioning then the scripts
         #  will still be in /tmp/box-scripts. Move them over.
