@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#
+# Example
+#
+#       box check-mounts
+#
+if [ -e /var/www/NOTMOUNTED ]
+then
+	cat /var/www/index.txt
+	exit 1
+fi
+
+exit 0
+
