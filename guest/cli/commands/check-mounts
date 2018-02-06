@@ -6,7 +6,9 @@
 #
 if [ -e /var/www/NOTMOUNTED ]
 then
+	tput setaf 1
 	cat /var/www/index.txt
+	tput sgr0
 	exit 1
 fi
 
