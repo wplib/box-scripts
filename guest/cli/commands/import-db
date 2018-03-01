@@ -72,6 +72,16 @@ cat /tmp/mysql-table-list.txt | while read table; do mysql -u wordpress -pwordpr
 rm /tmp/mysql-table-list.txt
 echo_if_not_quiet "$*", "^Tables dropped."
 
+if [ "" != "$(cat "${importfile}" | grep "utf8mb4_unicode_520_ci")" ]; then
+    #
+    # MariaDB does not support 'utf8mb4_unicode_520_ci' but does support 'utf8mb4_unicode_ci'
+    # This should become a lot more intelligent but for now it should suffice.
+    #
+    echo_if_not_quiet "$*", "=Stripping '520' from 'utf8mb4_unicode_520_ci' in ${importfile}..."
+    sed -i -e 's/utf8mb4_unicode_520_ci/utf8mb4_unicode_ci/g' "${importfile}"
+    echo_if_not_quiet "$*", "=520 stripped."
+fi
+
 echo_if_not_quiet "$*", "=Importing database from ${importfile}..."
 mysql -u wordpress -pwordpress wordpress < ${importfile}  2>&1 | grep -v "Warning:"
 echo_if_not_quiet "$*", "=Database imported."
