@@ -1,0 +1,26 @@
+#!/bin/bash
+#
+# Update WPLib-Box scripts.
+#
+
+
+BASEDIR="/opt/box/scripts"
+
+# Determine version to run.
+if [ "$1" == "" ]
+then
+	VERSION="$BOX_VERSION"
+else
+	VERSION="$1"
+fi
+
+# Pull from GitHub.
+if [ -d ${BASEDIR} ]
+then
+	cd ${BASEDIR}
+	git pull
+	git checkout $VERSION
+else
+	git clone https://github.com/wplib/box-scripts/ /opt/box/scripts
+fi
+

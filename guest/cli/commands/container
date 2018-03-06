@@ -41,7 +41,28 @@ IMAGE="$2"
 
 
 case $CMD in
-	'provision'|'create'|'install'|'pull')
+	'provision')
+		echo "WPLib-Box: Provisioning $IMAGE."
+		$0 container pull $IMAGE
+		;;
+
+
+	'refresh'|'upgrade')
+		echo "WPLib-Box: Refreshing $IMAGE."
+		$0 container stop $IMAGE
+		$0 container remove $IMAGE
+		$0 container pull $IMAGE
+		;;
+
+
+	'clean')
+		echo "WPLib-Box: Refreshing $IMAGE."
+		$0 container stop $IMAGE
+		$0 container remove $IMAGE
+		;;
+
+
+	'create'|'install'|'pull')
 		echo "WPLib-Box: Pulling $IMAGE from repository."
 		docker pull $IMAGE
 		if [ "$?" == "1" ]
@@ -58,7 +79,7 @@ case $CMD in
 		;;
 
 
-	'clean'|'remove'|'rm'|'destroy')
+	'remove'|'rm'|'destroy')
 		deets $IMAGE
 		if [ "$PROJECT" == "wplib" ]
 		then
