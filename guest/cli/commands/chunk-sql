@@ -45,31 +45,40 @@ if [ ! -f "${sql_filepath}" ]  ; then
 fi
 
 #
-# Create a backup of the file
-#
-echo_if_not_quiet "$*", "=Backing up to ${sql_filepath}.bak..."
-cp  "${sql_filepath}" "${sql_filepath}.bak"
-
-#
 # Create temp dir and move our SQL file to temp dir
 #
-temp_sql_dir=$(mktemp -d sql-XXXXX)
-temp_sql_file="${temp_sql_dir}/${sql_filename}"
-echo_if_not_quiet "$*", "=Moving to ${temp_sql_file}..."
+temp_sql_file="$(mktemp --tmpdir="$(pwd)" "${sql_basefile}-XXXXX.sql.bak")"
+rm -f "${temp_sql_file}"
+if [ $? -ne 0 ]; then
+	echo "box chunk-sql failed."
+fi
+
+#
+# Create a backup of the file
+#
+echo_if_not_quiet "$*", "=Backing up to ${temp_sql_file}..."
 mv "${sql_filepath}" "${temp_sql_file}"
+if [ $? -ne 0 ]; then
+	echo "box chunk-sql failed."
+fi
 
 #
 # Making a directory the same name as the previous SQL file
 #
 echo_if_not_quiet "$*", "=Making directory ${sql_filepath}/..."
 mkdir -p "${sql_filepath}"
+if [ $? -ne 0 ]; then
+	echo "box chunk-sql failed."
+fi
 
 #
 # Making a directory the same name as the previous SQL file
 #
 echo_if_not_quiet "$*", "=Splitting file into chunks in ${sql_filepath}/..."
 split --line-bytes="${CHUNK_SIZE}" --numeric-suffixes="1" --additional-suffix=".sql.chunk" "${temp_sql_file}" "${sql_filename}/${sql_basefile}-"
-if [ $? -ne 0 ]; then
+if [ $? -eq 0 ]; then
+    echo_if_not_quiet "$*", "=SQL file chunked."
+else
 	echo "box chunk-sql failed."
     rm -rf "${temp_sql_dir}"
     mv "${sql_filepath}.bak" "${sql_filepath}"
