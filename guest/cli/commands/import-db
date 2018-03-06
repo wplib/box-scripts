@@ -24,7 +24,7 @@ fi
 importfile="${WPLIB_BOX_SQL_DIR}/${importfile}"
 
 #
-# Check to see if we need to import from exists
+# Check to see if we the importfile exists
 #
 if [ ! -f "${importfile}" ]  ; then
 
