@@ -3,12 +3,11 @@
 # Converts a SQL file into a collection of `.sql.chunk` files
 # in a directory of the same name as the file:
 #
-# Usage: box chunk-sql {sql_file} [--echo] [--quiet]
+# Usage: box chunk-sql {sql_file} [--quiet]
 #
 #   Result ==> Generates /vagrant/sql/{sql_file}.sql/{sql_file}-??.sql.chunk
 #
-#   --echo - Echos the backed-up filename
-#   --quiet - Omits
+#   --quiet - Omits output
 
 #
 # Split file up into chunks of ~25M or smaller
