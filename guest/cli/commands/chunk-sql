@@ -19,17 +19,15 @@ CHUNK_SIZE=25600000
 #
 sql_filename="$1"
 
-if [ 'sql' != "$(to_lowercase $(file_extension "${sql_filename}"))" ]; then
-    #
-    # If no .sql extension, add one.
-    #
-    importfile="${sql_filename}.sql"
-fi
-
 #
 # Grab the base file name
 #
 sql_basefile="${sql_filename%%.*}"
+
+#
+# Fix the filename
+#
+sql_filename="${sql_filename}.sql"
 
 #
 # Calculate the SQL filepath from  /vagrant/sql/
