@@ -18,7 +18,7 @@ fi
 if [ -d ${BASEDIR} ]
 then
 	cd ${BASEDIR}
-	git clean  -d  -fx ""
+	git clean -q -d  -fx ""
 	git reset --hard $VERSION
 	git pull
 	git checkout -q $VERSION
