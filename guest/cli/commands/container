@@ -1,0 +1,125 @@
+#!/bin/bash
+#
+# Provisioning script for all containers.
+
+
+deets()
+{
+	PROJECT="`docker inspect --format='{{index .Config.Labels "container.project"}}' $IMAGE`"
+	if [ "$PROJECT" == "" ]
+	then
+		echo "WPLib-Box: Error $IMAGE image does not conform to JSON config format in 0.16 and later."
+		return 1
+	fi
+
+	NAME="`docker inspect --format='{{index .Config.Labels "container.name"}}' $IMAGE`"
+	VERSION="`docker inspect --format='{{index .Config.Labels "container.version"}}' $IMAGE`"
+	MAJORVERSION="`docker inspect --format='{{index .Config.Labels "container.majorversion"}}' $IMAGE`"
+	LATEST="`docker inspect --format='{{index .Config.Labels "container.latest"}}' $IMAGE`"
+	CLASS="`docker inspect --format='{{index .Config.Labels "container.class"}}' $IMAGE`"
+	NETWORK="`docker inspect --format='{{index .Config.Labels "container.network"}}' $IMAGE`"
+	PORTS="`docker inspect --format='{{index .Config.Labels "container.ports"}}' $IMAGE`"
+	VOLUMES="`docker inspect --format='{{index .Config.Labels "container.volumes"}}' $IMAGE`"
+	RESTART="`docker inspect --format='{{index .Config.Labels "container.restart"}}' $IMAGE`"
+	ARGS="`docker inspect --format='{{index .Config.Labels "container.args"}}' $IMAGE`"
+	ENV="`docker inspect --format='{{index .Config.Labels "container.env"}}' $IMAGE`"
+	CONTAINER_NAME="${NAME}-${VERSION}"
+
+	return 0
+}
+
+
+
+if [ "$2" == "" ]
+then
+	echo "WPLib-Box: Error no image provided."
+	exit 1
+fi
+	
+CMD="$1"
+IMAGE="$2"
+
+
+case $CMD in
+	'provision'|'create'|'install'|'pull')
+		echo "WPLib-Box: Pulling $IMAGE from repository."
+		docker pull $IMAGE
+		if [ "$?" == "1" ]
+		then
+			echo "WPLib-Box: Error $IMAGE image does not exist in repository."
+			exit 1
+		fi
+
+		deets $IMAGE
+		if [ "$PROJECT" == "wplib" ]
+		then
+			docker create --name ${CONTAINER_NAME} ${RESTART} ${NETWORK} ${PORTS} ${ARGS} ${VOLUMES} ${IMAGE}
+		fi
+		;;
+
+
+	'clean'|'remove'|'rm'|'destroy')
+		deets $IMAGE
+		if [ "$PROJECT" == "wplib" ]
+		then
+			echo "WPLib-Box: Removing container: $IMAGE"
+			docker rm ${CONTAINER_NAME}
+			if [ "$?" == "1" ]
+			then
+				echo "WPLib-Box: Error $IMAGE container can't be removed."
+				exit 1
+			fi
+		fi
+		;;
+
+
+	'start'|'up')
+		deets $IMAGE
+		if [ "$PROJECT" == "wplib" ]
+		then
+			echo "WPLib-Box: Starting container: $IMAGE"
+			docker start ${CONTAINER_NAME}
+			if [ "$?" == "1" ]
+			then
+				echo "WPLib-Box: Error $IMAGE container can't be started."
+				exit 1
+			fi
+		fi
+		;;
+
+
+	'stop'|'down')
+		deets $IMAGE
+		if [ "$PROJECT" == "wplib" ]
+		then
+			echo "WPLib-Box: Stopping container: $IMAGE"
+			docker stop ${CONTAINER_NAME}
+			if [ "$?" == "1" ]
+			then
+				echo "WPLib-Box: Error $IMAGE container can't be stopped. "
+				exit 1
+			fi
+		fi
+		;;
+
+
+	'show'|'list'|'ls')
+		deets $IMAGE
+		if [ "$PROJECT" == "wplib" ]
+		then
+			echo "WPLib-Box: Status of container: $IMAGE"
+			docker container ls -af "name=${CONTAINER_NAME}"
+			if [ "$?" == "1" ]
+			then
+				echo "WPLib-Box: Error $IMAGE container can't be stopped. "
+				exit 1
+			fi
+		fi
+		;;
+
+
+	*)
+		echo "WPLib-Box: Warning. Unknown command."
+		;;
+esac
+

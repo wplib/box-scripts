@@ -50,7 +50,8 @@ if [ $dryrun -eq 0 ]; then
 
     mkdir -p /vagrant/sql
 
-    mysqldump -u wordpress -pwordpress wordpress  2>&1 | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}
+    docker run --rm -it -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -e MYSQL_DATABASE=wordpress -e MYSQL_USER=wordpress -e MYSQL_PASSWORD=wordpress -v /tmp/sql:/docker-entrypoint-initdb.d -v mysql_data:/var/lib/mysql wplib/mysql:5.5.59 mysqldump -h 172.18.0.1 -u wordpress -pwordpress wordpress 2>&1 | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}
+    # mysqldump -u wordpress -pwordpress wordpress  2>&1 | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}
 
     result="$?"
 
