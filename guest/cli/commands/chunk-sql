@@ -1,0 +1,156 @@
+#!/usr/bin/env bash
+#
+# Converts a SQL file into a collection of `.sql.chunk` files
+# in a directory of the same name as the file:
+#
+# Usage: box chunk-sql {sql_file} [--echo] [--quiet]
+#
+#   Result ==> Generates /vagrant/sql/{sql_file}.sql/{sql_file}-??.sql.chunk
+#
+#   --echo - Echos the backed-up filename
+#   --quiet - Omits
+
+#
+# Split file up into chunks of ~25M or smaller
+#
+CHUNK_SIZE=25600000
+
+#
+# Grab the filename, without extension, then add extension
+#
+sql_filename="$1"
+
+if [ 'sql' != "$(to_lowercase $(file_extension "${sql_filename}"))" ]; then
+    #
+    # If no .sql extension, add one.
+    #
+    importfile="${sql_filename}.sql"
+fi
+
+#
+# Grab the base file name
+#
+sql_basefile="${sql_filename%%.*}"
+
+#
+# Calculate the SQL filepath from  /vagrant/sql/
+#
+sql_filepath="${WPLIB_BOX_SQL_DIR}/${sql_filename}"
+
+#
+# Check to see if we need to modify exists
+#
+if [ ! -f "${sql_filepath}" ]  ; then
+    echo_if_not_quiet "$*", "=No ${sql_filepath} exists.."
+    return
+fi
+
+#
+# Create a backup of the file
+#
+echo_if_not_quiet "$*", "=Backing up to ${sql_filepath}.bak..."
+cp  "${sql_filepath}" "${sql_filepath}.bak"
+
+#
+# Create temp dir and move our SQL file to temp dir
+#
+temp_sql_dir=$(mktemp -d sql-XXXXX)
+temp_sql_file="${temp_sql_dir}/${sql_filename}"
+echo_if_not_quiet "$*", "=Moving to ${temp_sql_file}..."
+mv "${sql_filepath}" "${temp_sql_file}"
+
+#
+# Making a directory the same name as the previous SQL file
+#
+echo_if_not_quiet "$*", "=Making directory ${sql_filepath}/..."
+mkdir -p "${sql_filepath}"
+
+#
+# Making a directory the same name as the previous SQL file
+#
+echo_if_not_quiet "$*", "=Splitting file into chunks in ${sql_filepath}/..."
+split --line-bytes="${CHUNK_SIZE}" --numeric-suffixes="1" --additional-suffix=".sql.chunk" "${temp_sql_file}" "${sql_filename}/${sql_basefile}-"
+if [ $? -ne 0 ]; then
+	echo "box chunk-sql failed."
+    rm -rf "${temp_sql_dir}"
+    mv "${sql_filepath}.bak" "${sql_filepath}"
+fi
+echo_if_not_quiet "$*", "=SQL file chunked."
+
+
+
+
+
+
+
+
+importfile="$1"
+
+#
+# Check to see if we need to import from exists
+#
+if [ ! -f "${importfile}" ]  ; then
+
+    echo_if_not_quiet "$*", "=No ${importfile} exists.."
+    return
+
+fi
+
+bakfile=$(box backup-db --quiet --echo-filename --dry-run)
+
+if [ "${bakfile}" == "${importfile}" ]; then
+
+    echo_if_not_quiet "$*", "=\tERROR: Cannot backup '$1' because the"
+    echo_if_not_quiet "$*", "=\t       default backup filename is '$1'"
+    echo_if_not_quiet "$*", "^\t       thus cannot backup before import."
+    echo_if_not_quiet "$*", "=\t       Rename ${importfile} to "
+    echo_if_not_quiet "$*", "=\t       bypass this check and allow import."
+    return
+
+fi
+
+echo_if_not_quiet "$*", "=Backing up database..."
+
+bakfile=$(box backup-db --quiet --echo-filename)
+
+if [ "" == "${bakfile}" ]; then
+
+    echo_if_not_quiet "$*", "^Unknown error when generating the backup."
+    return
+
+fi
+
+if [[ "$*" == *" error "* ]]; then
+
+    echo_if_not_quiet "$*", "^Error when generating the backup: ${bakfile}"
+    return
+
+fi
+
+echo_if_not_quiet "$*", "^Database backed-up to ${bakfile}."
+
+echo_if_not_quiet "$*", "=Dropping any prior tables..."
+mysql -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
+cat /tmp/mysql-table-list.txt | while read table; do mysql -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"; done
+rm /tmp/mysql-table-list.txt
+echo_if_not_quiet "$*", "^Tables dropped."
+
+if [ "" != "$(cat "${importfile}" | grep "utf8mb4_unicode_520_ci")" ]; then
+    #
+    # MariaDB does not support 'utf8mb4_unicode_520_ci' but does support 'utf8mb4_unicode_ci'
+    # This should become a lot more intelligent but for now it should suffice.
+    #
+    echo_if_not_quiet "$*", "=Stripping '520' from 'utf8mb4_unicode_520_ci' in ${importfile}..."
+    sed -i -e 's/utf8mb4_unicode_520_ci/utf8mb4_unicode_ci/g' "${importfile}"
+    echo_if_not_quiet "$*", "=520 stripped."
+fi
+
+echo_if_not_quiet "$*", "=Importing database from ${importfile}..."
+mysql -u wordpress -pwordpress wordpress < ${importfile}  2>&1 | grep -v "Warning:"
+echo_if_not_quiet "$*", "=Database imported."
+
+
+
+
+
+
