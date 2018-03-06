@@ -4,5 +4,5 @@
 #
 #       box version
 #
-echo "WPLib: You are running version `cat /box/version`"
+echo "WPLib: You are running version `cat /opt/box/version`"
 

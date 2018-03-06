@@ -3,7 +3,7 @@
 # WPLib Box Provision Script
 #
 
-if [[ -d /box/scripts && "$1" != "--force" ]]; then
+if [[ -d /opt/box/scripts && "$1" != "--force" ]]; then
 
     echo -e "\t"
     echo "NOTICE! ============>"
@@ -20,14 +20,14 @@ if [[ -d /box/scripts && "$1" != "--force" ]]; then
 
 else
 
-    if [[ ! -d /box/scripts && -d /tmp/box-scripts ]]; then
+    if [[ ! -d /opt/box/scripts && -d /tmp/box-scripts ]]; then
         #
         #  If this is the initial provisioning then the scripts
         #  will still be in /tmp/box-scripts. Move them over.
         #
-        sudo mkdir -p /box
-        sudo mkdir -p /box/scripts
-        sudo mv /tmp/box-scripts/* /box/scripts
+        sudo mkdir -p /opt/box
+        sudo mkdir -p /opt/box/scripts
+        sudo mv /tmp/box-scripts/* /opt/box/scripts
     fi
 
     #
@@ -35,8 +35,8 @@ else
     #
     echo "Installing the \"In-the-Box\" CLI"
     sudo rm -f /usr/local/bin/box
-    sudo chmod +x /box/scripts/guest/cli/box
-    sudo ln -s /box/scripts/guest/cli/box /usr/local/bin/box
+    sudo chmod +x /opt/box/scripts/guest/cli/box
+    sudo ln -s /opt/box/scripts/guest/cli/box /usr/local/bin/box
 
     #
     #  Enable Tab Completion

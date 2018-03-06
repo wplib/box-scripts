@@ -3,7 +3,7 @@ server {
     listen 443 ssl;
 	server_name {{server_name}};
 
-	root /box/sites/{{server_name}};
+	root /opt/box/sites/{{server_name}};
 
 	index index.php;
 
