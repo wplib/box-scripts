@@ -18,8 +18,10 @@ fi
 if [ -d ${BASEDIR} ]
 then
 	cd ${BASEDIR}
+	git clean  -d  -fx ""
+	# git reset --hard $VERSION
 	git pull
-	git checkout $VERSION
+	git checkout -q $VERSION
 else
 	git clone https://github.com/wplib/box-scripts/ /opt/box/scripts
 fi
