@@ -76,8 +76,13 @@ function database_unchunk() {
     output "Unchunking ${chunked_file}"
     cat "${temp_dir}/${basefile}"-??."${ext}.chunk" > $chunked_file
     if [ $? -ne 0 ]; then
-        output "Could not generate unchunked file ${$chunked_file}"
+        output "Could not generate unchunked file ${chunked_file}"
         return 5
+    fi
+
+    rm -rf "${temp_dir}"
+    if [ $? -ne 0 ]; then
+        output "Could not remove the chunked directory ${temp_dir}"
     fi
 
     output "SQL file unchunked"
@@ -284,6 +289,11 @@ function database_chunk() {
         rm -rf "${sql_filepath}"
         mv "${backup_file}" "${sql_filepath}"
         return 6
+    fi
+
+    rm "${backup_file}"
+    if [ $? -ne 0 ]; then
+        alert "Could not delete the backup file ${backup_file}"
     fi
 
     output "SQL file chunked"
