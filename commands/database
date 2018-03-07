@@ -28,20 +28,16 @@ function ctrl_c()
 #
 function database_import() {
 
-    importfile="$1"
+    local importfile="$1"
 
-    if [ 'sql' != $(to_lowercase $(file_extension "${importfile}")) ]; then
+    local ext="$(file_extension "${importfile}"))"
+
+    if [ 'sql' != "$(to_lowercase "${ext}")" ]; then
         #
         # If no .sql extension, add one.
         #
-        importfile="${importfile}.sql"
-    fi
-
-    if [ 'sql' != $(to_lowercase $(file_extension "${importfile}")) ]; then
-        #
-        # If no .sql extension, add one.
-        #
-        importfile="${importfile}.sql"
+        ext="sql"
+        importfile="${importfile}.${ext}"
     fi
 
     #
@@ -52,16 +48,30 @@ function database_import() {
     #
     # Check to see if we the importfile exists
     #
-    if [ ! -f "${importfile}" ]; then
+    if [ ! -e "${importfile}" ]; then
 
         output "No ${importfile} exists.."
-        return
+        return 1
 
     fi
 
-    output "Backing up database..."
-
     basefile="${importfile%%.*}"
+
+    if [ ! -d "${importfile}" ]; then
+        tempfile=""
+    else
+        tempfile="$(mktemp "${WPLIB_BOX_SQL_DIR}/${basefile}-XXXXX.${ext}")"
+
+        output "Unchunking ${importfile}"
+        cat "${importfile}/${basefile}"-??."${ext}.chunk" > $tempfile
+
+        importfile="${tempfile}"
+
+    fi
+
+
+
+    output "Backing up database..."
 
     database_backup "${basefile}.bak"
 
@@ -103,6 +113,11 @@ function database_import() {
     if [ ! $(has_arg --dryrun) ]; then
         mysql -u wordpress -pwordpress wordpress < ${importfile}  2>&1 | grep -v "Warning:"
     fi
+
+    if [ "" != "${tempfile}" ]; then
+        rm "${tempfile}"
+    fi
+
     output "Database imported."
 
 }
