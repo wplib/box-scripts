@@ -157,7 +157,7 @@ function database_chunk() {
     #
     # Fix the filename
     #
-    sql_filename="${sql_filename}.sql"
+    sql_filename="${sql_basefile}.sql"
 
     #
     # Calculate the SQL filepath from  /vagrant/sql/
