@@ -20,6 +20,71 @@ function ctrl_c()
 }
 
 #
+# Unchunk a SQL file that has been chunked
+#
+# Usage: box database import [{dump_file}] [{global-options}]
+#
+#   Result ==> Imports from /vagrant/sql/{dump_file}.sql
+#
+function database_unchunk() {
+    local chunked_file="$1"
+    local basefile="${chunked_file%%.*}"
+    local ext=${chunked_file##*.}"
+
+    if [ 'sql' != "$(to_lowercase "${ext}")" ]; then
+        #
+        # If no .sql extension, add one.
+        #
+        ext="sql"
+    fi
+
+    #
+    # Force import from  /vagrant/sql/
+    #
+    chunked_file="${WPLIB_BOX_SQL_DIR}/${basefile}.${ext}"
+
+    #
+    # Check to see if we the chunked_file exists
+    #
+    if [ ! -e "${chunked_file}" ]; then
+        alert "No ${chunked_file} exists"
+        return 1
+    fi
+
+    if [ ! -d "${chunked_file}" ]; then
+        alert "${chunked_file} is not a directory"
+        return 2
+    fi
+
+    temp_dir="$(mktemp "${WPLIB_BOX_SQL_DIR}/${basefile}-XXXXX.${ext}")"
+    if [ $? -ne 0 ]; then
+        output "Cannot create temp directory ${temp_dir}"
+        return 3
+    fi
+
+    rm "${temp_dir}"
+    if [ $? -ne 0 ]; then
+        output "Cannot remove temp directory ${temp_dir}"
+    fi
+
+    mv "${chunked_file}" "${temp_dir}"
+    if [ $? -ne 0 ]; then
+        output "Cannot rename ${chunked_file} directory ${temp_dir}"
+        return 4
+    fi
+
+    output "Unchunking ${chunked_file}"
+    cat "${temp_dir}/${basefile}"-??."${ext}.chunk" > $chunked_file
+    if [ $? -ne 0 ]; then
+        output "Could not generate unchunked file ${$chunked_file}"
+        return 5
+    fi
+
+    output "SQL file unchunked."
+
+}
+
+#
 # Import a database from /vagrant/sql/$1.sql
 #
 # Usage: box database import [{dump_file}] [{global-options}]
@@ -282,6 +347,7 @@ function database_help() {
 box database [32mbackup(B[m [<sql_file>] - Backup current database to <sql_file> or backup.sql.
 box database [32mimport(B[m [<sql_file>] - Import <sql_file> or provision.sql into current database.
 box database [32mchunk(B[m <sql_file>    - Split <sql_file> into chunks ~25Mb in size.
+box database [32munchunk(B[m <sql_file>  - Unsplit <sql_file> back into a complete file.
 
 box database [32mcredentials(B[m         - This will output host, username and password
 box database [32mdbname(B[m              - This will output database name
@@ -329,6 +395,10 @@ case $CMD in
 
     'chunk'|'split')
         database_chunk "$1"
+		;;
+
+    'unchunk'|'join')
+        database_unchunk "$1"
 		;;
 
 	*)
