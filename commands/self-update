@@ -4,7 +4,7 @@
 #
 
 
-BASEDIR="${WPLIB_BOX_CLI_DIR}/scripts"
+BASEDIR="${WPLIB_BOX_CLI_DIR}"
 
 # Determine version to run.
 if [ "$1" == "" ]
