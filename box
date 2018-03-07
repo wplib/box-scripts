@@ -44,7 +44,6 @@ if [ "" == "${error}" ];then
         fi
     fi
 
-    echo_if_not_quiet "$*" "*Running $1..."
     initial_dir=$(pwd)
     error=0
     case "${command_type}" in
@@ -62,14 +61,10 @@ if [ "" == "${error}" ];then
 
 fi
 
-if [[ $error -eq 0 ]]; then
-    echo_if_not_quiet "$*" "*The '$1' command completed without error."
-    exit 0
-else
+if [[ $error -ne 0 ]]; then
     echo -e "\t"
     echo "The '$1' command terminated WITH ERRORS."
     echo -e "\t"
     exit 1
 fi
 
-#check_updates_available "$*"
