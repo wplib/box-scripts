@@ -2,14 +2,52 @@
 #
 # Provisioning script for all containers.
 
+DEFAULT_PROJECT="wplib"
+
+GRAY="[30m"
+RED="(B[m[31m"
+GREEN="(B[m[32m"
+YELLOW="(B[m[33m"
+BLUE="(B[m[34m"
+PURPLE="(B[m[35m"
+CYAN="(B[m[36m"
+DIRTYSNOW="(B[m[37m"
+WHITE="(B[m[38m"
+RESET="(B[m"
+
+ECHO_PREFIX="$YELLOW# WPLib-Box:$RESET"
+
+
+trap ctrl_c INT
+
+ctrl_c()
+{
+        tput sgr0
+	echo ""
+	echo "$ECHO_PREFIX Aborting script."
+	exit
+}
+
 
 deets()
 {
+	if [ "$IMAGE" = "" ]
+	then
+		return 0
+	fi
+
+	RETURN="`docker image ls -q $IMAGE`"
+	if [ "$RETURN" == "" ]
+	then
+		echo "$ECHO_PREFIX ${YELLOW}Warning $IMAGE image not found locally.${RESET}"
+		return 1
+	fi
+
 	PROJECT="`docker inspect --format='{{index .Config.Labels "container.project"}}' $IMAGE`"
 	if [ "$PROJECT" == "" ]
 	then
-		echo "WPLib-Box: Error $IMAGE image does not conform to JSON config format in 0.16 and later."
-		return 1
+		echo "$ECHO_PREFIX ${RED}Error $IMAGE image does not conform to JSON config format in 0.16 and later.${RESET}"
+		return 2
 	fi
 
 	NAME="`docker inspect --format='{{index .Config.Labels "container.name"}}' $IMAGE`"
@@ -29,118 +67,281 @@ deets()
 }
 
 
-
-if [ "$2" == "" ]
-then
-	echo "WPLib-Box: Error no image provided."
-	exit 1
-fi
-	
-CMD="$1"
-IMAGE="$2"
-
-
-case $CMD in
-	'provision')
-		echo "WPLib-Box: Provisioning $IMAGE."
-		$0 container pull $IMAGE
-		;;
-
-
-	'refresh'|'upgrade')
-		echo "WPLib-Box: Refreshing $IMAGE."
-		$0 container stop $IMAGE
-		$0 container remove $IMAGE
-		$0 container pull $IMAGE
-		;;
-
-
-	'clean')
-		echo "WPLib-Box: Refreshing $IMAGE."
-		$0 container stop $IMAGE
-		$0 container remove $IMAGE
-		;;
+d_reallyclean()
+{
+	echo "${GREEN}Are you really sure? ${RED}Warning: this will remove ALL images and ALL data.${GREEN}"
+	echo -n "Respond with ${YELLOW}Yes please${RESET}: "
+	read RESPONSE
+	if [ "$RESPONSE" == "Yes please" ]
+	then
+		echo -n "Please respond again with ${YELLOW}Yes please${RESET}: "
+		read RESPONSE
+		if [ "$RESPONSE" == "Yes please" ]
+		then
+			echo "$ECHO_PREFIX ${GREEN}Shutting down all WPLib containers.${RESET}"
+			$0 container shutdown
+			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib containers.${RESET}"
+			docker container ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs -r docker container rm
+			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib images${RESET}"
+			docker image ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs -r docker image rm
+		fi
+	else
+		echo "$ECHO_PREFIX ${GREEN}Doing nothing.${RESET}"
+		echo "$ECHO_PREFIX If you want to really cleanup, then respond with ${YELLOW}Yes please${RESET}."
+	fi
+}
 
 
-	'create'|'install'|'pull')
-		echo "WPLib-Box: Pulling $IMAGE from repository."
-		docker pull $IMAGE
+d_pull()
+{
+	echo "$ECHO_PREFIX ${GREEN}Pulling $IMAGE from repository.${RESET}"
+	docker pull $IMAGE
+	if [ "$?" == "1" ]
+	then
+		echo "$ECHO_PREFIX ${RED}Error $IMAGE image does not exist in repository.${RESET}"
+		return 1
+	fi
+}
+
+
+d_install()
+{
+	deets $IMAGE
+	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
+	then
+		docker create --name ${CONTAINER_NAME} ${RESTART} ${NETWORK} ${PORTS} ${ARGS} ${VOLUMES} ${IMAGE}
+	fi
+}
+
+
+d_remove()
+{
+	deets $IMAGE
+	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
+	then
+		echo "$ECHO_PREFIX ${GREEN}Removing container: ${YELLOW}${IMAGE}${RESET}"
+		docker rm -v ${CONTAINER_NAME}
 		if [ "$?" == "1" ]
 		then
-			echo "WPLib-Box: Error $IMAGE image does not exist in repository."
-			exit 1
+			echo "$ECHO_PREFIX ${RED}Error $IMAGE container can't be removed.${RESET}"
+			return 1
 		fi
+	fi
+}
 
-		deets $IMAGE
-		if [ "$PROJECT" == "wplib" ]
+
+d_start()
+{
+	deets $IMAGE
+	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
+	then
+		echo "$ECHO_PREFIX ${GREEN}Starting container: ${YELLOW}${IMAGE}${RESET}"
+		docker start ${CONTAINER_NAME}
+		if [ "$?" == "1" ]
 		then
-			docker create --name ${CONTAINER_NAME} ${RESTART} ${NETWORK} ${PORTS} ${ARGS} ${VOLUMES} ${IMAGE}
+			echo "$ECHO_PREFIX ${RED}Error $IMAGE container can't be started.${RESET}"
+			return 1
 		fi
-		;;
+	fi
+}
 
 
-	'remove'|'rm'|'destroy')
-		deets $IMAGE
-		if [ "$PROJECT" == "wplib" ]
+d_stop()
+{
+	deets $IMAGE
+	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
+	then
+		echo "$ECHO_PREFIX ${GREEN}Stopping container: ${YELLOW}${IMAGE}${RESET}"
+		docker stop ${CONTAINER_NAME}
+		if [ "$?" == "1" ]
 		then
-			echo "WPLib-Box: Removing container: $IMAGE"
-			docker rm ${CONTAINER_NAME}
-			if [ "$?" == "1" ]
-			then
-				echo "WPLib-Box: Error $IMAGE container can't be removed."
-				exit 1
-			fi
+			echo "$ECHO_PREFIX ${RED}Error $IMAGE container can't be stopped.${RESET}"
+			return 1
 		fi
-		;;
+	fi
+}
 
 
-	'start'|'up')
-		deets $IMAGE
-		if [ "$PROJECT" == "wplib" ]
-		then
-			echo "WPLib-Box: Starting container: $IMAGE"
-			docker start ${CONTAINER_NAME}
-			if [ "$?" == "1" ]
-			then
-				echo "WPLib-Box: Error $IMAGE container can't be started."
-				exit 1
-			fi
-		fi
-		;;
+d_shutdown()
+{
+	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLLib containers${RESET}"
+	docker container ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs docker stop
+	if [ "$?" == "1" ]
+	then
+		echo "$ECHO_PREFIX ${RED}Error $IMAGE container can't be stopped.${RESET}"
+		return 1
+	fi
+}
 
 
-	'stop'|'down')
-		deets $IMAGE
-		if [ "$PROJECT" == "wplib" ]
-		then
-			echo "WPLib-Box: Stopping container: $IMAGE"
-			docker stop ${CONTAINER_NAME}
-			if [ "$?" == "1" ]
-			then
-				echo "WPLib-Box: Error $IMAGE container can't be stopped. "
-				exit 1
-			fi
-		fi
-		;;
+d_ls()
+{
+	deets $IMAGE
+	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
+	then
+		echo "$ECHO_PREFIX ${GREEN}Installed image: ${YELLOW}${IMAGE}${RESET}"
+		docker image ls $IMAGE
+		echo ""
+		echo "$ECHO_PREFIX ${GREEN}Installed container: ${YELLOW}${IMAGE}${RESET}"
+		docker container ls -af "name=${CONTAINER_NAME}"
+	else
+		echo "$ECHO_PREFIX ${GREEN}Installed images: ${YELLOW}${IMAGE}${RESET}"
+		docker image ls -af "label=container.project=$DEFAULT_PROJECT"
+		echo ""
+		echo "$ECHO_PREFIX ${GREEN}Installed containers: ${YELLOW}${IMAGE}${RESET}"
+		docker container ls -af "label=container.project=$DEFAULT_PROJECT" -f "status=created" -f "status=exited"
+		echo ""
+		echo "$ECHO_PREFIX ${GREEN}Running containers: ${YELLOW}${IMAGE}${RESET}"
+		docker container ls -af "label=container.project=$DEFAULT_PROJECT" -f "status=running"
+	fi
+}
 
 
+d_inspect()
+{
+	deets $IMAGE
+	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
+	then
+		echo "$ECHO_PREFIX ${GREEN}Installed image: ${YELLOW}${IMAGE}${RESET}"
+		docker image inspect $IMAGE
+		echo ""
+		echo "$ECHO_PREFIX ${GREEN}Running container: ${YELLOW}${IMAGE}${RESET}"
+		docker container inspect ${CONTAINER_NAME}
+	fi
+}
+
+
+d_log()
+{
+	deets $IMAGE
+	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
+	then
+		echo "$ECHO_PREFIX ${GREEN}Logs for container: ${YELLOW}${IMAGE}${RESET}"
+		docker container logs ${CONTAINER_NAME}
+	fi
+}
+
+
+d_help()
+{
+	cat <<EOF
+box container [32minstall(B[m <package>	- Install and configure a container.
+box container [32mls(B[m [package]	- List current image and container.
+box container [32mstart(B[m <package>	- Start a container.
+box container [32mstop(B[m <package>	- Stop a container.
+box container [32mrm(B[m <package>	- Remove the container.
+box container [32mclean(B[m <package>	- Remove the container and associated image.
+box container [32mrefresh(B[m <package>	- Refresh an existing container.
+
+box container [32mshutdown(B[m		- This will shutdown all WPLib related packages.
+box container [32mreallyclean(B[m	- This will remove all WPLib related packages.
+box container [32minspect(B[m <package>	- Provide detailed info on image and container.
+box container [32mlog(B[m <package>	- Show log files from container.
+box container [32mpull(B[m <package>	- Just pull a container image. No install.
+EOF
+}
+
+
+################################################################################
+#if [ "$1" == "container" ]
+#then
+#	# We are running from the box script, instead of directly.
+#fi
+CMD="$1"
+shift
+IMAGES="$@"
+
+case $CMD in
 	'show'|'list'|'ls')
-		deets $IMAGE
-		if [ "$PROJECT" == "wplib" ]
+		# Only the 'ls' command can accept no image.
+		if [ "$2" == "" ]
 		then
-			echo "WPLib-Box: Status of container: $IMAGE"
-			docker container ls -af "name=${CONTAINER_NAME}"
-			if [ "$?" == "1" ]
-			then
-				echo "WPLib-Box: Error $IMAGE container can't be stopped. "
-				exit 1
-			fi
+			d_ls
 		fi
 		;;
 
+	'reallyclean')
+		d_reallyclean
+		;;
+
+	'shutdown')
+		d_shutdown
+		;;
+
+	''|'help')
+		d_help
+		;;
 
 	*)
-		echo "WPLib-Box: Warning. Unknown command."
+		if [ "$1" == "" ]
+		then
+			echo "$ECHO_PREFIX ${RED}Error no image provided.${RESET}"
+			d_help
+			exit 1
+		fi
 		;;
 esac
+
+
+for IMAGE in $IMAGES
+do
+	case $CMD in
+		'provision')
+			echo "$ECHO_PREFIX ${GREEN}Provisioning $IMAGE.${RESET}"
+			d_pull $IMAGE
+			d_install $IMAGE
+			d_start $IMAGE
+			;;
+
+		'refresh'|'upgrade')
+			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${YELLOW}${IMAGE}${RESET}"
+			d_stop $IMAGE
+			d_remove $IMAGE
+			docker image rm $IMAGE
+
+			d_install $IMAGE
+			;;
+
+		'clean')
+			echo "$ECHO_PREFIX ${GREEN}Cleaning up: $IMAGE.${RESET}"
+			d_stop $IMAGE
+			d_remove $IMAGE
+			docker image rm $IMAGE
+			;;
+
+		'pull')
+			d_pull
+			;;
+
+		'create'|'install')
+			d_pull
+			d_install
+			;;
+
+		'remove'|'rm'|'destroy')
+			d_remove
+			;;
+
+		'start'|'up')
+			d_start
+			;;
+
+		'stop'|'down')
+			d_stop
+			;;
+
+		'show'|'list'|'ls')
+			d_ls
+			;;
+
+		'inspect'|'info')
+			d_inspect
+			;;
+
+		'log')
+			d_log
+			;;
+	esac
+done
+
 
