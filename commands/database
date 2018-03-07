@@ -375,7 +375,7 @@ case $CMD in
         echo wordpress
 		;;
 
-    'host'|'hostip'|'host-ip')
+    'host'|'hostname'|'server'|'hostip'|'host-ip')
         echo "${DB_HOST_IP}"
 		;;
 
