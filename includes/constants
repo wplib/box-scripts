@@ -5,7 +5,7 @@ export WPLIB_BOX_ARGS_ALL="$*"
 export WPLIB_BOX_PHPCLI=$(which php7.0)
 
 export WPLIB_BOX_DIR="/vagrant"
-export WPLIB_BOX_CLI_DIR="/opt/box/"
+export WPLIB_BOX_CLI_DIR="/opt/box"
 export WPLIB_BOX_CLI_CMD="/opt/box/box"
 export WPLIB_BOX_WEB_ROOT_DIR="/var/www"
 export WPLIB_BOX_WATCHERS_DIR="${WPLIB_BOX_WEB_ROOT_DIR}/watchers"
