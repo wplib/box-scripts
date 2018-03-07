@@ -381,6 +381,7 @@ case $CMD in
 
     'credentials'|'creds'|'login')
         echo "Host:     ${GREEN}${DB_HOST_IP}${RESET}"
+        echo "Database: ${GREEN}wordpress${RESET}"
         echo "Username: ${GREEN}wordpress${RESET}"
         echo "Password: ${GREEN}wordpress${RESET}"
 		;;
