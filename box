@@ -49,12 +49,12 @@ if [ "" == "${error}" ];then
     error=0
     case "${command_type}" in
        "bash")
-            source "${command_file}" "$2" "$3" "$4" "$5"
+            source "${command_file}" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
             error=$?
             ;;
        "php")
 
-            /usr/bin/php7.0 "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args "${WPLIB_BOX_COMMAND}" "$2" "$3" "$4" "$5"
+            /usr/bin/php7.0 "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args "${WPLIB_BOX_COMMAND}" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
             error=$?
             ;;
     esac

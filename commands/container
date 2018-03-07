@@ -4,25 +4,13 @@
 
 DEFAULT_PROJECT="wplib"
 
-GRAY="[30m"
-RED="(B[m[31m"
-GREEN="(B[m[32m"
-YELLOW="(B[m[33m"
-BLUE="(B[m[34m"
-PURPLE="(B[m[35m"
-CYAN="(B[m[36m"
-DIRTYSNOW="(B[m[37m"
-WHITE="(B[m[38m"
-RESET="(B[m"
-
-ECHO_PREFIX="$YELLOW# WPLib-Box:$RESET"
-
+source "${WPLIB_BOX_COLORS_FILE}"
 
 trap ctrl_c INT
 
 ctrl_c()
 {
-        tput sgr0
+    tput sgr0
 	echo ""
 	echo "$ECHO_PREFIX Aborting script."
 	exit

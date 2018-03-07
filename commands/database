@@ -1,0 +1,336 @@
+#!/bin/bash
+#
+# Script for handling database related functionality.
+#
+# Usage: box database {sub-command} [{command-options}] [--dryrun] [--quiet]
+#
+
+DEFAULT_PROJECT="wplib"
+DB_HOST_IP="172.18.0.1"
+source "${WPLIB_BOX_COLORS_FILE}"
+
+trap ctrl_c INT
+
+function ctrl_c()
+{
+    tput sgr0
+	echo ""
+	echo "$ECHO_PREFIX Aborting script."
+	exit
+}
+
+#
+# Import a database from /vagrant/sql/$1.sql
+#
+# Usage: box database import [{dump_file}] [{global-options}]
+#
+#   Result ==> Imports from /vagrant/sql/{dump_file}.sql
+#
+function database_import() {
+
+    importfile="$1"
+
+    if [ 'sql' != $(to_lowercase $(file_extension "${importfile}")) ]; then
+        #
+        # If no .sql extension, add one.
+        #
+        importfile="${importfile}.sql"
+    fi
+
+    if [ 'sql' != $(to_lowercase $(file_extension "${importfile}")) ]; then
+        #
+        # If no .sql extension, add one.
+        #
+        importfile="${importfile}.sql"
+    fi
+
+    #
+    # Force import from  /vagrant/sql/
+    #
+    importfile="${WPLIB_BOX_SQL_DIR}/${importfile}"
+
+    #
+    # Check to see if we the importfile exists
+    #
+    if [ ! -f "${importfile}" ]; then
+
+        output "No ${importfile} exists.."
+        return
+
+    fi
+
+    output "Backing up database..."
+
+    basefile="${importfile%%.*}"
+
+    database_backup "${basefile}.bak"
+
+    if [ $? -ne 0 ]; then
+        output "Error when backing up to ${basefile}.bak"
+        return 1
+    fi
+
+    output "Database backed-up to ${bakfile}"
+
+    output "Dropping any prior tables..."
+
+    if [ ! $(has_arg --dryrun) ]; then
+        #
+        # @TODO: Switch this to using Docker
+        #
+        mysql -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
+        cat /tmp/mysql-table-list.txt | while read table; do mysql -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"; done
+        rm /tmp/mysql-table-list.txt
+    fi
+    output "Tables dropped."
+
+    if [ "" != "$(cat "${importfile}" | grep "utf8mb4_unicode_520_ci")" ]; then
+        #
+        # MariaDB does not support 'utf8mb4_unicode_520_ci' but does support 'utf8mb4_unicode_ci'
+        # This should become a lot more intelligent but for now it should suffice.
+        #
+        output "Stripping '520' from 'utf8mb4_unicode_520_ci' in ${importfile}..."
+        if [ ! $(has_arg --dryrun) ]; then
+            sed -i -e 's/utf8mb4_unicode_520_ci/utf8mb4_unicode_ci/g' "${importfile}"
+        fi
+        output "520 stripped."
+    fi
+
+    output "Importing database from ${importfile}..."
+    #
+    # @TODO: Switch this to using Docker
+    #
+    if [ ! $(has_arg --dryrun) ]; then
+        mysql -u wordpress -pwordpress wordpress < ${importfile}  2>&1 | grep -v "Warning:"
+    fi
+    output "Database imported."
+
+}
+
+#
+# Converts a SQL file into a collection of `.sql.chunk` files
+# in a directory of the same name as the file:
+#
+# Usage: box database chunk {sql_file} [{global-options}]
+#
+#   Result ==> Generates /vagrant/sql/{sql_file}.sql/{sql_file}-??.sql.chunk
+#
+#   --quiet - Omits output
+function database_chunk() {
+    
+    #
+    # Split file up into chunks of ~25M or smaller
+    #
+    CHUNK_SIZE=25600000
+    
+    #
+    # Grab the filename, without extension, then add extension
+    #
+    sql_filename="$1"
+    
+    #
+    # Grab the base file name
+    #
+    sql_basefile="${sql_filename%%.*}"
+    
+    #
+    # Fix the filename
+    #
+    sql_filename="${sql_filename}.sql"
+    
+    #
+    # Calculate the SQL filepath from  /vagrant/sql/
+    #
+    sql_filepath="${WPLIB_BOX_SQL_DIR}/${sql_filename}"
+    
+    #
+    # Check to see if we need to modify exists
+    #
+    if [ ! -f "${sql_filepath}" ]  ; then
+        output "No ${sql_filepath} exists."
+        return
+    fi
+    
+    #
+    # Create temp dir and move our SQL file to temp dir
+    #
+    temp_sql_file="$(mktemp --tmpdir="$(pwd)" "${sql_filename}.XXXXX.bak")"
+    rm -f "${temp_sql_file}"
+    if [ $? -ne 0 ]; then
+        alert "box chunk-sql failed."
+    fi
+    
+    #
+    # Create a backup of the file
+    #
+    output "Backing up to ${temp_sql_file}"
+    mv "${sql_filepath}" "${temp_sql_file}"
+    if [ $? -ne 0 ]; then
+        alert "box chunk-sql failed."
+    fi
+    
+    #
+    # Making a directory the same name as the previous SQL file
+    #
+    output "Making directory ${sql_filepath}/"
+    mkdir -p "${sql_filepath}"
+    if [ $? -ne 0 ]; then
+        alert "box chunk-sql failed."
+    fi
+    
+    #
+    # Making a directory the same name as the previous SQL file
+    #
+    output "Splitting file into chunks in ${sql_filepath}/..."
+
+    split \
+        --line-bytes="${CHUNK_SIZE}" \
+        --numeric-suffixes="1" \
+        --additional-suffix=".sql.chunk" \
+        "${temp_sql_file}" \
+        "${sql_filename}/${sql_basefile}-"
+        
+    if [ $? -eq 0 ]; then
+        output "SQL file chunked."
+    else
+        alert "box chunk-sql failed."
+        rm -rf "${temp_sql_dir}"
+        mv "${sql_filepath}.bak" "${sql_filepath}"
+    fi
+    
+}
+
+#
+# Backup the database to /vagrant/sql/backup.sql
+#
+# Usage: box database backup [{backup_file}] [{global-options}]
+#
+#   Result ==> Backs up to /vagrant/sql/{backup_file}.sql
+#
+#   --quiet - Omits status messages
+#   --dryrun - Do everything except actually run it
+#
+#   Rolls forward existing files per shift_files() logic.
+#
+function database_backup() {
+
+    bakfile="${WPLIB_BOX_SQL_DIR}/backup.sql"
+
+    #
+    # Check to see if we need to save a prior backup
+    #
+    if [[ -f "${bakfile}" ]]  ; then
+
+        output "Saving prior backups"
+        
+        #
+        # Shift the files forward backup.sql becomes backup1.sql, etc. 
+        #
+        shift_files "${bakfile}"
+
+    fi
+
+    output "Backing up database to ${bakfile}"
+
+    if [ ! $(has_arg --dryrun) ]; then
+
+        mkdir -p "${WPLIB_BOX_SQL_DIR}/"
+
+        docker run --rm -it \
+            -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \ 
+            -e MYSQL_DATABASE=wordpress \ 
+            -e MYSQL_USER=wordpress \ 
+            -e MYSQL_PASSWORD=wordpress \ 
+            -v /tmp/sql:/docker-entrypoint-initdb.d \ 
+            -v mysql_data:/var/lib/mysql wplib/mysql:5.5.59 mysqldump \ 
+            -h "${DB_HOST_IP}" \ 
+            -u wordpress \ 
+            -pwordpress wordpress  \
+            2>&1  \
+            | grep -v "Warning: Using a password on the command line interface can be insecure." \
+            > ${bakfile}
+            
+        result="$?"
+
+        if [ "${result}" != "0" ]; then
+
+            output "mysqldump error (${result})"
+            return 1
+
+        fi
+
+    fi
+
+    output "Database backed up."
+
+}
+
+
+function database_help() {
+	cat <<EOF
+box database [32mbackup(B[m [<sql_file>]- Backup current database to <sql_file> or backup.sql. 
+box database [32import(B[m [<sql_file>]	- Import <sql_file> or provision.sql into current database.
+box database [32mchunk(B[m <sql_file>	- Split <sql_file> into chunks ~25Mb in size.
+
+box database [32mcredentials(B[m		- This will output host, username and password
+box database [32mdbname(B[m		- This will output database name
+box database [32musername(B[m		- This will output database login username
+box database [32mpassword(B[m		- This will output database login password
+EOF
+
+}
+
+
+################################################################################
+#if [ "$1" == "database" ]
+#then
+#	# We are running from the box script, instead of directly.
+#fi
+CMD="$1"
+shift
+IMAGES="$@"
+
+case $CMD in
+    'help')
+        database_help
+        ;;
+        
+    'dbname'|'name'|'username'|'user'|'password'|'pw')
+        echo wordpress
+		;;
+
+    'host'|'hostip'|'host-ip')
+        echo "${DB_HOST_IP}"
+		;;
+
+    'credentials'|'creds'|'login')
+        echo "Host:     ${GREEN}wordpress${RESET}"
+        echo "Username: ${GREEN}wordpress${RESET}"
+        echo "Password: ${GREEN}wordpress${RESET}"
+		;;
+
+    'backup'|'dump'|'save')
+        database_backup
+		;;
+
+    'import')
+        database_import
+		;;
+
+    'chunk')
+        database_chunk
+		;;
+
+	*)
+		if [ "$1" == "" ]
+		then
+			echo "$ECHO_PREFIX ${RED}Error: No database command provided.${RESET}"
+			database_help
+			exit 1
+		fi
+		;;
+esac
+
+
+
+

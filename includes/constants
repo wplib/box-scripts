@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export WPLIB_BOX_ARGS_ALL="$*"
+
 export WPLIB_BOX_PHPCLI=$(which php7.0)
 
 export WPLIB_BOX_DIR="/vagrant"
@@ -15,6 +17,8 @@ export WPLIB_BOX_COMPOSER_FILE="${WPLIB_BOX_DIR}/composer.json"
 
 export WPLIB_BOX_COMMANDS_DIR="${WPLIB_BOX_CLI_DIR}/commands"
 export WPLIB_BOX_INCLUDES_DIR="${WPLIB_BOX_CLI_DIR}/includes"
+
+export WPLIB_BOX_COLORS_FILE="${WPLIB_BOX_INCLUDES_DIR}/colors"
 
 export WPLIB_BOX_FILES_DIR="${WPLIB_BOX_CLI_DIR}/files"
 

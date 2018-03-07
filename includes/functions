@@ -344,52 +344,6 @@ function file_basename() {
     echo "${filename%.*}"
 }
 
-#
-# Returns a filename that does not exist given an existing filename.
-#
-# $1 - The backup file, e.g.  /vagrant/sql/backup.sql
-#
-# Outputs: The new file name in the form of {previous}{n}.{ext} where:
-#
-#       {previous} - Root filename for backup, e.g. /vagrant/sql/backup
-#       {n}        - Ordinal position for prior backups, e.g. 1, 2, 3, etc
-#       {ext}      - The file extension, e.g. sql
-#
-# Usage:  newbakfile=$(next_backup_file "${file_to_backup}")
-#
-function next_backup_file() {
-    local bakfile="$1"
-
-    #
-    # Get the file extension if there is one
-    # See: http://stackoverflow.com/a/965072/102699
-    #
-    local ext=$(file_extension "${bakfile}")
-    if [[ "" == "${ext}" || "${ext}" == "${bakfile}" ]]; then
-        ext=""
-    fi
-
-
-    #
-    # Get the filepath sans extension
-    # See: http://stackoverflow.com/a/965072/102699
-    #
-    bakfile="${bakfile%.*}"
-
-    #
-    # Now check to see if the default prior backup exists
-    # Continue checking until we find a workable filename
-    #
-    local test="${bakfile}.${ext}"
-    local counter
-    until [ ! -e "${test}" ]; do
-        counter=$((counter))
-        let counter++
-        test="${bakfile}${counter}.${ext}"
-    done
-    echo "${test}"
-}
-
 function is_dry_run() {
     if [[ "$1" == *"--dry-run"* ]]; then
         echo "true"
@@ -400,6 +354,14 @@ function is_dry_run() {
 
 function is_quiet() {
     if [[ "$1" == *"--quiet"* ]]; then
+        echo "true"
+        return
+    fi
+    echo "false"
+}
+
+function is_force() {
+    if [[ "$1" == *"--force"* ]]; then
         echo "true"
         return
     fi
@@ -591,5 +553,124 @@ function quiet_git() {
     fi
 
     rm -f $stdout $stderr
+}
+
+#
+# Tests if arg is used when calling `box` command
+#
+# $1 - Arg (include '--' prefix, e.g.: --force)
+#
+# Usage:
+#
+#       is_quiet=$(has_arg "--quiet")
+#
+#       if [ $(has_arg "--quiet") ]; then
+#           echo "Is quiet"
+#       fi
+#
+# Depends on `box` setting $WPLIB_BOX_ARGS_ALL="$*"
+#
+# Returns: "1" or ""
+#
+function has_arg() {
+    if [[ "${WPLIB_BOX_ARGS_ALL}" == *"$1"* ]]; then
+        echo 1
+    fi
+}
+
+#
+# Renumbers backup files, rolling them forward.
+#
+# $1 - The file to backup, e.g. backup.sql
+#
+# Usage:  shift_files "${filename}"
+#
+# Behavior:
+#
+#       Assume that backup.sql, backup1.sql and backup2.sql exist.
+#
+#       Then:
+#
+#           backup2.sql ==[renamed to]==> backup3.sql
+#           backup1.sql ==[renamed to]==> backup2.sql
+#           backup.sql  ==[renamed to]==> backup1.sql
+#
+#
+function shift_files() {
+    local filename="$1"
+
+    #
+    # Get the file extension if there is one
+    # See: http://stackoverflow.com/a/965072/102699
+    #
+    local ext=$(file_extension "${filename}")
+    if [[ "" == "${ext}" || "${ext}" == "${filename}" ]]; then
+        ext=""
+    fi
+
+    #
+    # Get the filepath sans extension
+    # See: http://stackoverflow.com/a/965072/102699
+    #
+    filename="${filename%.*}"
+
+    #
+    # Reconstitute the filename with extension for testing
+    #
+    local testfile="${filename}.${ext}"
+
+
+    #
+    # If the test file does not exist then there is nothing to do
+    #
+    if [ ! -f "${testfile}" ]; then
+        return
+    fi
+
+    #
+    # Look for a file that does not exist. So if backup.sql,
+    # backup1.sql and backup2.sql exists this will backup3.sql.
+    #
+    local counter
+    until [ ! -e "${testfile}" ]; do
+        counter=$((counter))
+        let counter++
+        testfile="${filename}${counter}.${ext}"
+    done
+
+    #
+    # Now shifts all numbered files up to match the missing one
+    # and to leave the original file name passed as a file that
+    # does not exist so we can use it.
+    #
+    until [ "${testfile}" == "${filename}.${ext}" ]; do
+        oneless=$((counter))
+        let oneless--
+        if [ "0" == "${oneless}" ]; then
+            oneless=""
+        fi
+        mv "${filename}${oneless}.${ext}" "${filename}${counter}.${ext}"
+        counter="${oneless}"
+        testfile="${filename}${counter}.${ext}"
+    done
+
+}
+
+#
+# Generate output unless --quiet was passed in as an arg
+#
+function output() {
+    if [ $(has_arg "--quiet") ]; then
+        return
+    fi
+    echo -e "$1"
+
+}
+
+#
+# Generate output to stderr
+#
+function alert() {
+    echo -e "$1" >2
 }
 
