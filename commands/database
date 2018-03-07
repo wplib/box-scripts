@@ -236,20 +236,7 @@ function database_backup() {
 
         mkdir -p "${WPLIB_BOX_SQL_DIR}/"
 
-        docker run --rm -it \
-            -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \ 
-            -e MYSQL_DATABASE=wordpress \ 
-            -e MYSQL_USER=wordpress \ 
-            -e MYSQL_PASSWORD=wordpress \ 
-            -v /tmp/sql:/docker-entrypoint-initdb.d \ 
-            -v mysql_data:/var/lib/mysql wplib/mysql:5.5.59 mysqldump \ 
-            -h "${DB_HOST_IP}" \ 
-            -u wordpress \ 
-            -pwordpress wordpress  \
-            2>&1  \
-            | grep -v "Warning: Using a password on the command line interface can be insecure." \
-            > ${bakfile}
-            
+        docker run --rm -it -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -e MYSQL_DATABASE=wordpress -e MYSQL_USER=wordpress -e MYSQL_PASSWORD=wordpress -v /tmp/sql:/docker-entrypoint-initdb.d -v mysql_data:/var/lib/mysql wplib/mysql:5.5.59 mysqldump -h "${DB_HOST_IP}"  -u wordpress  -pwordpress wordpress 2>&1  | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}            
         result="$?"
 
         if [ "${result}" != "0" ]; then
