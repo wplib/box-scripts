@@ -29,7 +29,7 @@ function ctrl_c()
 function database_unchunk() {
     local chunked_file="$1"
     local basefile="${chunked_file%%.*}"
-    local ext=${chunked_file##*.}"
+    local ext="${chunked_file##*.}"
 
     if [ 'sql' != "$(to_lowercase "${ext}")" ]; then
         #
@@ -380,7 +380,7 @@ case $CMD in
 		;;
 
     'credentials'|'creds'|'login')
-        echo "Host:     ${GREEN}wordpress${RESET}"
+        echo "Host:     ${GREEN}${DB_HOST_IP}${RESET}"
         echo "Username: ${GREEN}wordpress${RESET}"
         echo "Password: ${GREEN}wordpress${RESET}"
 		;;
