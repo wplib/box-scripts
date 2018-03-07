@@ -268,14 +268,14 @@ function database_backup() {
 
 function database_help() {
 	cat <<EOF
-box database [32mbackup(B[m [<sql_file>]- Backup current database to <sql_file> or backup.sql. 
-box database [32import(B[m [<sql_file>]	- Import <sql_file> or provision.sql into current database.
-box database [32mchunk(B[m <sql_file>	- Split <sql_file> into chunks ~25Mb in size.
+box database [32mbackup(B[m [<sql_file>] - Backup current database to <sql_file> or backup.sql.
+box database [32mimport(B[m [<sql_file>] - Import <sql_file> or provision.sql into current database.
+box database [32mchunk(B[m <sql_file>    - Split <sql_file> into chunks ~25Mb in size.
 
-box database [32mcredentials(B[m		- This will output host, username and password
-box database [32mdbname(B[m		- This will output database name
-box database [32musername(B[m		- This will output database login username
-box database [32mpassword(B[m		- This will output database login password
+box database [32mcredentials(B[m	    - This will output host, username and password
+box database [32mdbname(B[m		    - This will output database name
+box database [32musername(B[m		    - This will output database login username
+box database [32mpassword(B[m		    - This will output database login password
 EOF
 
 }
