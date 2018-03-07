@@ -69,8 +69,6 @@ function database_import() {
 
     fi
 
-
-
     output "Backing up database..."
 
     database_backup "${basefile}.bak"
@@ -320,15 +318,15 @@ case $CMD in
 		;;
 
     'backup'|'dump'|'save')
-        database_backup
+        database_backup "$1"
 		;;
 
-    'import')
-        database_import
+    'import'|'restore'|'undump')
+        database_import "$1"
 		;;
 
     'chunk')
-        database_chunk
+        database_chunk "$1"
 		;;
 
 	*)
