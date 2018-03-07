@@ -130,22 +130,22 @@ function database_import() {
 #
 #   --quiet - Omits output
 function database_chunk() {
-    
+
     #
     # Split file up into chunks of ~25M or smaller
     #
     CHUNK_SIZE=25600000
-    
+
     #
     # Grab the filename, without extension, then add extension
     #
     sql_filename="$1"
-    
+
     #
     # Check to see if arg was passed
     #
-    if [ "" == "${sql_filepath}" ]  ; then
-        output "No <sql_file> passed."
+    if [ "" == "${sql_filename}" ]  ; then
+        alert "No <sql_file> passed"
         return 1
     fi
 
@@ -153,52 +153,55 @@ function database_chunk() {
     # Grab the base file name
     #
     sql_basefile="${sql_filename%%.*}"
-    
+
     #
     # Fix the filename
     #
     sql_filename="${sql_filename}.sql"
-    
+
     #
     # Calculate the SQL filepath from  /vagrant/sql/
     #
     sql_filepath="${WPLIB_BOX_SQL_DIR}/${sql_filename}"
-    
+
     #
     # Check to see if we need to modify exists
     #
     if [ ! -f "${sql_filepath}" ]  ; then
-        output "No ${sql_filepath} exists."
+        alert "No ${sql_filepath} exists"
         return 2
     fi
-    
+
     #
     # Create temp dir and move our SQL file to temp dir
     #
-    temp_sql_file="$(mktemp --tmpdir="$(pwd)" "${sql_filename}.XXXXX.bak")"
-    rm -f "${temp_sql_file}"
+    backup_file="$(mktemp --tmpdir="$(pwd)" "${WPLIB_BOX_SQL_DIR}/${sql_basefile}.XXXXX.bak")"
+    rm -f "${backup_file}"
     if [ $? -ne 0 ]; then
-        alert "box chunk-sql failed."
+        alert "Could not make backup sql file ${backup_file}"
+        return 3
     fi
-    
+
     #
-    # Create a backup of the file
+    # Backing up of the file
     #
-    output "Backing up to ${temp_sql_file}"
-    mv "${sql_filepath}" "${temp_sql_file}"
+    output "Backing up to ${backup_file}"
+    mv "${sql_filepath}" "${backup_file}"
     if [ $? -ne 0 ]; then
-        alert "box chunk-sql failed."
+        alert "Could not backup ${sql_filepath}"
+        return 4
     fi
-    
+
     #
     # Making a directory the same name as the previous SQL file
     #
     output "Making directory ${sql_filepath}/"
     mkdir -p "${sql_filepath}"
     if [ $? -ne 0 ]; then
-        alert "box chunk-sql failed."
+        alert "Could not create directory ${sql_filepath}/"
+        return 5
     fi
-    
+
     #
     # Making a directory the same name as the previous SQL file
     #
@@ -208,17 +211,18 @@ function database_chunk() {
         --line-bytes="${CHUNK_SIZE}" \
         --numeric-suffixes="1" \
         --additional-suffix=".sql.chunk" \
-        "${temp_sql_file}" \
+        "${backup_file}" \
         "${sql_filename}/${sql_basefile}-"
-        
-    if [ $? -eq 0 ]; then
-        output "SQL file chunked."
-    else
-        alert "box chunk-sql failed."
-        rm -rf "${temp_sql_dir}"
-        mv "${sql_filepath}.bak" "${sql_filepath}"
+
+    if [ $? -ne 0 ]; then
+        alert "Could not chunk ${backup_file} into ${sql_filepath}"
+        rm -rf "${sql_filepath}"
+        mv "${backup_file}" "${sql_filepath}"
+        return 6
     fi
-    
+
+    output "SQL file chunked."
+
 }
 
 #
@@ -243,7 +247,7 @@ function database_backup() {
     if [[ -f "${bakfile}" ]]  ; then
 
         output "Saving prior backups"
-        
+
         #
         # Shift the files forward backup.sql becomes backup1.sql, etc. 
         #
@@ -273,7 +277,6 @@ function database_backup() {
 
 }
 
-
 function database_help() {
 	cat <<EOF
 box database [32mbackup(B[m [<sql_file>] - Backup current database to <sql_file> or backup.sql.
@@ -288,7 +291,6 @@ EOF
 
 }
 
-
 ################################################################################
 #if [ "$1" == "database" ]
 #then
@@ -302,7 +304,7 @@ case $CMD in
     'help')
         database_help
         ;;
-        
+
     'dbname'|'name'|'username'|'user'|'password'|'pw')
         echo wordpress
 		;;
@@ -338,7 +340,4 @@ case $CMD in
 		fi
 		;;
 esac
-
-
-
 
