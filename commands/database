@@ -328,7 +328,7 @@ function database_backup() {
     #
     # Check to see if we need to save a prior backup
     #
-    if [[ -f "${bakfile}" ]]  ; then
+    if [[ -f "${bakfile}" || -d "${bakfile}" ]]  ; then
 
         output "Saving prior backups"
 

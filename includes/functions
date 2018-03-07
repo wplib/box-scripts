@@ -619,7 +619,6 @@ function shift_files() {
     #
     local testfile="${filename}.${ext}"
 
-
     #
     # If the test file does not exist then there is nothing to do
     #
