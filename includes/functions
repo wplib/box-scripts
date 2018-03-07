@@ -623,7 +623,7 @@ function shift_files() {
     #
     # If the test file does not exist then there is nothing to do
     #
-    if [ ! -e "${testfile}" ]; then
+    if [[ ! -f "${testfile}" && ! -d "${testfile}" ]]
         return
     fi
 
@@ -632,7 +632,7 @@ function shift_files() {
     # backup1.sql and backup2.sql exists this will backup3.sql.
     #
     local counter
-    until [ ! -e "${testfile}" ]; do
+    until [[ ! -f "${testfile}" && ! -d "${testfile}" ]]; do
         counter=$((counter))
         let counter++
         testfile="${filename}${counter}.${ext}"
