@@ -35,8 +35,8 @@ else
     #
     echo "Installing the \"In-the-Box\" CLI"
     sudo rm -f /usr/local/bin/box
-    sudo chmod +x /opt/box/scripts/guest/cli/box
-    sudo ln -s /opt/box/scripts/guest/cli/box /usr/local/bin/box
+    sudo chmod +x /opt/box/box
+    sudo ln -s /opt/box/box /usr/local/bin/box
 
     #
     #  Enable Tab Completion

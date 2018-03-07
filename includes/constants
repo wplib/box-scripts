@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+export WPLIB_BOX_PHPCLI=$(which php7.0)
+
+export WPLIB_BOX_DIR="/vagrant"
+export WPLIB_BOX_CLI_DIR="/opt/box/"
+export WPLIB_BOX_WEB_ROOT_DIR="/var/www"
+export WPLIB_BOX_WATCHERS_DIR="${WPLIB_BOX_WEB_ROOT_DIR}/watchers"
+
+export WPLIB_BOX_GIT_DIR="${WPLIB_BOX_DIR}/.git"
+export WPLIB_BOX_LOGS_DIR="${WPLIB_BOX_DIR}/logs"
+export WPLIB_BOX_SQL_DIR="${WPLIB_BOX_DIR}/sql"
+export WPLIB_BOX_COMPOSER_FILE="${WPLIB_BOX_DIR}/composer.json"
+
+export WPLIB_BOX_COMMANDS_DIR="${WPLIB_BOX_CLI_DIR}/commands"
+export WPLIB_BOX_INCLUDES_DIR="${WPLIB_BOX_CLI_DIR}/includes"
+
+export WPLIB_BOX_FILES_DIR="${WPLIB_BOX_CLI_DIR}/scripts/files"
+
+export WPLIB_BOX_CONTENT_DIR=$(find_wp_content_dir)
+export WPLIB_BOX_PLUGINS_DIR=$(find_wp_plugins_dir)
+export WPLIB_BOX_MU_PLUGINS_DIR=$(find_wp_mu_plugins_dir)
+export WPLIB_BOX_VENDOR_DIR=$(find_composer_vendor_dir)
+
+#
+# These need to be deprecated and replaced with project.json
+#
+export WPLIB_BOX_CONFIG="${WPLIB_BOX_DIR}/wplib.box.json"
+export WPLIB_BOX_USER_CONFIG="${HOME}/wplib.box.json"

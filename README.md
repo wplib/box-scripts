@@ -27,4 +27,4 @@ This repository is free to use with absolutely no warranty.
 
 See [LICENSE.md](LICENSE.md) for more detail.
 
-Copyright 2016 NewClarity Consulting LLC, All Rights Reserved Worldwide
+Copyright (c) 2016-2018 NewClarity Consulting LLC, All Rights Reserved Worldwide
