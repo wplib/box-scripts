@@ -671,6 +671,6 @@ function output() {
 # Generate output to stderr
 #
 function alert() {
-    echo -e "$1" >2
+    (>&2 echo -e "$1")
 }
 

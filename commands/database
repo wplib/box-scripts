@@ -144,7 +144,7 @@ function database_chunk() {
     #
     # Check to see if arg was passed
     #
-    if [ "" == "${sql_filename}" ]  ; then
+    if [ "" == "${sql_filename}" ]; then
         alert "No <sql_file> passed"
         return 1
     fi
