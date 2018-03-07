@@ -144,6 +144,14 @@ function database_chunk() {
     sql_filename="$1"
     
     #
+    # Check to see if arg was passed
+    #
+    if [ "" == "${sql_filepath}" ]  ; then
+        output "No <sql_file> passed."
+        return 1
+    fi
+
+    #
     # Grab the base file name
     #
     sql_basefile="${sql_filename%%.*}"
@@ -163,7 +171,7 @@ function database_chunk() {
     #
     if [ ! -f "${sql_filepath}" ]  ; then
         output "No ${sql_filepath} exists."
-        return
+        return 2
     fi
     
     #
