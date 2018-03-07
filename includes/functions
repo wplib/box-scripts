@@ -623,7 +623,7 @@ function shift_files() {
     #
     # If the test file does not exist then there is nothing to do
     #
-    if [[ ! -f "${testfile}" && ! -d "${testfile}" ]]
+    if [[ ! -f "${testfile}" && ! -d "${testfile}" ]]; then
         return
     fi
 
