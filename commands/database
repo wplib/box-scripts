@@ -130,10 +130,19 @@ function database_import() {
     if [ ! -d "${importfile}" ]; then
         tempfile=""
     else
+
         tempfile="$(mktemp "${WPLIB_BOX_SQL_DIR}/${basefile}-XXXXX.${ext}")"
+        if [ $? -ne 0 ]; then
+            output "Cannot create temp file ${tempfile}"
+            return 2
+        fi
 
         output "Unchunking ${importfile}"
         cat "${importfile}/${basefile}"-??."${ext}.chunk" > $tempfile
+        if [ $? -ne 0 ]; then
+            output "Could not generate unchunked file ${chunked_file}"
+            return 3
+        fi
 
         importfile="${tempfile}"
 
@@ -145,7 +154,7 @@ function database_import() {
 
     if [ $? -ne 0 ]; then
         output "Error when backing up to ${basefile}.bak"
-        return 1
+        return 4
     fi
 
     output "Database backed-up to ${bakfile}"
