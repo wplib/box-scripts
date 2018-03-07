@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-echo "WPLib-Box: No longer required."
+echo "WPLib Box: No longer required."
 exit
 echo_if_not_quiet "$*" "=Installing WordPress..."
 
