@@ -95,7 +95,7 @@ function database_import() {
 
     local importfile="$1"
 
-    local ext="$(file_extension "${importfile}"))"
+    local ext="$(file_extension "${importfile}")"
 
     if [ 'sql' != "$(to_lowercase "${ext}")" ]; then
         #
