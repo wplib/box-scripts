@@ -175,7 +175,7 @@ function database_chunk() {
     #
     # Create temp dir and move our SQL file to temp dir
     #
-    backup_file="$(mktemp "${WPLIB_BOX_SQL_DIR}/${sql_basefile}.XXXXX.bak")"
+    backup_file="$(mktemp "${WPLIB_BOX_SQL_DIR}/${sql_basefile}.XXXXX.${ext}.bak")"
     rm -f "${backup_file}"
     if [ $? -ne 0 ]; then
         alert "Could not make backup sql file ${backup_file}"
