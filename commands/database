@@ -15,7 +15,7 @@ function ctrl_c()
 {
     tput sgr0
 	echo ""
-	echo "$ECHO_PREFIX Aborting script."
+	echo "$ECHO_PREFIX Aborting script"
 	exit
 }
 
@@ -80,7 +80,7 @@ function database_unchunk() {
         return 5
     fi
 
-    output "SQL file unchunked."
+    output "SQL file unchunked"
 
 }
 
@@ -115,7 +115,7 @@ function database_import() {
     #
     if [ ! -e "${importfile}" ]; then
 
-        output "No ${importfile} exists.."
+        output "No ${importfile} exists"
         return 1
 
     fi
@@ -134,7 +134,7 @@ function database_import() {
 
     fi
 
-    output "Backing up database..."
+    output "Backing up database"
 
     database_backup "${basefile}.bak"
 
@@ -145,7 +145,7 @@ function database_import() {
 
     output "Database backed-up to ${bakfile}"
 
-    output "Dropping any prior tables..."
+    output "Dropping any prior tables"
 
     if [ ! $(has_arg --dryrun) ]; then
         #
@@ -155,21 +155,21 @@ function database_import() {
         cat /tmp/mysql-table-list.txt | while read table; do mysql -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"; done
         rm /tmp/mysql-table-list.txt
     fi
-    output "Tables dropped."
+    output "Tables dropped"
 
     if [ "" != "$(cat "${importfile}" | grep "utf8mb4_unicode_520_ci")" ]; then
         #
         # MariaDB does not support 'utf8mb4_unicode_520_ci' but does support 'utf8mb4_unicode_ci'
         # This should become a lot more intelligent but for now it should suffice.
         #
-        output "Stripping '520' from 'utf8mb4_unicode_520_ci' in ${importfile}..."
+        output "Stripping '520' from 'utf8mb4_unicode_520_ci' in ${importfile}"
         if [ ! $(has_arg --dryrun) ]; then
             sed -i -e 's/utf8mb4_unicode_520_ci/utf8mb4_unicode_ci/g' "${importfile}"
         fi
-        output "520 stripped."
+        output "520 stripped"
     fi
 
-    output "Importing database from ${importfile}..."
+    output "Importing database from ${importfile}"
     #
     # @TODO: Switch this to using Docker
     #
@@ -181,7 +181,7 @@ function database_import() {
         rm "${tempfile}"
     fi
 
-    output "Database imported."
+    output "Database imported"
 
 }
 
@@ -270,7 +270,7 @@ function database_chunk() {
     #
     # Making a directory the same name as the previous SQL file
     #
-    output "Splitting file into chunks in ${sql_filepath}/..."
+    output "Splitting file into chunks in ${sql_filepath}/"
 
     split \
         --line-bytes="${CHUNK_SIZE}" \
@@ -286,7 +286,7 @@ function database_chunk() {
         return 6
     fi
 
-    output "SQL file chunked."
+    output "SQL file chunked"
 
 }
 
@@ -338,7 +338,7 @@ function database_backup() {
 
     fi
 
-    output "Database backed up."
+    output "Database backed up"
 
 }
 
