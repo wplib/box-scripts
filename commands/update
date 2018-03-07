@@ -4,7 +4,7 @@
 #
 
 
-BASEDIR="/opt/box/scripts"
+BASEDIR="${WPLIB_BOX_CLI_DIR}/scripts"
 
 # Determine version to run.
 if [ "$1" == "" ]
@@ -23,6 +23,6 @@ then
 	git pull
 	git checkout -q $VERSION
 else
-	git clone https://github.com/wplib/box-scripts/ /opt/box/scripts
+	git clone "#{WPLIB_BOX_SCRIPTS_REPO}" "${WPLIB_BOX_CLI_DIR}"
 fi
 
