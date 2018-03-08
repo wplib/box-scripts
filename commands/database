@@ -231,12 +231,12 @@ function database_chunk() {
     #
     # Grab the base file name
     #
-    sql_basefile="${sql_filename%%.*}"
+    sql_basename="${sql_filename%%.*}"
 
     #
     # Fix the filename
     #
-    sql_filename="${sql_basefile}.sql"
+    sql_filename="${sql_basename}.sql"
 
     #
     # Calculate the SQL filepath from  /vagrant/sql/
@@ -254,7 +254,7 @@ function database_chunk() {
     #
     # Create temp dir and move our SQL file to temp dir
     #
-    backup_file="$(mktemp "${WPLIB_BOX_SQL_DIR}/${sql_basefile}.XXXXX.sql.bak")"
+    backup_file="$(mktemp "${WPLIB_BOX_SQL_DIR}/${sql_basename}.XXXXX.sql.bak")"
     rm -f "${backup_file}"
     if [ $? -ne 0 ]; then
         alert "Could not make backup sql file ${backup_file}"
@@ -291,13 +291,75 @@ function database_chunk() {
         --numeric-suffixes="1" \
         --additional-suffix=".sql.chunk" \
         "${backup_file}" \
-        "${sql_filename}/${sql_basefile}-"
-
+        "${sql_filename}/${sql_basename}-"
     if [ $? -ne 0 ]; then
         alert "Could not chunk ${backup_file} into ${sql_filepath}"
         rm -rf "${sql_filepath}"
         mv "${backup_file}" "${sql_filepath}"
         return 6
+    fi
+
+    chunk_count="${ls -1 "${sql_filename}" | wc -l)"
+    if [ $? -ne 0 ]; then
+        alert "Could not count chunks generated into ${sql_filepath}/"
+        return 7
+    fi
+
+    checksum="$(md5sum "${sql_basename}-??.sql.chunk")"
+    if [ $? -ne 0 ]; then
+        alert "Could not generate checksum of chunks in ${sql_filepath}/"
+        return 8
+    fi
+
+    cat << EOF > ${sql_filepath}/$sql_basename.chunks.json
+{
+    "schema": "1.0",
+    "chunk_count": "${chunk_count}",
+    "max_chunk_size": "${CHUNK_SIZE}",
+    "checksum": "${checksum}"
+}
+JSON
+    if [ $? -ne 0 ]; then
+        alert "Could not generate ${sql_filepath}/{$sql_basename}.chunks.json"
+        return 9
+    fi
+
+    cat << EOF > ${sql_filepath}/$sql_basename.README.fcps
+File Chunk Packaging Scheme (FCPS)
+----------------------------------
+This directory should contain ${chunk_count} chunks of the original file ${sql_filename}.
+If was generated with the 'box database chunk "${sql_filename}"' command from the CLI[1]
+for WPLib Box[2].
+
+You can reconstitute the orginal file ${sql_filename} if the chuncks are located in
+/vagrant/sql/ as /vagrant/sql/${sql_filename}/ and the files have not been modified
+since they were generated using the 'box database unchunk "${sql_filename}"' command
+when inside of WPLib Box which you can acccess from your host computer using the
+bash or batch/Powershell command 'vagrant ssh'.
+
+In the case you do not have WPLib Box and cannot install it you can reconstitute the
+original SQL file in Bash (e.g. Mac and Linux) using this command when run from the
+directory with contains the XXX subdirectory containing the chunks:
+
+    mv "${sql_filename}/" "${sql_filename}.tmp/"
+    cat "${sql_filename}/${sql_basename}"-??."${ext}.chunk" > $sql_filename
+
+On Windows this is what (WE THINK) you will need to do, though we have not tested it
+yet (contact us here https://github.com/wplib/box-scripts/issues if these commands
+do not work for you, please):
+
+    ren "${sql_filename}/" "${sql_filename}.tmp/"
+    copy "${sql_filename}/${sql_basename}-*.${ext}.chunk" ../$sql_filename
+
+FCPS is licensed via GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html
+Copyright (C) 2018 NewClarity Consulting LLC; All rights reserved worldwide
+
+[1] https://github.com/wplib/box-scripts
+[2] https://github.com/wplib/wplib-box
+JSON
+    if [ $? -ne 0 ]; then
+        alert "Could not generate ${sql_filepath}/{$sql_basename}.README.fcps"
+        return 10
     fi
 
     rm "${backup_file}"
