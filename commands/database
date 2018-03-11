@@ -347,18 +347,18 @@ JSON
         alert "Could not delete the chunk list file ${chunk_list_file}"
     fi
 
-    cat << EOF > $sql_filepath/$sql_basename.README.fcps
+    cat << EOF > $sql_filepath/$sql_basename.README
 File Chunk Packaging Scheme (FCPS)
 ----------------------------------
 This directory should contain ${chunk_count} chunks of the original file ${sql_filename}.
 If was generated with the 'box database chunk "${sql_filename}"' command from the
 CLI[1] for WPLib Box[2].
 
-You can reconstitute the orginal file ${sql_filename} if the chuncks are located in
-/vagrant/sql/ as /vagrant/sql/${sql_filename}/ and the files have not been modified
-since they were generated using the 'box database unchunk "${sql_filename}"' command
-when inside of WPLib Box which you can acccess from your host computer using the
-bash or batch/Powershell command 'vagrant ssh'.
+You can reconstitute the orginal file ${sql_filename} if files have not been modified
+since generated and the the chunks are located in /vagrant/sql/${sql_filename}/
+and the using the 'box database unchunk "${sql_filename}"' command when inside of
+WPLib Box which you can acccess from your host computer using the bash or
+batch/Powershell command 'vagrant ssh'.
 
 In the case you do not have WPLib Box and cannot install it you can reconstitute the
 original SQL file in Bash (e.g. Mac and Linux) using this command when run from the
