@@ -329,7 +329,7 @@ function database_chunk() {
     cat << JSON > ${sql_filepath}/$sql_basename.chunks.json
 {
         "schema": "1.0",
-        "chunk_count": "${chunk_count}",
+        "chunk_count": ${chunk_count},
         "max_chunk_size": "${CHUNK_SIZE}",
         "checksums": [
 ${checksums: : -1}
