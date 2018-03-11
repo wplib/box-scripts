@@ -325,7 +325,7 @@ function database_chunk() {
     do
         $checksums[${#checksums}]="$(md5sum $file)"
         if [ $? -ne 0 ]; then
-            alert "Could not generate checksum of ${$file}"
+            alert "Could not generate checksum of ${file}"
             return 11
         fi
     done
