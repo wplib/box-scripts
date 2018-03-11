@@ -295,7 +295,6 @@ function database_chunk() {
     fi
 
     chunk_list_file="$(mktemp --tmpdir=/tmp chunk-list-XXXX.txt)"
-    echo "${chunk_list_file}"
     if [ $? -ne 0 ]; then
         alert "Could not generate chunk list filename"
         return 8
