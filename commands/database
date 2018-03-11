@@ -299,7 +299,6 @@ function database_chunk() {
         return 6
     fi
 
-
     chunk_list_file="$(mktemp --tmpdir=/tmp chunk-list-XXXX.txt)"
     if [ $? -ne 0 ]; then
         alert "Could not generate chunk list filename"
@@ -341,6 +340,7 @@ function database_chunk() {
     "checksums": "${checksums}"
 }
 JSON
+
     if [ $? -ne 0 ]; then
         alert "Could not generate ${sql_filepath}/{$sql_basename}.chunks.json"
         return 12
