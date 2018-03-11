@@ -351,8 +351,8 @@ JSON
 File Chunk Packaging Scheme (FCPS)
 ----------------------------------
 This directory should contain ${chunk_count} chunks of the original file ${sql_filename}.
-If was generated with the 'box database chunk "${sql_filename}"' command from the CLI[1]
-for WPLib Box[2].
+If was generated with the 'box database chunk "${sql_filename}"' command from the
+CLI[1] for WPLib Box[2].
 
 You can reconstitute the orginal file ${sql_filename} if the chuncks are located in
 /vagrant/sql/ as /vagrant/sql/${sql_filename}/ and the files have not been modified
