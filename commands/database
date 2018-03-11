@@ -73,7 +73,6 @@ function database_unchunk() {
         return 4
     fi
 
-    output "Unchunking ${chunked_file}"
     cat "${temp_dir}/${basefile}"-??."${ext}.chunk" > $chunked_file
     if [ $? -ne 0 ]; then
         output "Could not generate unchunked file ${chunked_file}"
@@ -85,7 +84,7 @@ function database_unchunk() {
         output "Could not remove the chunked directory ${temp_dir}"
     fi
 
-    output "SQL file unchunked"
+    output "SQL file ${chunked_file} unchunked"
 
 }
 
@@ -211,9 +210,9 @@ function database_import() {
 function database_chunk() {
 
     #
-    # Split file up into chunks of ~25M or smaller
+    # Split file up into chunks of 25Mb or smaller
     #
-    CHUNK_SIZE=25600000
+    CHUNK_SIZE=25M
 
     #
     # Grab the filename, without extension, then add extension
@@ -264,7 +263,6 @@ function database_chunk() {
     #
     # Backing up of the file
     #
-    output "Backing up to ${backup_file}"
     mv "${sql_filepath}" "${backup_file}"
     if [ $? -ne 0 ]; then
         alert "Could not backup ${sql_filepath}"
@@ -274,7 +272,6 @@ function database_chunk() {
     #
     # Making a directory the same name as the previous SQL file
     #
-    output "Making directory ${sql_filepath}/"
     mkdir -p "${sql_filepath}"
     if [ $? -ne 0 ]; then
         alert "Could not create directory ${sql_filepath}/"
@@ -284,8 +281,6 @@ function database_chunk() {
     #
     # Making a directory the same name as the previous SQL file
     #
-    output "Splitting file into chunks in ${sql_filepath}/"
-
     split \
         --line-bytes="${CHUNK_SIZE}" \
         --numeric-suffixes="1" \
@@ -300,6 +295,7 @@ function database_chunk() {
     fi
 
     chunk_list_file="$(mktemp --tmpdir=/tmp chunk-list-XXXX.txt)"
+    echo "${chunk_list_file}"
     if [ $? -ne 0 ]; then
         alert "Could not generate chunk list filename"
         return 8
@@ -311,39 +307,45 @@ function database_chunk() {
         return 9
     fi
 
-
     chunk_count="$(cat "${chunk_list_file}" | wc -l)"
     if [ $? -ne 0 ]; then
         alert "Could not count chunks generated into ${sql_filepath}/"
         return 10
     fi
 
-    declare -a $checksums
     saveIFS="${IFS}" && IFS=$'\n'
-    for $file in $(cat "${chunk_list_file}")
+    chunk_list="$(cat "${chunk_list_file}")"
+    rm "${chunk_list_file}"
+    for file in $chunk_list
     do
-        $checksums[${#checksums}]="$(md5sum $file)"
+        echo -e "\t\t\"$(md5sum $file|cut -d " " -f1)\"," >> $chunk_list_file
         if [ $? -ne 0 ]; then
             alert "Could not generate checksum of ${file}"
             return 11
         fi
     done
-    IFS=, eval 'checksums=",${checksums[*]}"'
-    checksums="${checksums:1}"
     IFS="${saveIFS}"
+    checksums="$(cat "${chunk_list_file}")"
 
     cat << JSON > ${sql_filepath}/$sql_basename.chunks.json
 {
-    "schema": "1.0",
-    "chunk_count": "${chunk_count}",
-    "max_chunk_size": "${CHUNK_SIZE}",
-    "checksums": "${checksums}"
+        "schema": "1.0",
+        "chunk_count": "${chunk_count}",
+        "max_chunk_size": "${CHUNK_SIZE}",
+        "checksums": [
+${checksums: : -1}
+        ]
 }
 JSON
 
     if [ $? -ne 0 ]; then
         alert "Could not generate ${sql_filepath}/{$sql_basename}.chunks.json"
         return 12
+    fi
+
+    rm "${chunk_list_file}"
+    if [ $? -ne 0 ]; then
+        alert "Could not delete the chunk list file ${chunk_list_file}"
     fi
 
     cat << EOF > $sql_filepath/$sql_basename.README.fcps
@@ -390,7 +392,7 @@ EOF
         alert "Could not delete the backup file ${backup_file}"
     fi
 
-    output "SQL file chunked"
+    output "SQL file ${sql_filepath} chunked"
 
 }
 
