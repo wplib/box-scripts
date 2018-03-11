@@ -299,29 +299,51 @@ function database_chunk() {
         return 6
     fi
 
-    chunk_count="${ls -1 "${sql_filename}" | wc -l)"
-    if [ $? -ne 0 ]; then
-        alert "Could not count chunks generated into ${sql_filepath}/"
-        return 7
-    fi
 
-    checksum="$(md5sum "${sql_basename}-??.sql.chunk")"
+    chunk_list_file="$(mktemp --tmpdir=/tmp chunk-list-XXXX.txt)"
     if [ $? -ne 0 ]; then
-        alert "Could not generate checksum of chunks in ${sql_filepath}/"
+        alert "Could not generate chunk list filename"
         return 8
     fi
+
+    ls -1 "${sql_filename}/"*.chunk > $chunk_list_file
+    if [ $? -ne 0 ]; then
+        alert "Could not generate chunk list file"
+        return 9
+    fi
+
+
+    chunk_count="${cat "${chunk_list_file}" | wc -l)"
+    if [ $? -ne 0 ]; then
+        alert "Could not count chunks generated into ${sql_filepath}/"
+        return 10
+    fi
+
+    declare -a $checksums
+    saveIFS="${IFS}" && IFS=$'\n'
+    for $file in $(cat "${chunk_list_file}")
+    do
+        $checksums[${#checksums}]="$(md5sum $file)"
+        if [ $? -ne 0 ]; then
+            alert "Could not generate checksum of ${$file}"
+            return 11
+        fi
+    done
+    IFS=, eval 'checksums=",${checksums[*]}"'
+    checksums="${checksums:1}"
+    IFS="${saveIFS}"
 
     cat << EOF > ${sql_filepath}/$sql_basename.chunks.json
 {
     "schema": "1.0",
     "chunk_count": "${chunk_count}",
     "max_chunk_size": "${CHUNK_SIZE}",
-    "checksum": "${checksum}"
+    "checksums": "${checksums}"
 }
 JSON
     if [ $? -ne 0 ]; then
         alert "Could not generate ${sql_filepath}/{$sql_basename}.chunks.json"
-        return 9
+        return 12
     fi
 
     cat << EOF > ${sql_filepath}/$sql_basename.README.fcps
@@ -359,7 +381,7 @@ Copyright (C) 2018 NewClarity Consulting LLC; All rights reserved worldwide
 JSON
     if [ $? -ne 0 ]; then
         alert "Could not generate ${sql_filepath}/{$sql_basename}.README.fcps"
-        return 10
+        return 13
     fi
 
     rm "${backup_file}"
