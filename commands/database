@@ -312,7 +312,7 @@ function database_chunk() {
     fi
 
 
-    chunk_count="${cat "${chunk_list_file}" | wc -l)"
+    chunk_count="$(cat "${chunk_list_file}" | wc -l)"
     if [ $? -ne 0 ]; then
         alert "Could not count chunks generated into ${sql_filepath}/"
         return 10
@@ -346,7 +346,7 @@ JSON
         return 12
     fi
 
-    cat << EOF > ${sql_filepath}/$sql_basename.README.fcps
+    cat << EOF > $sql_filepath/$sql_basename.README.fcps
 File Chunk Packaging Scheme (FCPS)
 ----------------------------------
 This directory should contain ${chunk_count} chunks of the original file ${sql_filename}.
@@ -379,6 +379,7 @@ Copyright (C) 2018 NewClarity Consulting LLC; All rights reserved worldwide
 [1] https://github.com/wplib/box-scripts
 [2] https://github.com/wplib/wplib-box
 JSON
+
     if [ $? -ne 0 ]; then
         alert "Could not generate ${sql_filepath}/{$sql_basename}.README.fcps"
         return 13
