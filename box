@@ -27,7 +27,7 @@ if [ "" == "${error}" ];then
     if [ "${WPLIB_BOX_COMMAND}" == "help" ]; then
         source "${command_file}"
         check_updates_available "$*"
-        echo
+        echo 1>&2
         exit
     fi
 
@@ -37,14 +37,14 @@ if [ "" == "${error}" ];then
         if [ -f "${command_file}.php" ]; then
             command_type="php"
         else
-            echo
-            echo -e "\tCommand not found: $1"
-            echo
+            echo 1>&2
+            echo -e "\tCommand not found: $1" 1>&2
+            echo 1>&2
             exit
         fi
     fi
 
-    echo_if_not_quiet "$*" "*Running $1..."
+    echo_if_not_quiet "$*" "*Running $1..." 1>&2
     initial_dir=$(pwd)
     error=0
     case "${command_type}" in
@@ -65,12 +65,12 @@ if [ "" == "${error}" ];then
 fi
 
 if [[ $error -eq 0 ]]; then
-    echo_if_not_quiet "$*" "*The '$1' command completed without error."
+    echo_if_not_quiet "$*" "*The '$1' command completed without error." 1>&2
     exit 0
 else
-    echo -e "\t"
-    echo "The '$1' command terminated WITH ERRORS."
-    echo -e "\t"
+    echo -e "\t" 1>&2
+    echo "The '$1' command terminated WITH ERRORS." 1>&2
+    echo -e "\t" 1>&2
     exit 1
 fi
 

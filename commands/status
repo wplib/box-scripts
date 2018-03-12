@@ -1,19 +1,4 @@
 #!/usr/bin/env bash
 
 . /opt/box/commands/readJSON
-
-case $0 in
-	*status)
-		box container ls $database $webserver $processvm $kvstore
-		;;
-
-	*startup)
-		box container start $database $webserver $processvm $kvstore
-		;;
-
-	*shutdown)
-		box container stop $database $webserver $processvm $kvstore
-		;;
-
-esac
-
+box container ls $database $webserver $processvm $kvstore $cache $sqladmin $webadmin

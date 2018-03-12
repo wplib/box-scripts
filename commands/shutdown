@@ -1,1 +1,4 @@
-status
+#!/usr/bin/env bash
+
+. /opt/box/commands/readJSON
+box container stop $database $webserver $processvm $kvstore $cache $sqladmin $webadmin
