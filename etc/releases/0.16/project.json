@@ -7,8 +7,8 @@
 		"kvstore":	"wplib/redis:4.0.8",
 		"mail":		"wplib/mailhog:1.0.0",
 		"proxy":	"wplib/proxy:1.13.9",
-		"cache":	"wplib/memcached:1.5",
-		"sqladmin":     "wplib/adminer:4.5",
-		"webadmin":	"wplib/wp-cli:1.5"
+		"cache":	"wplib/memcached:1.5.6",
+		"sqladmin":     "wplib/adminer:4.6.2",
+		"webadmin":	"wplib/wp-cli:1.5.0"
 	}
 }
