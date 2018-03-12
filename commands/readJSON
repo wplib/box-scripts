@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 
-source /opt/box/includes/constants
-
 DEFAULT_PROJECT="wplib"
+WPLIB_BOX_DIR=/opt/box
 
 # Colour codes.
 GRAY="[30m"
@@ -28,9 +27,9 @@ RETURN_NO_IMAGE_JSON="3"
 RETURN_INVALID_PROJECT="4"
 
 
-VERSION="`cat /opt/box/version`"
-DEFAULTS_FILE="${WPLIB_BOX_SCRIPTS_DIR}/etc/releases/$VERSION/project.json"
-if ! -r $DEFAULTS_FILE
+VERSION="`cat ${WPLIB_BOX_DIR}/version`"
+DEFAULTS_FILE="${WPLIB_BOX_DIR}/etc/releases/$VERSION/project.json"
+if [ ! -f $DEFAULTS_FILE ]
 then
 	echo "$ECHO_PREFIX ${RED}Error: Unkown release ${CYAN}${VERSION}${RESET}."
 	exit 1
