@@ -116,6 +116,12 @@ error_csac()
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W019/${RESET}"
 }
 
+error_cni()
+{
+	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container not installed.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W020/${RESET}"
+}
+
 
 deets()
 {
@@ -262,9 +268,9 @@ d_shell()
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			if [ "$CONTAINER_HOSTNAME" != "" ]
+			if [ "$CONTAINER_HOSTNAME" == "" ]
 			then
-				error_cai
+				error_cni
 			else
 				echo "$ECHO_PREFIX ${GREEN}Shell to container: ${CYAN}${IMAGE}${RESET}" 1>&2
 				docker run --name ${CONTAINER_NAME}-shell --rm -i -t ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
