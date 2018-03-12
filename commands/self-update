@@ -7,6 +7,7 @@
 
 
 BASEDIR="${WPLIB_BOX_CLI_DIR}"
+VERSION="`cat /opt/box/version`"
 
 # Determine version to run.
 if [ "$1" == "" ]
