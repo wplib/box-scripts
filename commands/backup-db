@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+echo "No longer used."
+exit
+
 #
 # Backup the database to /vagrant/sql/current.sql
 #
