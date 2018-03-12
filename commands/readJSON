@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+
+
+source /opt/box/includes/constants
+
+DEFAULT_PROJECT="wplib"
+
+# Colour codes.
+GRAY="[30m"
+RED="(B[m[31m"
+GREEN="(B[m[32m"
+YELLOW="(B[m[33m"
+BLUE="(B[m[34m"
+PURPLE="(B[m[35m"
+CYAN="(B[m[36m"
+DIRTYSNOW="(B[m[37m"
+WHITE="(B[m[38m"
+RESET="(B[m"
+
+# Prefix used by all echo lines.
+ECHO_PREFIX="$WHITE# WPLib-Box:$RESET"
+
+# Return codes from functions.
+RETURN_OK="0"
+RETURN_NO_IMAGE_NAME="1"
+RETURN_NO_LOCAL_IMAGE="2"
+RETURN_NO_IMAGE_JSON="3"
+RETURN_INVALID_PROJECT="4"
+
+
+VERSION="`cat /opt/box/version`"
+DEFAULTS_FILE="${WPLIB_BOX_SCRIPTS_DIR}/etc/releases/$VERSION/project.json"
+if ! -r $DEFAULTS_FILE
+then
+	echo "$ECHO_PREFIX ${RED}Error: Unkown release ${CYAN}${VERSION}${RESET}."
+	exit 1
+fi
+
+# Setup defaults.
+d_database="$(jq -r '.services.database' $DEFAULTS_FILE)"
+d_webserver="$(jq -r '.services.webserver' $DEFAULTS_FILE)"
+d_processvm="$(jq -r '.services.processvm' $DEFAULTS_FILE)"
+d_kvstore="$(jq -r '.services.kvstore' $DEFAULTS_FILE)"
+d_mail="$(jq -r '.services.mail' $DEFAULTS_FILE)"
+d_proxy="$(jq -r '.services.proxy' $DEFAULTS_FILE)"
+d_cache="$(jq -r '.services.cache' $DEFAULTS_FILE)"
+d_sqladmin="$(jq -r '.services.sqladmin' $DEFAULTS_FILE)"
+d_webadmin="$(jq -r '.services.webadmin' $DEFAULTS_FILE)"
+
+# Pull in user defined JSON file.
+if [ -f "${WPLIB_BOX_DIR}/project.json" ]
+then
+    database="$(jq -r '.services.database' ${WPLIB_BOX_DIR}/project.json)"
+    webserver="$(jq -r '.services.webserver' ${WPLIB_BOX_DIR}/project.json)"
+    processvm="$(jq -r '.services.processvm' ${WPLIB_BOX_DIR}/project.json)"
+    kvstore="$(jq -r '.services.kvstore' ${WPLIB_BOX_DIR}/project.json)"
+fi
+
+case $database in
+	'mysql'|'')
+		database=$d_database
+		;;
+esac
+
+case $webserver in
+	'nginx'|'')
+		webserver=$d_webserver
+		;;
+esac
+
+case $processvm in
+	'php-fpm'|php7*|'')
+		processvm=$d_processvm
+		;;
+
+	'php5*')
+		processvm="wplib/php-fpm:5.6"
+		;;
+esac
+
+case $kvstore in
+	'redis'|'')
+		kvstore=$d_kvstore
+		;;
+esac
+
+case $mail in
+	'mailhog'|'')
+		mail=$d_mail
+		;;
+esac
+
+case $proxy in
+	'proxy'|'')
+		proxy=$d_proxy
+		;;
+esac
+
+case $sqladmin in
+	'adminer'|'')
+		sqladmin=$d_sqladmin
+		;;
+esac
+
+case $webadmin in
+	'wp-cli'|'')
+		webadmin=$d_webadmin
+		;;
+esac
+

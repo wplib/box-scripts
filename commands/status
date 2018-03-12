@@ -1,56 +1,19 @@
 #!/usr/bin/env bash
 
-status()
-{
-	# echo docker container ls --filter "name=$1" -a --format '{{.Image}};{{.Names}};{{.Status}};{{.RunningFor}};{{.Ports}};{{.Size}};{{.Mounts}}'
-	CONTAINER=`docker container ls --filter "name=$1" -a --format '{{.Image}};{{.Names}};{{.Status}};{{.RunningFor}};{{.Ports}};{{.Size}};{{.Mounts}}'`
-	IFS=';' read -r -a state_array <<< "$CONTAINER"
-	CONTAINER_IMAGE="${state_array[0]}"
-	CONTAINER_NAME="${state_array[1]}"
-	CONTAINER_STATUS="${state_array[2]}"
-	CONTAINER_RUNFOR="${state_array[3]}"
-	CONTAINER_PORTS="${state_array[4]}"
-	CONTAINER_SIZE="${state_array[5]}"
-	CONTAINER_MOUNTS="${state_array[6]}"
-}
+. /opt/box/commands/readJSON
 
+case $0 in
+	*status)
+		box container ls $database $webserver $processvm $kvstore
+		;;
 
-print_status()
-{
-	status $1
-	echo "
-Image:	    $CONTAINER_IMAGE
-Name:	    $CONTAINER_NAME
-Status:	    $CONTAINER_STATUS
-Up for:	    $CONTAINER_RUNFOR
-Ports:	    $CONTAINER_PORTS
-Mounts:	    $CONTAINER_MOUNTS
-Size:	    $CONTAINER_SIZE
+	*startup)
+		box container start $database $webserver $processvm $kvstore
+		;;
 
-"
-}
+	*shutdown)
+		box container stop $database $webserver $processvm $kvstore
+		;;
 
-
-database="mysql"
-webserver="nginx"
-processvm="php7.0"
-kvstore="redis"
-if [ -f "/vagrant/project.json" ]; then
-    database="$(jq -r '.services.database' < /vagrant/project.json)"
-    webserver="$(jq -r '.services.webserver' < /vagrant/project.json)"
-    processvm="$(jq -r '.services.processvm' < /vagrant/project.json)"
-    kvstore="$(jq -r '.services.kvstore' < /vagrant/project.json)"
-fi
-
-echo "# Database: $database"
-print_status $database
-
-echo "# Webserver : $webserver"
-print_status $webserver
-
-echo "# ProcessVM : $processvm"
-print_status $processvm
-
-echo "# KVstore : $kvstore"
-print_status $kvstore
+esac
 
