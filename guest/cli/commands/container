@@ -172,8 +172,46 @@ deets()
 		CONTAINER_HOSTNAME=""
 	fi
 
-
 	return $RETURN_OK
+}
+
+
+d_update()
+{
+	echo -n "$ECHO_PREFIX ${GREEN}Updating repository list${RESET}."
+	if [ ! -d /opt/box/etc ]
+	then
+		mkdir -p /opt/box/etc
+	fi
+	if [ ! -d /opt/box/etc/images ]
+	then
+		mkdir -p /opt/box/etc/images
+	fi
+
+	wget -qNO /opt/box/etc/respositories.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/?page_size=256
+	IMAGES="`jq -r '.results|.[]|.name' /opt/box/etc/respositories.json`"
+	for IMAGE in $IMAGES
+	do
+		echo -n "."
+		wget -qNO /opt/box/etc/images/$IMAGE.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/$IMAGE/tags/?page_size=256
+	done
+	echo "Done"
+}
+
+
+d_show()
+{
+	echo "$ECHO_PREFIX ${GREEN}Available images on repository.${RESET}"
+	IMAGES="`jq -r '.results|.[]|.name' /opt/box/etc/respositories.json`"
+	for IMAGE in $IMAGES
+	do
+		TAGS="`jq -r '.results|.[]|.name' /opt/box/etc/images/$IMAGE.json`"
+		for TAG in $TAGS
+		do
+			echo "$DEFAULT_PROJECT/$IMAGE:$TAG"
+		done
+		
+	done
 }
 
 
@@ -199,6 +237,8 @@ d_reallyclean()
 		echo "$ECHO_PREFIX ${GREEN}Doing nothing.${RESET}"
 		echo "$ECHO_PREFIX If you want to really cleanup, then respond with ${YELLOW}Yes please${RESET}."
 	fi
+
+	return $RETURN_OK
 }
 
 
@@ -211,6 +251,8 @@ d_pull()
 		error_dni
 		return 1
 	fi
+
+	return $RETURN_OK
 }
 
 
@@ -362,6 +404,8 @@ d_shutdown()
 		error_csac
 		return 1
 	fi
+
+	return $RETURN_OK
 }
 
 
@@ -466,19 +510,21 @@ d_log()
 d_help()
 {
 	cat <<EOF
-box container [32minstall(B[m <package>	- Install and configure a container.
-box container [32mls(B[m [package]	- List current image and container.
-box container [32mstart(B[m <package>	- Start a container.
-box container [32mstop(B[m <package>	- Stop a container.
-box container [32mrm(B[m <package>	- Remove the container.
-box container [32mclean(B[m <package>	- Remove the container and associated image.
-box container [32mrefresh(B[m <package>	- Refresh an existing container.
+box container ${GREEN}install${RESET} <package>	- Install and configure a container.
+box container ${GREEN}ls${RESET} [package]	- List current image and container.
+box container ${GREEN}start${RESET} <package>	- Start a container.
+box container ${GREEN}stop${RESET} <package>	- Stop a container.
+box container ${GREEN}rm${RESET} <package>	- Remove the container.
+box container ${GREEN}clean${RESET} <package>	- Remove the container and associated image.
+box container ${GREEN}refresh${RESET} <package>	- Refresh an existing container.
 
-box container [32mshutdown(B[m		- This will shutdown all WPLib related packages.
-box container [32mreallyclean(B[m	- This will remove all WPLib related packages.
-box container [32minspect(B[m <package>	- Provide detailed info on image and container.
-box container [32mlog(B[m <package>	- Show log files from container.
-box container [32mpull(B[m <package>	- Just pull a container image. No install.
+box container ${GREEN}update${RESET}		- Update container list from repository.
+box container ${GREEN}show${RESET}		- Show a list of containers available for download.
+box container ${GREEN}shutdown${RESET}		- This will shutdown all WPLib related packages.
+box container ${GREEN}reallyclean${RESET}	- This will remove all WPLib related packages.
+box container ${GREEN}inspect${RESET} <package>	- Provide detailed info on image and container.
+box container ${GREEN}log${RESET} <package>	- Show log files from container.
+box container ${GREEN}pull${RESET} <package>	- Just pull a container image. No install.
 EOF
 }
 
@@ -489,13 +535,23 @@ shift
 IMAGES="$@"
 
 case $CMD in
-	'show'|'list'|'ls')
+	'list'|'ls')
 		# Only the 'ls' command can accept no image.
 		#echo "$@"
 		if [ "$1" == "" ]
 		then
 			d_ls
 		fi
+		;;
+
+	'show')
+		d_show
+		exit $?
+		;;
+
+	'update')
+		d_update
+		exit $?
 		;;
 
 	'reallyclean')
@@ -570,7 +626,7 @@ do
 			d_stop
 			;;
 
-		'show'|'list'|'ls')
+		'list'|'ls')
 			d_ls
 			;;
 
