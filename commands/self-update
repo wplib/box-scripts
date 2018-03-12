@@ -2,6 +2,8 @@
 #
 # Update WPLib Box scripts.
 #
+# Be careful with making ANY changes to this script.
+# Any changes will potentially alter this script on disk in future versions.
 
 
 BASEDIR="${WPLIB_BOX_CLI_DIR}"
