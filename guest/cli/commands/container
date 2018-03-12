@@ -40,67 +40,80 @@ trap ctrl_c INT
 
 error_pns()
 {
-	echo "$ECHO_PREFIX ${YELLOW}Warning project not supported${RESET}"
+	echo "$ECHO_PREFIX ${YELLOW}Warning project not supported.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W007/${RESET}"
 }
 
 error_nip()
 {
 	echo "$ECHO_PREFIX ${RED}Error no image provided.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W008/${RESET}"
 }
 
 error_nfl()
 {
 	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} image not found locally.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W009/${RESET}"
 }
 
 error_dnc()
 {
 	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} image doesn't conform to JSON config format in 0.16 or later.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W010/${RESET}"
 }
 
 error_dni()
 {
 	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} image does not exist in repository.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W011/${RESET}"
 }
 
 error_ccbr()
 {
 	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} container can't be removed.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W012/${RESET}"
 }
 
 error_ccbi()
 {
 	echo "$ECHO_PREFIX ${RED}Warning ${CYAN}${IMAGE}${RED} container can't be installed.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W013/${RESET}"
 }
 
 error_ccbs()
 {
 	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} container can't be started.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W014/${RESET}"
 }
 
 error_ccbd()
 {
 	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} container can't be stopped.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W015/${RESET}"
 }
 
 error_cai()
 {
 	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container already installed.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W016/${RESET}"
 }
 
 error_car()
 {
 	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container already running.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W017/${RESET}"
 }
 
 error_cas()
 {
 	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container already stopped.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W018/${RESET}"
 }
 
 error_csac()
 {
 	echo "$ECHO_PREFIX ${RED}Error not all containers could be stopped.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W019/${RESET}"
 }
 
 
