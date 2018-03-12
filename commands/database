@@ -6,8 +6,9 @@
 #
 
 DEFAULT_PROJECT="wplib"
-DB_HOST_IP="172.18.0.1"
+DB_HOST_IP="172.42.0.1"
 source "${WPLIB_BOX_COLORS_FILE}"
+MYSQL_CONTAINER="wplib/mysql:5.5.59"
 
 trap ctrl_c INT
 
@@ -164,7 +165,7 @@ function database_import() {
         #
         # @TODO: Switch this to using Docker
         #
-        mysql -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
+        box container shell $MYSQL_CONTAINER mysql -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
         cat /tmp/mysql-table-list.txt | while read table; do mysql -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"; done
         rm /tmp/mysql-table-list.txt
     fi
@@ -187,7 +188,7 @@ function database_import() {
     # @TODO: Switch this to using Docker
     #
     if [ ! $(has_arg --dryrun) ]; then
-        mysql -u wordpress -pwordpress wordpress < ${importfile}  2>&1 | grep -v "Warning:"
+        box container shell $MYSQL_CONTAINER mysql -u wordpress -pwordpress wordpress < ${importfile}  2>&1 | grep -v "Warning:"
     fi
 
     if [ "" != "${tempfile}" ]; then
@@ -431,7 +432,7 @@ function database_backup() {
 
         mkdir -p "${WPLIB_BOX_SQL_DIR}/"
 
-        docker run --rm -it -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -e MYSQL_DATABASE=wordpress -e MYSQL_USER=wordpress -e MYSQL_PASSWORD=wordpress -v /tmp/sql:/docker-entrypoint-initdb.d -v mysql_data:/var/lib/mysql wplib/mysql:5.5.59 mysqldump -h "${DB_HOST_IP}"  -u wordpress  -pwordpress wordpress 2>&1  | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}            
+        box container shell $MYSQL_CONTAINER mysqldump -h "${DB_HOST_IP}" -u wordpress -pwordpress wordpress 2>&1 | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}
         result="$?"
 
         if [ "${result}" != "0" ]; then
