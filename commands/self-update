@@ -25,4 +25,5 @@ then
 else
 	git clone "#{WPLIB_BOX_SCRIPTS_REPO}" "${WPLIB_BOX_CLI_DIR}"
 fi
+echo $VERSION > /opt/box/version
 
