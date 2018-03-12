@@ -1,6 +1,11 @@
 #!/bin/bash
 #
-# Provisioning script for all containers.
+# Provisioning and management script for all containers.
+#
+# This is a low level script that will:
+#	Pull the complete list of WPLib container packages from Docker Hub into local JSON files.
+#	Manage containers - stop/start and most importantly creating containers using the embedded JSON string in the image.
+
 
 DEFAULT_PROJECT="wplib"
 
