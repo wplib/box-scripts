@@ -4,6 +4,7 @@
 
 DEFAULT_PROJECT="wplib"
 
+# Colour codes.
 GRAY="[30m"
 RED="(B[m[31m"
 GREEN="(B[m[32m"
@@ -15,10 +16,16 @@ DIRTYSNOW="(B[m[37m"
 WHITE="(B[m[38m"
 RESET="(B[m"
 
-ECHO_PREFIX="$YELLOW# WPLib-Box:$RESET"
+# Prefix used by all echo lines.
+ECHO_PREFIX="$WHITE# WPLib-Box:$RESET"
 
+# Return codes from functions.
+RETURN_OK="0"
+RETURN_NO_IMAGE_NAME="1"
+RETURN_NO_LOCAL_IMAGE="2"
+RETURN_NO_IMAGE_JSON="3"
+RETURN_INVALID_PROJECT="4"
 
-trap ctrl_c INT
 
 ctrl_c()
 {
@@ -28,42 +35,132 @@ ctrl_c()
 	exit
 }
 
+trap ctrl_c INT
+
+
+error_pns()
+{
+	echo "$ECHO_PREFIX ${YELLOW}Warning project not supported${RESET}"
+}
+
+error_nip()
+{
+	echo "$ECHO_PREFIX ${RED}Error no image provided.${RESET}"
+}
+
+error_nfl()
+{
+	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} image not found locally.${RESET}"
+}
+
+error_dnc()
+{
+	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} image doesn't conform to JSON config format in 0.16 or later.${RESET}"
+}
+
+error_dni()
+{
+	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} image does not exist in repository.${RESET}"
+}
+
+error_ccbr()
+{
+	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} container can't be removed.${RESET}"
+}
+
+error_ccbi()
+{
+	echo "$ECHO_PREFIX ${RED}Warning ${CYAN}${IMAGE}${RED} container can't be installed.${RESET}"
+}
+
+error_ccbs()
+{
+	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} container can't be started.${RESET}"
+}
+
+error_ccbd()
+{
+	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} container can't be stopped.${RESET}"
+}
+
+error_cai()
+{
+	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container already installed.${RESET}"
+}
+
+error_car()
+{
+	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container already running.${RESET}"
+}
+
+error_cas()
+{
+	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container already stopped.${RESET}"
+}
+
+error_csac()
+{
+	echo "$ECHO_PREFIX ${RED}Error not all containers could be stopped.${RESET}"
+}
+
 
 deets()
 {
-	if [ "$IMAGE" = "" ]
+	if [ "$IMAGE" == "" ]
 	then
-		return 0
+		return $RETURN_NO_IMAGE_NAME
 	fi
 
 	RETURN="`docker image ls -q $IMAGE`"
 	if [ "$RETURN" == "" ]
 	then
-		echo "$ECHO_PREFIX ${YELLOW}Warning $IMAGE image not found locally.${RESET}"
-		return 1
+		return $RETURN_NO_LOCAL_IMAGE
 	fi
 
-	PROJECT="`docker inspect --format='{{index .Config.Labels "container.project"}}' $IMAGE`"
+	DOCKER=`docker inspect --format='{{index .Config.Labels "container.project"}};{{index .Config.Labels "container.name"}};{{index .Config.Labels "container.version"}};{{index .Config.Labels "container.majorversion"}};{{index .Config.Labels "container.latest"}};{{index .Config.Labels "container.class"}};{{index .Config.Labels "container.network"}};{{index .Config.Labels "container.ports"}};{{index .Config.Labels "container.volumes"}};{{index .Config.Labels "container.restart"}};{{index .Config.Labels "container.args"}};{{index .Config.Labels "container.env"}}' $IMAGE`
+	IFS=';' read -r -a state_array <<< "$DOCKER"
+
+	PROJECT="${state_array[0]}"
+	IMAGE_NAME="${state_array[1]}"
+	IMAGE_VERSION="${state_array[2]}"
+	IMAGE_MAJORVERSION="${state_array[3]}"
+	IMAGE_LATEST="${state_array[4]}"
+	IMAGE_CLASS="${state_array[5]}"
+	IMAGE_NETWORK="${state_array[6]}"
+	IMAGE_PORTS="${state_array[7]}"
+	IMAGE_VOLUMES="${state_array[8]}"
+	IMAGE_RESTART="${state_array[9]}"
+	IMAGE_ARGS="${state_array[10]}"
+	IMAGE_ENV="${state_array[11]}"
+
 	if [ "$PROJECT" == "" ]
 	then
-		echo "$ECHO_PREFIX ${RED}Error $IMAGE image does not conform to JSON config format in 0.16 and later.${RESET}"
-		return 2
+		return $RETURN_NO_IMAGE_JSON
+	fi
+	if [ "$PROJECT" != "${DEFAULT_PROJECT}" ]
+	then
+		return $RETURN_INVALID_PROJECT
 	fi
 
-	NAME="`docker inspect --format='{{index .Config.Labels "container.name"}}' $IMAGE`"
-	VERSION="`docker inspect --format='{{index .Config.Labels "container.version"}}' $IMAGE`"
-	MAJORVERSION="`docker inspect --format='{{index .Config.Labels "container.majorversion"}}' $IMAGE`"
-	LATEST="`docker inspect --format='{{index .Config.Labels "container.latest"}}' $IMAGE`"
-	CLASS="`docker inspect --format='{{index .Config.Labels "container.class"}}' $IMAGE`"
-	NETWORK="`docker inspect --format='{{index .Config.Labels "container.network"}}' $IMAGE`"
-	PORTS="`docker inspect --format='{{index .Config.Labels "container.ports"}}' $IMAGE`"
-	VOLUMES="`docker inspect --format='{{index .Config.Labels "container.volumes"}}' $IMAGE`"
-	RESTART="`docker inspect --format='{{index .Config.Labels "container.restart"}}' $IMAGE`"
-	ARGS="`docker inspect --format='{{index .Config.Labels "container.args"}}' $IMAGE`"
-	ENV="`docker inspect --format='{{index .Config.Labels "container.env"}}' $IMAGE`"
-	CONTAINER_NAME="${NAME}-${VERSION}"
 
-	return 0
+	CONTAINER_NAME="${IMAGE_NAME}-${IMAGE_VERSION}"
+	CONTAINER_ID=`docker container ls -qaf name="${CONTAINER_NAME}"`
+	if [ "$CONTAINER_ID" != "" ]
+	then
+		DOCKER="`docker inspect -f '{{.State.Running}};{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}};{{range .NetworkSettings.Networks}}{{(index .Aliases 0)}}{{end}}' $CONTAINER_NAME`"
+		IFS=';' read -r -a state_array <<< "$DOCKER"
+
+		CONTAINER_RUNNING="${state_array[0]}"
+		CONTAINER_IP="${state_array[1]}"
+		CONTAINER_HOSTNAME="${state_array[2]}"
+	else
+		CONTAINER_RUNNING=""
+		CONTAINER_IP=""
+		CONTAINER_HOSTNAME=""
+	fi
+
+
+	return $RETURN_OK
 }
 
 
@@ -94,11 +191,11 @@ d_reallyclean()
 
 d_pull()
 {
-	echo "$ECHO_PREFIX ${GREEN}Pulling $IMAGE from repository.${RESET}"
+	echo "$ECHO_PREFIX ${GREEN}Pulling ${CYAN}$IMAGE${GREEN} from repository.${RESET}"
 	docker pull $IMAGE
 	if [ "$?" == "1" ]
 	then
-		echo "$ECHO_PREFIX ${RED}Error $IMAGE image does not exist in repository.${RESET}"
+		error_dni
 		return 1
 	fi
 }
@@ -107,58 +204,139 @@ d_pull()
 d_install()
 {
 	deets $IMAGE
-	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
-	then
-		docker create --name ${CONTAINER_NAME} ${RESTART} ${NETWORK} ${PORTS} ${ARGS} ${VOLUMES} ${IMAGE}
-	fi
+	RETURN="$?"
+	case $RETURN in
+		$RETURN_OK)
+			if [ "$CONTAINER_HOSTNAME" != "" ]
+			then
+				error_cai
+			else
+				echo "$ECHO_PREFIX ${GREEN}Installing container: ${CYAN}${IMAGE}${RESET}"
+				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE}
+				if [ "$?" == "1" ]
+				then
+					error_ccbi
+				fi
+			fi
+			;;
+
+		$RETURN_NO_LOCAL_IMAGE)
+			error_nfl
+			;;
+
+		$RETURN_NO_IMAGE_JSON)
+			error_dnc
+			;;
+
+		$RETURN_INVALID_PROJECT)
+			error_pns
+			;;
+	esac
+
+	return $RETURN
 }
 
 
 d_remove()
 {
 	deets $IMAGE
-	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
-	then
-		echo "$ECHO_PREFIX ${GREEN}Removing container: ${YELLOW}${IMAGE}${RESET}"
-		docker rm -v ${CONTAINER_NAME}
-		if [ "$?" == "1" ]
-		then
-			echo "$ECHO_PREFIX ${RED}Error $IMAGE container can't be removed.${RESET}"
-			return 1
-		fi
-	fi
+	RETURN="$?"
+	case $RETURN in
+		$RETURN_OK)
+			echo "$ECHO_PREFIX ${GREEN}Removing container: ${CYAN}${IMAGE}${RESET}"
+			docker rm -v ${CONTAINER_NAME}
+			if [ "$?" == "1" ]
+			then
+				error_ccbr
+			fi
+			;;
+
+		$RETURN_NO_LOCAL_IMAGE)
+			error_nfl
+			;;
+
+		$RETURN_NO_IMAGE_JSON)
+			error_dnc
+			;;
+
+		$RETURN_INVALID_PROJECT)
+			error_pns
+			;;
+	esac
+
+	return $RETURN
 }
 
 
 d_start()
 {
 	deets $IMAGE
-	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
-	then
-		echo "$ECHO_PREFIX ${GREEN}Starting container: ${YELLOW}${IMAGE}${RESET}"
-		docker start ${CONTAINER_NAME}
-		if [ "$?" == "1" ]
-		then
-			echo "$ECHO_PREFIX ${RED}Error $IMAGE container can't be started.${RESET}"
-			return 1
-		fi
-	fi
+	RETURN="$?"
+	case $RETURN in
+		$RETURN_OK)
+			if [ "$CONTAINER_RUNNING" == "true" ]
+			then
+				error_car
+			else
+				echo "$ECHO_PREFIX ${GREEN}Starting container: ${CYAN}${IMAGE}${RESET}"
+				docker start ${CONTAINER_NAME}
+				if [ "$?" == "1" ]
+				then
+					error_ccbs
+				fi
+			fi
+			;;
+
+		$RETURN_NO_LOCAL_IMAGE)
+			error_nfl
+			;;
+
+		$RETURN_NO_IMAGE_JSON)
+			error_dnc
+			;;
+
+		$RETURN_INVALID_PROJECT)
+			error_pns
+			;;
+	esac
+
+	return $RETURN
 }
 
 
 d_stop()
 {
 	deets $IMAGE
-	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
-	then
-		echo "$ECHO_PREFIX ${GREEN}Stopping container: ${YELLOW}${IMAGE}${RESET}"
-		docker stop ${CONTAINER_NAME}
-		if [ "$?" == "1" ]
-		then
-			echo "$ECHO_PREFIX ${RED}Error $IMAGE container can't be stopped.${RESET}"
-			return 1
-		fi
-	fi
+	RETURN="$?"
+	case $RETURN in
+		$RETURN_OK)
+			if [ "$CONTAINER_RUNNING" != "true" ]
+			then
+				error_cas
+			else
+				echo "$ECHO_PREFIX ${GREEN}Stopping container: ${CYAN}${IMAGE}${RESET}"
+				docker stop ${CONTAINER_NAME}
+				if [ "$?" == "1" ]
+				then
+					error_ccbd
+				fi
+			fi
+			;;
+
+		$RETURN_NO_LOCAL_IMAGE)
+			error_nfl
+			;;
+
+		$RETURN_NO_IMAGE_JSON)
+			error_dnc
+			;;
+
+		$RETURN_INVALID_PROJECT)
+			error_pns
+			;;
+	esac
+
+	return $RETURN
 }
 
 
@@ -168,7 +346,7 @@ d_shutdown()
 	docker container ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs docker stop
 	if [ "$?" == "1" ]
 	then
-		echo "$ECHO_PREFIX ${RED}Error $IMAGE container can't be stopped.${RESET}"
+		error_csac
 		return 1
 	fi
 }
@@ -177,48 +355,98 @@ d_shutdown()
 d_ls()
 {
 	deets $IMAGE
-	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
-	then
-		echo "$ECHO_PREFIX ${GREEN}Installed image: ${YELLOW}${IMAGE}${RESET}"
-		docker image ls $IMAGE
-		echo ""
-		echo "$ECHO_PREFIX ${GREEN}Installed container: ${YELLOW}${IMAGE}${RESET}"
-		docker container ls -af "name=${CONTAINER_NAME}"
-	else
-		echo "$ECHO_PREFIX ${GREEN}Installed images: ${YELLOW}${IMAGE}${RESET}"
-		docker image ls -af "label=container.project=$DEFAULT_PROJECT"
-		echo ""
-		echo "$ECHO_PREFIX ${GREEN}Installed containers: ${YELLOW}${IMAGE}${RESET}"
-		docker container ls -af "label=container.project=$DEFAULT_PROJECT" -f "status=created" -f "status=exited"
-		echo ""
-		echo "$ECHO_PREFIX ${GREEN}Running containers: ${YELLOW}${IMAGE}${RESET}"
-		docker container ls -af "label=container.project=$DEFAULT_PROJECT" -f "status=running"
-	fi
+	RETURN="$?"
+	case $RETURN in
+		$RETURN_OK)
+			echo "$ECHO_PREFIX ${GREEN}Installed image: ${CYAN}${IMAGE}${RESET}"
+			docker image ls $IMAGE
+			echo ""
+			echo "$ECHO_PREFIX ${GREEN}Installed container: ${CYAN}${IMAGE}${RESET}"
+			docker container ls -af "name=${CONTAINER_NAME}"
+			;;
+
+		$RETURN_NO_IMAGE_NAME)
+			echo "$ECHO_PREFIX ${GREEN}Installed images: ${CYAN}${IMAGE}${RESET}"
+			docker image ls -af "label=container.project=$DEFAULT_PROJECT"
+			echo ""
+			echo "$ECHO_PREFIX ${GREEN}Installed containers: ${CYAN}${IMAGE}${RESET}"
+			docker container ls -af "label=container.project=$DEFAULT_PROJECT" -f "status=created" -f "status=exited"
+			echo ""
+			echo "$ECHO_PREFIX ${GREEN}Running containers: ${CYAN}${IMAGE}${RESET}"
+			docker container ls -af "label=container.project=$DEFAULT_PROJECT" -f "status=running"
+			;;
+
+		$RETURN_NO_LOCAL_IMAGE)
+			error_nfl
+			;;
+
+		$RETURN_NO_IMAGE_JSON)
+			error_dnc
+			;;
+
+		$RETURN_INVALID_PROJECT)
+			error_pns
+			;;
+	esac
+
+	return $RETURN
 }
 
 
 d_inspect()
 {
 	deets $IMAGE
-	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
-	then
-		echo "$ECHO_PREFIX ${GREEN}Installed image: ${YELLOW}${IMAGE}${RESET}"
-		docker image inspect $IMAGE
-		echo ""
-		echo "$ECHO_PREFIX ${GREEN}Running container: ${YELLOW}${IMAGE}${RESET}"
-		docker container inspect ${CONTAINER_NAME}
-	fi
+	RETURN="$?"
+	case $RETURN in
+		$RETURN_OK)
+			echo "$ECHO_PREFIX ${GREEN}Installed image: ${CYAN}${IMAGE}${RESET}"
+			docker image inspect $IMAGE
+			echo ""
+			echo "$ECHO_PREFIX ${GREEN}Running container: ${CYAN}${IMAGE}${RESET}"
+			docker container inspect ${CONTAINER_NAME}
+			;;
+
+		$RETURN_NO_LOCAL_IMAGE)
+			error_nfl
+			;;
+
+		$RETURN_NO_IMAGE_JSON)
+			error_dnc
+			;;
+
+		$RETURN_INVALID_PROJECT)
+			error_pns
+			;;
+	esac
+
+	return $RETURN
 }
 
 
 d_log()
 {
 	deets $IMAGE
-	if [ "$PROJECT" == "${DEFAULT_PROJECT}" ]
-	then
-		echo "$ECHO_PREFIX ${GREEN}Logs for container: ${YELLOW}${IMAGE}${RESET}"
-		docker container logs ${CONTAINER_NAME}
-	fi
+	RETURN="$?"
+	case $RETURN in
+		$RETURN_OK)
+			echo "$ECHO_PREFIX ${GREEN}Logs for container: ${CYAN}${IMAGE}${RESET}"
+			docker container logs ${CONTAINER_NAME}
+			;;
+
+		$RETURN_NO_LOCAL_IMAGE)
+			error_nfl
+			;;
+
+		$RETURN_NO_IMAGE_JSON)
+			error_dnc
+			;;
+
+		$RETURN_INVALID_PROJECT)
+			error_pns
+			;;
+	esac
+
+	return $RETURN
 }
 
 
@@ -243,10 +471,6 @@ EOF
 
 
 ################################################################################
-#if [ "$1" == "container" ]
-#then
-#	# We are running from the box script, instead of directly.
-#fi
 CMD="$1"
 shift
 IMAGES="$@"
@@ -254,7 +478,8 @@ IMAGES="$@"
 case $CMD in
 	'show'|'list'|'ls')
 		# Only the 'ls' command can accept no image.
-		if [ "$2" == "" ]
+		#echo "$@"
+		if [ "$1" == "" ]
 		then
 			d_ls
 		fi
@@ -262,10 +487,12 @@ case $CMD in
 
 	'reallyclean')
 		d_reallyclean
+		exit $?
 		;;
 
 	'shutdown')
 		d_shutdown
+		exit $?
 		;;
 
 	''|'help')
@@ -275,7 +502,7 @@ case $CMD in
 	*)
 		if [ "$1" == "" ]
 		then
-			echo "$ECHO_PREFIX ${RED}Error no image provided.${RESET}"
+			error_nip
 			d_help
 			exit 1
 		fi
@@ -287,14 +514,14 @@ for IMAGE in $IMAGES
 do
 	case $CMD in
 		'provision')
-			echo "$ECHO_PREFIX ${GREEN}Provisioning $IMAGE.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Provisioning ${CYAN}${IMAGE}.${RESET}"
 			d_pull $IMAGE
 			d_install $IMAGE
 			d_start $IMAGE
 			;;
 
 		'refresh'|'upgrade')
-			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${YELLOW}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${CYAN}${IMAGE}${RESET}"
 			d_stop $IMAGE
 			d_remove $IMAGE
 			docker image rm $IMAGE
@@ -303,7 +530,7 @@ do
 			;;
 
 		'clean')
-			echo "$ECHO_PREFIX ${GREEN}Cleaning up: $IMAGE.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Cleaning up: ${CYAN}${IMAGE}.${RESET}"
 			d_stop $IMAGE
 			d_remove $IMAGE
 			docker image rm $IMAGE
