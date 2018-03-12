@@ -1,0 +1,37 @@
+#!/bin/bash
+
+check_image()
+{
+	VERSION="wplib/php-fpm:$REQVERS"
+	EXISTS="`docker images -q $VERSION 2>/dev/null`"
+
+	if [ "$EXISTS" == "" ]
+	then
+		wget -q -O /dev/null https://index.docker.io/v1/repositories/wplib/php-fpm/tags/$REQVERS
+		if [ "$?" == "0" ]
+		then
+			echo "WPLib: Need to retrieve $VERSION from repository. Please wait..."
+			/usr/bin/docker pull $VERSION
+		else
+			echo "WPLib: ERROR: Version $VERSION doesn't exist in repository."
+			exit
+		fi
+	fi
+}
+
+
+SCRIPT="`basename $0`"
+REQVERS="`echo $SCRIPT | sed -r 's/php-([0-9]*\.[0-9]*)/\1/'`"
+EXEC="/usr/local/bin/php-$REQVERS"
+
+
+if [ -x "$EXEC" ]
+then
+	check_image
+elif [ "$SCRIPT" == "$REQVERS" ]
+then
+	REQVERS="latest"
+	check_image
+fi
+
+exec /usr/bin/docker run --rm -it --name "php-$REQVERS" --mount type=bind,source=/var/www,target=/var/www --mount type=bind,source=/srv/sites,target=/srv/sites $VERSION /usr/bin/php "$@"
