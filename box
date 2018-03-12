@@ -3,8 +3,8 @@
 # @todo: http://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
 #
 
-source /opt/box/includes/functions
-source /opt/box/includes/constants
+source /opt/box/scripts/guest/cli/includes/functions
+source /opt/box/scripts/guest/cli/includes/constants
 
 #
 #
@@ -44,16 +44,19 @@ if [ "" == "${error}" ];then
         fi
     fi
 
+    echo_if_not_quiet "$*" "*Running $1..."
     initial_dir=$(pwd)
     error=0
     case "${command_type}" in
        "bash")
-            source "${command_file}" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
+		shift
+            source "${command_file}" "$@"
             error=$?
             ;;
        "php")
+		shift
 
-            /usr/bin/php7.0 "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args "${WPLIB_BOX_COMMAND}" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
+            /usr/bin/php7.0 "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args "${WPLIB_BOX_COMMAND}" "$@"
             error=$?
             ;;
     esac
@@ -61,3 +64,14 @@ if [ "" == "${error}" ];then
 
 fi
 
+if [[ $error -eq 0 ]]; then
+    echo_if_not_quiet "$*" "*The '$1' command completed without error."
+    exit 0
+else
+    echo -e "\t"
+    echo "The '$1' command terminated WITH ERRORS."
+    echo -e "\t"
+    exit 1
+fi
+
+#check_updates_available "$*"
