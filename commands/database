@@ -328,7 +328,7 @@ function database_chunk() {
     rm "${chunk_list_file}"
     for file in $chunk_list
     do
-        echo -e "\t\t\"$(md5sum $file|cut -d " " -f1)\"," >> $chunk_list_file
+        echo -e "\t\t\t\"$(md5sum $file|cut -d " " -f1)\"," >> $chunk_list_file
         if [ $? -ne 0 ]; then
             alert "Could not generate checksum of ${file}"
             return 11
