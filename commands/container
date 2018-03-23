@@ -278,7 +278,14 @@ d_shell()
 				error_cni
 			else
 				# echo "$ECHO_PREFIX ${GREEN}Shell to container: ${CYAN}${IMAGE}${RESET}" 1>&2
-				docker run --name ${CONTAINER_NAME}-shell --rm -i -t ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
+				if [ "$1" == "" ]
+				then
+					ARG1="/bin/bash"
+				else
+					ARG1="/bin/bash"
+				fi
+
+				docker run --name ${CONTAINER_NAME}-shell --rm -i -t ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} $ARG1 "$@"
 				if [ "$?" == "1" ]
 				then
 					error_ccbi
