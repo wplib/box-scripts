@@ -28,16 +28,21 @@ function ctrl_c()
 #   Result ==> Imports from /vagrant/sql/{dump_file}.sql
 #
 function database_unchunk() {
+
     local chunked_file="$1"
     local basefile="${chunked_file%%.*}"
     local ext="${chunked_file##*.}"
-
     if [ 'sql' != "$(to_lowercase "${ext}")" ]; then
         #
         # If no .sql extension, add one.
         #
         ext="sql"
     fi
+
+    #
+    # First change to the SQL dir
+    #
+    cd "${WPLIB_BOX_SQL_DIR}"
 
     #
     # Force import from  /vagrant/sql/
@@ -209,6 +214,11 @@ function database_import() {
 #
 #   --quiet - Omits output
 function database_chunk() {
+
+    #
+    # First change to the SQL dir
+    #
+    cd "${WPLIB_BOX_SQL_DIR}"
 
     #
     # Split file up into chunks of 25Mb or smaller
