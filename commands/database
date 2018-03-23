@@ -358,7 +358,7 @@ JSON
         alert "Could not delete the chunk list file ${chunk_list_file}"
     fi
 
-    cat << EOF > $sql_filepath/$sql_basename.README.fcps
+    cat << EOF > $sql_filepath/$sql_basename.README
 File Chunk Packaging Scheme (FCPS)
 ----------------------------------
 This directory should contain ${chunk_count} chunks of the original file ${sql_filename}.
