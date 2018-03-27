@@ -171,10 +171,10 @@ function database_import() {
         #
         # @TODO: Switch this to using Docker
         #
-        box container shell ${database} mysql -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
+        box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
         cat /tmp/mysql-table-list.txt | while read table
 	do
-		box container shell ${database} mysql -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"
+		box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"
 	done
         rm /tmp/mysql-table-list.txt
     fi
@@ -197,7 +197,7 @@ function database_import() {
     # @TODO: Switch this to using Docker
     #
     if [ ! $(has_arg --dryrun) ]; then
-        box container shell ${database} mysql -u wordpress -pwordpress wordpress < ${importfile}  2>&1 | grep -v "Warning:"
+        box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress wordpress < ${importfile}  2>&1 | grep -v "Warning:"
     fi
 
     if [ "" != "${tempfile}" ]; then
