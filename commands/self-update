@@ -21,12 +21,12 @@ fi
 if [ -d ${BASEDIR} ]
 then
 	cd ${BASEDIR}
-	git clean -q -d  -fx ""
-	git reset -q --hard $VERSION
-	git pull
-	git checkout -q $VERSION
+	sudo git clean -q -d  -fx ""
+	sudo git reset -q --hard $VERSION
+	sudo git pull
+	sudo git checkout -q $VERSION
 else
-	git clone "#{WPLIB_BOX_SCRIPTS_REPO}" "${WPLIB_BOX_CLI_DIR}"
+	sudo git clone "#{WPLIB_BOX_SCRIPTS_REPO}" "${WPLIB_BOX_CLI_DIR}"
 fi
 echo $VERSION > /opt/box/version
 
