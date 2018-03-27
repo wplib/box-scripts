@@ -117,23 +117,26 @@ function database_import() {
     fi
 
     #
+    # Grab the basefile name to use later
+    #
+    basefile="${importfile%%.*}"
+
+    #
     # Force import from  /vagrant/sql/
     #
-    importfile="${WPLIB_BOX_SQL_DIR}/${importfile}"
+    importfilepath="${WPLIB_BOX_SQL_DIR}/${importfile}"
 
     #
-    # Check to see if we the importfile exists
+    # Check to see if we the importfilepath exists
     #
-    if [ ! -e "${importfile}" ]; then
+    if [ ! -e "${importfilepath}" ]; then
 
-        output "No ${importfile} exists"
+        output "No ${importfilepath} exists"
         return 1
 
     fi
 
-    basefile="${importfile%%.*}"
-
-    if [ ! -d "${importfile}" ]; then
+    if [ ! -d "${importfilepath}" ]; then
         tempfile=""
     else
 
@@ -144,17 +147,15 @@ function database_import() {
         fi
 
         output "Unchunking ${importfile}"
-        cat "${importfile}/${basefile}"-??."${ext}.chunk" > $tempfile
+        cat "${importfilepath}/${basefile}"-??."${ext}.chunk" > $tempfile
         if [ $? -ne 0 ]; then
             output "Could not generate unchunked file ${chunked_file}"
             return 3
         fi
 
-        importfile="${tempfile}"
+        importfilepath="${tempfile}"
 
     fi
-
-    output "Backing up database"
 
     database_backup "${basefile}.bak"
 
@@ -162,8 +163,6 @@ function database_import() {
         output "Error when backing up to ${basefile}.bak"
         return 4
     fi
-
-    output "Database backed-up to ${bakfile}"
 
     output "Dropping any prior tables"
 
@@ -180,14 +179,14 @@ function database_import() {
     fi
     output "Tables dropped"
 
-    if [ "" != "$(cat "${importfile}" | grep "utf8mb4_unicode_520_ci")" ]; then
+    if [ "" != "$(cat "${importfilepath}" | grep "utf8mb4_unicode_520_ci")" ]; then
         #
         # MariaDB does not support 'utf8mb4_unicode_520_ci' but does support 'utf8mb4_unicode_ci'
         # This should become a lot more intelligent but for now it should suffice.
         #
-        output "Stripping '520' from 'utf8mb4_unicode_520_ci' in ${importfile}"
+        output "Stripping '520' from 'utf8mb4_unicode_520_ci' in ${importfilepath}"
         if [ ! $(has_arg --dryrun) ]; then
-            sed -i -e 's/utf8mb4_unicode_520_ci/utf8mb4_unicode_ci/g' "${importfile}"
+            sed -i -e 's/utf8mb4_unicode_520_ci/utf8mb4_unicode_ci/g' "${importfilepath}"
         fi
         output "520 stripped"
     fi
@@ -197,7 +196,8 @@ function database_import() {
     # @TODO: Switch this to using Docker
     #
     if [ ! $(has_arg --dryrun) ]; then
-        box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress wordpress < ${importfile}  2>&1 | grep -v "Warning:"
+        echo "box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress wordpress < ${importfilepath}"
+        box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress wordpress < ${importfilepath}  2>&1 | grep -v "Warning:"
     fi
 
     if [ "" != "${tempfile}" ]; then
