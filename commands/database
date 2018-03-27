@@ -196,8 +196,8 @@ function database_import() {
     # @TODO: Switch this to using Docker
     #
     if [ ! $(has_arg --dryrun) ]; then
-        echo "box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress wordpress < ${importfilepath}"
-        box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress wordpress < ${importfilepath}  2>&1 | grep -v "Warning:"
+        echo "box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress wordpress -e \"source ${importfilepath}\""
+        box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress wordpress -e "source ${importfilepath}"  2>&1 | grep -v "Warning:"
     fi
 
     if [ "" != "${tempfile}" ]; then

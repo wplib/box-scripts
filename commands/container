@@ -9,20 +9,7 @@
 
 DEFAULT_PROJECT="wplib"
 
-# Colour codes.
-GRAY="[30m"
-RED="(B[m[31m"
-GREEN="(B[m[32m"
-YELLOW="(B[m[33m"
-BLUE="(B[m[34m"
-PURPLE="(B[m[35m"
-CYAN="(B[m[36m"
-DIRTYSNOW="(B[m[37m"
-WHITE="(B[m[38m"
-RESET="(B[m"
-
-# Prefix used by all echo lines.
-ECHO_PREFIX="$WHITE# WPLib-Box:$RESET"
+source "${WPLIB_BOX_COLORS_FILE}"
 
 # Return codes from functions.
 RETURN_OK="0"
