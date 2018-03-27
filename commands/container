@@ -179,19 +179,19 @@ d_update()
 	echo -n "$ECHO_PREFIX ${GREEN}Updating repository list${RESET}."
 	if [ ! -d /opt/box/etc ]
 	then
-		mkdir -p /opt/box/etc
+		sudo mkdir -p /opt/box/etc
 	fi
 	if [ ! -d /opt/box/etc/images ]
 	then
-		mkdir -p /opt/box/etc/images
+		sudo mkdir -p /opt/box/etc/images
 	fi
 
-	wget -qNO /opt/box/etc/respositories.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/?page_size=256
+	sudo wget -qNO /opt/box/etc/respositories.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/?page_size=256
 	IMAGES="`jq -r '.results|.[]|.name' /opt/box/etc/respositories.json`"
 	for IMAGE in $IMAGES
 	do
 		echo -n "."
-		wget -qNO /opt/box/etc/images/$IMAGE.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/$IMAGE/tags/?page_size=256
+		sudo wget -qNO /opt/box/etc/images/$IMAGE.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/$IMAGE/tags/?page_size=256
 	done
 	echo "Done"
 }
