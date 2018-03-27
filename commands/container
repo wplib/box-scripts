@@ -278,14 +278,43 @@ d_shell()
 				error_cni
 			else
 				# echo "$ECHO_PREFIX ${GREEN}Shell to container: ${CYAN}${IMAGE}${RESET}" 1>&2
-				if [ "$1" == "" ]
+				docker run --name ${CONTAINER_NAME}-shell --rm -i -t ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
+				if [ "$?" == "1" ]
 				then
-					ARG1="/bin/bash"
-				else
-					ARG1="/bin/bash"
+					error_ccbi
 				fi
+			fi
+			;;
 
-				docker run --name ${CONTAINER_NAME}-shell --rm -i -t ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} $ARG1 "$@"
+		$RETURN_NO_LOCAL_IMAGE)
+			error_nfl
+			;;
+
+		$RETURN_NO_IMAGE_JSON)
+			error_dnc
+			;;
+
+		$RETURN_INVALID_PROJECT)
+			error_pns
+			;;
+	esac
+
+	return $RETURN
+}
+
+
+d_exec()
+{
+	deets $IMAGE
+	RETURN="$?"
+	case $RETURN in
+		$RETURN_OK)
+			if [ "$CONTAINER_HOSTNAME" == "" ]
+			then
+				error_cni
+			else
+				# echo "$ECHO_PREFIX ${GREEN}Shell to container: ${CYAN}${IMAGE}${RESET}" 1>&2
+				docker run --name ${CONTAINER_NAME}-exec --rm ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
 				if [ "$?" == "1" ]
 				then
 					error_ccbi
@@ -623,6 +652,13 @@ case $CMD in
 		shift
 		ARGS="$@"
 		d_shell "$@"
+		;;
+
+	'exec')
+		IMAGE="$1"
+		shift
+		ARGS="$@"
+		d_exec "$@"
 		;;
 
 	''|'help')

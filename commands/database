@@ -6,15 +6,16 @@
 #
 
 DEFAULT_PROJECT="wplib"
+
 DB_HOST_IP="172.42.0.1"
 source "${WPLIB_BOX_COLORS_FILE}"
-MYSQL_CONTAINER="wplib/mysql:5.5.59"
+source "${WPLIB_BOX_COMMANDS_DIR}/readJSON"
 
 trap ctrl_c INT
 
 function ctrl_c()
 {
-    tput sgr0
+	tput sgr0
 	echo ""
 	echo "$ECHO_PREFIX Aborting script"
 	exit
@@ -170,8 +171,11 @@ function database_import() {
         #
         # @TODO: Switch this to using Docker
         #
-        box container shell $MYSQL_CONTAINER mysql -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
-        cat /tmp/mysql-table-list.txt | while read table; do mysql -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"; done
+        box container shell ${database} mysql -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
+        cat /tmp/mysql-table-list.txt | while read table
+	do
+		box container shell ${database} mysql -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"
+	done
         rm /tmp/mysql-table-list.txt
     fi
     output "Tables dropped"
@@ -193,7 +197,7 @@ function database_import() {
     # @TODO: Switch this to using Docker
     #
     if [ ! $(has_arg --dryrun) ]; then
-        box container shell $MYSQL_CONTAINER mysql -u wordpress -pwordpress wordpress < ${importfile}  2>&1 | grep -v "Warning:"
+        box container shell ${database} mysql -u wordpress -pwordpress wordpress < ${importfile}  2>&1 | grep -v "Warning:"
     fi
 
     if [ "" != "${tempfile}" ]; then
@@ -442,7 +446,7 @@ function database_backup() {
 
         mkdir -p "${WPLIB_BOX_SQL_DIR}/"
 
-        box container shell $MYSQL_CONTAINER mysqldump -h "${DB_HOST_IP}" -u wordpress -pwordpress wordpress 2>&1 | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}
+        box container shell ${database} mysqldump -h "${DB_HOST_IP}" -u wordpress -pwordpress wordpress 2>&1 | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}
         result="$?"
 
         if [ "${result}" != "0" ]; then
@@ -460,27 +464,24 @@ function database_backup() {
 
 function database_help() {
 	cat <<EOF
-box database [32mbackup(B[m [<sql_file>] - Backup current database to <sql_file> or backup.sql.
-box database [32mimport(B[m [<sql_file>] - Import <sql_file> or provision.sql into current database.
-box database [32mchunk(B[m <sql_file>    - Split <sql_file> into chunks ~25Mb in size.
-box database [32munchunk(B[m <sql_file>  - Unsplit <sql_file> back into a complete file.
+box database ${GREEN}backup${RESET} [<sql_file>] - Backup current database to <sql_file> or backup.sql.
+box database ${GREEN}import${RESET} [<sql_file>] - Import <sql_file> or provision.sql into current database.
+box database ${GREEN}chunk${RESET} <sql_file>    - Split <sql_file> into chunks ~25Mb in size.
+box database ${GREEN}unchunk${RESET} <sql_file>  - Unsplit <sql_file> back into a complete file.
 
-box database [32mcredentials(B[m         - This will output host, username and password
-box database [32mdbname(B[m              - This will output database name
-box database [32musername(B[m            - This will output database login username
-box database [32mpassword(B[m            - This will output database login password
+box database ${GREEN}credentials${RESET}         - This will output host, username and password
+box database ${GREEN}dbname${RESET}              - This will output database name
+box database ${GREEN}username${RESET}            - This will output database login username
+box database ${GREEN}password${RESET}            - This will output database login password
 EOF
 
 }
 
 ################################################################################
-#if [ "$1" == "database" ]
-#then
-#	# We are running from the box script, instead of directly.
-#fi
 CMD="$1"
 shift
 IMAGES="$@"
+
 
 case $CMD in
     'help')
