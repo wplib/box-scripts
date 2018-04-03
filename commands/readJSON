@@ -56,15 +56,27 @@ then
     kvstore="$(jq -r '.services.kvstore' ${WPLIB_BOX_DIR}/project.json)"
 fi
 
+
+# Backwards compatibility.
 case $database in
 	'mysql'|'')
 		database=$d_database
+		;;
+
+	*-*)
+		IFS='-' read -r -a state_array <<< "$database"
+		database="${DEFAULT_PROJECT}/${state_array[0]}:${state_array[1]}"
 		;;
 esac
 
 case $webserver in
 	'nginx'|'')
 		webserver=$d_webserver
+		;;
+
+	*-*)
+		IFS='-' read -r -a state_array <<< "$webserver"
+		webserver="${DEFAULT_PROJECT}/${state_array[0]}:${state_array[1]}"
 		;;
 esac
 
@@ -74,13 +86,23 @@ case $processvm in
 		;;
 
 	'php5*')
-		processvm="wplib/php-fpm:5.6"
+		processvm="${DEFAULT_PROJECT}/php-fpm:5.6"
+		;;
+
+	php-fpm-*)
+		IFS='-' read -r -a state_array <<< "$processvm"
+		processvm="${DEFAULT_PROJECT}/${state_array[0]}-${state_array[1]}:${state_array[2]}"
 		;;
 esac
 
 case $kvstore in
 	'redis'|'')
 		kvstore=$d_kvstore
+		;;
+
+	redis-*)
+		IFS='-' read -r -a state_array <<< "$kvstore"
+		kvstore="${DEFAULT_PROJECT}/${state_array[0]}:${state_array[1]}"
 		;;
 esac
 
