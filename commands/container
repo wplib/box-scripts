@@ -16,7 +16,8 @@ RETURN_OK="0"
 RETURN_NO_IMAGE_NAME="1"
 RETURN_NO_LOCAL_IMAGE="2"
 RETURN_NO_IMAGE_JSON="3"
-RETURN_INVALID_PROJECT="4"
+RETURN_NO_IMAGE_REPO="4"
+RETURN_INVALID_PROJECT="5"
 
 
 ctrl_c()
@@ -32,86 +33,114 @@ trap ctrl_c INT
 
 error_pns()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${YELLOW}Warning project not supported.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W007/${RESET}"
+	return $RETURN
 }
 
 error_nip()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}Error no image provided.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W008/${RESET}"
+	return $RETURN
 }
 
 error_nfl()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} image not found locally.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W009/${RESET}"
+	return $RETURN
 }
 
 error_dnc()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} image doesn't conform to JSON config format in 0.16 or later.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W010/${RESET}"
+	return $RETURN
 }
 
 error_dni()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} image does not exist in repository.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W011/${RESET}"
+	return $RETURN
 }
 
 error_ccbr()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} container can't be removed.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W012/${RESET}"
+	return $RETURN
 }
 
 error_ccbi()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}Warning ${CYAN}${IMAGE}${RED} container can't be installed.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W013/${RESET}"
+	return $RETURN
 }
 
 error_ccbs()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} container can't be started.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W014/${RESET}"
+	return $RETURN
 }
 
 error_ccbd()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} container can't be stopped.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W015/${RESET}"
+	return $RETURN
 }
 
 error_cai()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container already installed.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W016/${RESET}"
+	return $RETURN
 }
 
 error_car()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container already running.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W017/${RESET}"
+	return $RETURN
 }
 
 error_cas()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container already stopped.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W018/${RESET}"
+	return $RETURN
 }
 
 error_csac()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}Error not all containers could be stopped.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W019/${RESET}"
+	return $RETURN
 }
 
 error_cni()
 {
+	RETURN="$?"
 	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container not installed.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W020/${RESET}"
+	return $RETURN
 }
 
 
@@ -174,6 +203,24 @@ deets()
 }
 
 
+d_exists()
+{
+	IFS='/:' read -r -a state_array <<< "$IMAGE"
+	PROJECT="${state_array[0]}"
+	IMAGE_NAME="${state_array[1]}"
+	IMAGE_VERSION="${state_array[2]}"
+
+	wget -qO /dev/null https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/$IMAGE_NAME/tags/
+	if [ "$?" == "0" ]
+	then
+		return $RETURN_OK
+	else
+		error_dni
+		return $RETURN_NO_IMAGE_REPO
+	fi
+}
+
+
 d_update()
 {
 	echo -n "$ECHO_PREFIX ${GREEN}Updating repository list${RESET}."
@@ -188,10 +235,10 @@ d_update()
 
 	sudo wget -qNO /opt/box/etc/respositories.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/?page_size=256
 	IMAGES="`jq -r '.results|.[]|.name' /opt/box/etc/respositories.json`"
-	for IMAGE in $IMAGES
+	for IMAGE_NAME in $IMAGES
 	do
 		echo -n "."
-		sudo wget -qNO /opt/box/etc/images/$IMAGE.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/$IMAGE/tags/?page_size=256
+		sudo wget -qNO /opt/box/etc/images/${IMAGE_NAME}.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/${IMAGE_NAME}/tags/?page_size=256
 	done
 	echo "Done"
 }
@@ -201,12 +248,12 @@ d_show()
 {
 	echo "$ECHO_PREFIX ${GREEN}Available images on repository.${RESET}"
 	IMAGES="`jq -r '.results|.[]|.name' /opt/box/etc/respositories.json`"
-	for IMAGE in $IMAGES
+	for IMAGE_NAME in $IMAGES
 	do
-		TAGS="`jq -r '.results|.[]|.name' /opt/box/etc/images/$IMAGE.json`"
-		for TAG in $TAGS
+		VERSIONS="`jq -r '.results|.[]|.name' /opt/box/etc/images/${IMAGE_NAME}.json`"
+		for IMAGE_VERSION in $VERSIONS
 		do
-			echo "$DEFAULT_PROJECT/$IMAGE:$TAG"
+			echo "$DEFAULT_PROJECT/${IMAGE_NAME}:$IMAGE_VERSION"
 		done
 		
 	done
@@ -247,7 +294,7 @@ d_pull()
 	if [ "$?" == "1" ]
 	then
 		error_dni
-		return 1
+		return $RETURN_NO_IMAGE_REPO
 	fi
 
 	return $RETURN_OK
@@ -577,6 +624,40 @@ d_log()
 }
 
 
+d_provision()
+{
+	deets $IMAGE
+	RETURN="$?"
+	case $RETURN in
+		$RETURN_OK)
+			echo "$ECHO_PREFIX ${GREEN}Container already exists: ${CYAN}${IMAGE}${RESET}"
+			;;
+
+		$RETURN_NO_IMAGE_JSON)
+			error_dnc
+			;;
+
+		$RETURN_INVALID_PROJECT)
+			error_pns
+			;;
+
+		$RETURN_NO_LOCAL_IMAGE)
+			d_pull $IMAGE
+			if [ "$?" == "$RETURN_OK" ]
+			then
+				d_install $IMAGE
+				if [ "$?" == "$RETURN_OK" ]
+				then
+					d_start $IMAGE
+				fi
+			fi
+			;;
+	esac
+
+	return $RETURN
+}
+
+
 d_help()
 {
 	cat <<EOF
@@ -668,9 +749,7 @@ do
 	case $CMD in
 		'provision')
 			echo "$ECHO_PREFIX ${GREEN}Provisioning ${CYAN}${IMAGE}.${RESET}"
-			d_pull $IMAGE
-			d_install $IMAGE
-			d_start $IMAGE
+			d_provision $IMAGE
 			;;
 
 		'refresh'|'upgrade')
@@ -690,36 +769,42 @@ do
 			;;
 
 		'pull')
-			d_pull
+			d_pull $IMAGE
 			;;
 
 		'create'|'install')
-			d_pull
-			d_install
+			d_pull $IMAGE
+			d_install $IMAGE
 			;;
 
 		'remove'|'rm'|'destroy')
-			d_remove
+			d_remove $IMAGE
 			;;
 
 		'start'|'up')
-			d_start
+			deets $IMAGE
+			if [ "$?" == "$RETURN_NO_LOCAL_IMAGE" ]
+			then
+				d_provision $IMAGE
+			else
+				d_start $IMAGE
+			fi
 			;;
 
 		'stop'|'down')
-			d_stop
+			d_stop $IMAGE
 			;;
 
 		'list'|'ls')
-			d_ls
+			d_ls $IMAGE
 			;;
 
 		'inspect'|'info')
-			d_inspect
+			d_inspect $IMAGE
 			;;
 
 		'log')
-			d_log
+			d_log $IMAGE
 			;;
 	esac
 done
