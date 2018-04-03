@@ -2,7 +2,8 @@
 
 
 DEFAULT_PROJECT="wplib"
-WPLIB_BOX_DIR=/opt/box
+WPLIB_BOX_DIR=/vagrant
+WPLIB_BOX_CLI_DIR=/opt/box
 
 # Colour codes.
 GRAY="[30m"
@@ -27,8 +28,8 @@ RETURN_NO_IMAGE_JSON="3"
 RETURN_INVALID_PROJECT="4"
 
 
-VERSION="`cat ${WPLIB_BOX_DIR}/version`"
-DEFAULTS_FILE="${WPLIB_BOX_DIR}/etc/releases/$VERSION/project.json"
+VERSION="`cat ${WPLIB_BOX_CLI_DIR}/version`"
+DEFAULTS_FILE="${WPLIB_BOX_CLI_DIR}/etc/releases/$VERSION/project.json"
 if [ ! -f $DEFAULTS_FILE ]
 then
 	echo "$ECHO_PREFIX ${RED}Error: Unkown release ${CYAN}${VERSION}${RESET}."
