@@ -1,0 +1,5 @@
+#!/bin/bash
+#
+# `box db` is an alias for `box database` command
+#
+source "${WPLIB_BOX_COMMANDS_DIR}/database"

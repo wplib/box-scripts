@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# Update WPLib Box scripts.
+#
+# Be careful with making ANY changes to this script.
+# Any changes will potentially alter this script on disk in future versions.
+
+
+BASEDIR="${WPLIB_BOX_CLI_DIR}"
+BOX_VERSION="`cat /opt/box/version`"
+
+# Determine version to run.
+if [ "$1" == "" ]
+then
+	VERSION="$BOX_VERSION"
+else
+	VERSION="$1"
+fi
+
+# Pull from GitHub.
+if [ -d ${BASEDIR} ]
+then
+	cd ${BASEDIR}
+	sudo git clean -q -d  -fx ""
+	sudo git reset -q --hard $VERSION
+	sudo git pull
+	sudo git checkout -q $VERSION
+else
+	sudo git clone "#{WPLIB_BOX_SCRIPTS_REPO}" "${WPLIB_BOX_CLI_DIR}"
+fi
+echo $VERSION > /opt/box/version
+

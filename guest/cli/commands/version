@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-#
-# Example
-#
-#       box version
-#
-echo "WPLib: You are running version `cat /opt/box/version`"
-
