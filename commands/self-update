@@ -32,13 +32,13 @@ then
 	cat <<EOF > /tmp/self-update.$$
 	cd ${WPLIB_BOX_CLI_DIR}
 	echo "# WPLib-Box: Updating /opt/box with version ${VERSION}"
-	sudo git clean -q -d  -fx "" > /dev/null
-	sudo git reset -q --hard ${VERSION} > /dev/null
-	sudo git pull -q ${WPLIB_BOX_SCRIPTS_REPO} > /dev/null
-	sudo git checkout -q ${VERSION} > /dev/null
+	sudo git config --global user.email "user@wplib.com"
+	sudo git config --global user.name "WPLib"
+	sudo git clean -q -d -fx "" > /dev/null
+	sudo git pull > /dev/null 2>&1
+	sudo git checkout -q --force ${VERSION} > /dev/null
 	echo $VERSION > /opt/box/version
 	echo "Done"
-	exec rm -f /tmp/self-update.$$
 EOF
 else
 	cat <<EOF > /tmp/self-update.$$
@@ -46,7 +46,6 @@ else
 	sudo git clone -q ${WPLIB_BOX_SCRIPTS_REPO} ${WPLIB_BOX_CLI_DIR} > /dev/null
 	echo $VERSION > /opt/box/version
 	echo "Done"
-	exec rm -f /tmp/self-update.$$
 EOF
 fi
 
