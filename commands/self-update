@@ -21,10 +21,10 @@ fi
 if [ -d ${BASEDIR} ]
 then
 	cd ${BASEDIR}
-	sudo git clean -q -d  -fx ""
-	sudo git reset -q --hard $VERSION
+	sudo git clean -q -d  -fx "" 2>/dev/null
+	sudo git reset -q --hard $VERSION 2>/dev/null
 	sudo git pull 2>/dev/null
-	sudo git checkout -q $VERSION
+	sudo git checkout -q $VERSION 2>/dev/null
 else
 	sudo git clone "#{WPLIB_BOX_SCRIPTS_REPO}" "${WPLIB_BOX_CLI_DIR}"
 fi
