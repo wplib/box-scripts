@@ -2,31 +2,53 @@
 #
 # Update WPLib Box scripts.
 #
-# Be careful with making ANY changes to this script.
-# Any changes will potentially alter this script on disk in future versions.
+# This script will handle having itself updated by creating a secondary script that contains
+# all the git commands.
+# This will be exec at the very end ensuring itself wont be changed during the update.
 
 
-BASEDIR="${WPLIB_BOX_CLI_DIR}"
-BOX_VERSION="`cat /opt/box/version`"
+# Don't reference common variables as they may not exist.
+WPLIB_BOX_SCRIPTS_REPO="https://github.com/wplib/box-scripts"
+WPLIB_BOX_CLI_DIR="/opt/box"
+DEFAULT_VERSION="master"
+
 
 # Determine version to run.
 if [ "$1" == "" ]
 then
-	VERSION="$BOX_VERSION"
+	VERSION="`cat ${WPLIB_BOX_CLI_DIR}/version`"
+	if [ "$DEFAULT_VERSION" == "" ]
+	then
+		VERSION=${DEFAULT_VERSION}
+	fi
 else
 	VERSION="$1"
 fi
 
-# Pull from GitHub.
-if [ -d ${BASEDIR} ]
-then
-	cd ${BASEDIR}
-	sudo git clean -q -d  -fx "" 2>/dev/null
-	sudo git reset -q --hard $VERSION 2>/dev/null
-	sudo git pull 2>/dev/null
-	sudo git checkout -q $VERSION 2>/dev/null
-else
-	sudo git clone "#{WPLIB_BOX_SCRIPTS_REPO}" "${WPLIB_BOX_CLI_DIR}"
-fi
-echo $VERSION > /opt/box/version
 
+# Pull from GitHub.
+if [ -d ${WPLIB_BOX_CLI_DIR} ]
+then
+	cat <<EOF > /tmp/self-update.$$
+	cd ${WPLIB_BOX_CLI_DIR}
+	echo "# WPLib-Box: Updating /opt/box with version ${VERSION}"
+	sudo git clean -q -d  -fx "" > /dev/null
+	sudo git reset -q --hard ${VERSION} > /dev/null
+	sudo git pull -q ${WPLIB_BOX_SCRIPTS_REPO} > /dev/null
+	sudo git checkout -q ${VERSION} > /dev/null
+	echo $VERSION > /opt/box/version
+	echo "Done"
+	exec rm -f /tmp/self-update.$$
+EOF
+else
+	cat <<EOF > /tmp/self-update.$$
+	echo "# WPLib-Box: Initializing /opt/box with version ${VERSION}"
+	sudo git clone -q ${WPLIB_BOX_SCRIPTS_REPO} ${WPLIB_BOX_CLI_DIR} > /dev/null
+	echo $VERSION > /opt/box/version
+	echo "Done"
+	exec rm -f /tmp/self-update.$$
+EOF
+fi
+
+chmod a+x /tmp/self-update.$$
+exec /tmp/self-update.$$
