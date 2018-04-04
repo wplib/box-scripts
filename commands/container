@@ -379,10 +379,12 @@ d_install()
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			if [ "$CONTAINER_HOSTNAME" != "" ]
+			#if [ "$CONTAINER_HOSTNAME" != "" ]
+			#then
+			#	error_cai
+			#else
+			if [ "$CONTAINER_HOSTNAME" == "" ]
 			then
-				error_cai
-			else
 				echo "$ECHO_PREFIX ${GREEN}Installing container: ${CYAN}${IMAGE}${RESET}"
 				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE}
 				if [ "$?" == "1" ]
@@ -454,7 +456,10 @@ d_start()
 				docker start ${CONTAINER_NAME}
 				if [ "$?" == "1" ]
 				then
+					echo "${RED}NOT OK${RESET}"
 					error_ccbs
+				else
+					echo "${GREEN}OK${RESET}"
 				fi
 			fi
 			;;
@@ -471,6 +476,7 @@ d_start()
 			error_pns
 			;;
 	esac
+	echo ""
 
 	return $RETURN
 }
@@ -490,7 +496,10 @@ d_stop()
 				docker stop ${CONTAINER_NAME}
 				if [ "$?" == "1" ]
 				then
+					echo "${RED}NOT OK${RESET}"
 					error_ccbd
+				else
+					echo "${GREEN}OK${RESET}"
 				fi
 			fi
 			;;
@@ -507,6 +516,7 @@ d_stop()
 			error_pns
 			;;
 	esac
+	echo ""
 
 	return $RETURN
 }
