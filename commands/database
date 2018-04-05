@@ -445,7 +445,7 @@ function database_backup() {
 
         mkdir -p "${WPLIB_BOX_SQL_DIR}/"
 
-        box container shell ${database} mysqldump -h "${DB_HOST_IP}" -u wordpress -pwordpress wordpress 2>&1 | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}
+        box container exec ${database} mysqldump -h "${DB_HOST_IP}" -u wordpress -pwordpress wordpress 2>&1 | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}
         result="$?"
 
         if [ "${result}" != "0" ]; then
