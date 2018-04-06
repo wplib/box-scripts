@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+source "${WPLIB_BOX_COMMANDS_DIR}/readJSON"
+box container ls $database $webserver $processvm $kvstore $cache $sqladmin $webadmin

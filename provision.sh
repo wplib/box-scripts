@@ -3,13 +3,13 @@
 # WPLib Box Provision Script
 #
 
-if [[ -d /vagrant/scripts && "$1" != "--force" ]]; then
+if [[ -f "/opt/box/box" && "$1" != "--force" ]]; then
 
     echo -e "\t"
     echo "NOTICE! ============>"
     echo -e "\t"
-    echo "The /scripts/ folder has already been installed. To reprovision"
-    echo "WPLib Box please rename or delete the /scripts/ folder then run:"
+    echo "The /opt/box/box command has already been installed."
+    echo "To reprovision please run:"
     echo -e "\t"
     echo -e "\tvagrant reload --provision"
     echo -e "\t"
@@ -20,12 +20,14 @@ if [[ -d /vagrant/scripts && "$1" != "--force" ]]; then
 
 else
 
-    if [[ ! -d /vagrant/scripts && -d /tmp/box-scripts ]]; then
+    if [[ ! -f /opt/box/box && -f /tmp/box-scripts ]]; then
         #
         #  If this is the initial provisioning then the scripts
         #  will still be in /tmp/box-scripts. Move them over.
         #
-        mv /tmp/box-scripts /vagrant/scripts
+        sudo mkdir -p /opt/box
+        sudo mv /tmp/box-scripts/* /opt/box
+        git pull
     fi
 
     #
@@ -33,8 +35,8 @@ else
     #
     echo "Installing the \"In-the-Box\" CLI"
     sudo rm -f /usr/local/bin/box
-    sudo chmod +x /vagrant/scripts/guest/cli/box
-    sudo ln -s /vagrant/scripts/guest/cli/box /usr/local/bin/box
+    sudo chmod +x /opt/box/box
+    sudo ln -s /opt/box/box /usr/local/bin/box
 
     #
     #  Enable Tab Completion
