@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 cat <<EOF
-${YELLOW}WPLib Box ${GREEN}CLI${RESET} Usage:
+
+${YELLOW}WPLib Box ${GREEN}CLI${RESET} usage:
 
 box ${GREEN}database${RESET} <args>   - Manage databases.
 box ${GREEN}container${RESET} <args>  - Manage Docker containers.
