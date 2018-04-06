@@ -15,5 +15,5 @@ box ${GREEN}status${RESET}              - Output status of WPLib Box's standard 
 box ${GREEN}version${RESET}             - Display the current version of this WPLib Box VM.
 box ${GREEN}self-update${RESET}         - Update this CLI tool to the latest version for this Box version.
 
-box ${GREEN}help${RESET}                - Display the above information.
+box [${GREEN}help${RESET}]              - Display the above information.
 EOF
