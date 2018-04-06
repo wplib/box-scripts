@@ -5,6 +5,7 @@
 
 source /opt/box/includes/functions
 source /opt/box/includes/constants
+source "${WPLIB_BOX_COLORS_FILE}"
 
 #
 #

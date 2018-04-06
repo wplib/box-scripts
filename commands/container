@@ -9,8 +9,6 @@
 
 DEFAULT_PROJECT="wplib"
 
-source "${WPLIB_BOX_COLORS_FILE}"
-
 # Return codes from functions.
 RETURN_OK="0"
 RETURN_NO_IMAGE_NAME="1"
