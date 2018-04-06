@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-source "${WPLIB_BOX_COMMANDS_DIR}/readJSON"
+source "${WPLIB_BOX_INCLUDES_DIR}/read-json"
 box container start $mail $proxy $database $webserver $processvm $kvstore $cache $sqladmin $webadmin
