@@ -19,7 +19,7 @@ function check_updates_available() {
         fi
         cd "${save_dir}"
 
-    fibox
+    fi
 
 }
 
