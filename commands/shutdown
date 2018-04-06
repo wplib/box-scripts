@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 
-source "${WPLIB_BOX_COMMANDS_DIR}/readJSON"
-box container stop $database $webserver $processvm $kvstore $cache $sqladmin $webadmin
+# source "${WPLIB_BOX_COMMANDS_DIR}/readJSON"
+# box container stop $mail $proxy $database $webserver $processvm $kvstore $cache $sqladmin $webadmin
+box container shutdown
+
