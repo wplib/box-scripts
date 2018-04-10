@@ -46,8 +46,7 @@ then
 	echo $VERSION > /opt/box/version
 fi
 
-
-echo "Done"
+sudo chown -R vagrant:vagrant /opt/box
 
 
 
