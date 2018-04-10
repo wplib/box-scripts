@@ -2,3 +2,14 @@
 
 source "${WPLIB_BOX_INCLUDES_DIR}/read-json"
 box container start $mail $proxy $database $webserver $processvm $kvstore $cache $sqladmin $webadmin
+
+if [[ ! -e "${WPLIB_BOX_CLI_DIR}/PROVISION" && -e "${WPLIB_BOX_SQL_DIR}/provision.sql" ]] ; then
+
+    sudo bash -c "date +'%Y%m%d %H%M%S' > \"${WPLIB_BOX_CLI_DIR}/PROVISION\""
+    box database import provision.sql
+
+    #
+    # @todo check return value and if error delete ${WPLIB_BOX_CLI_DIR}/PROVISION
+    #
+
+fi
