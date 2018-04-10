@@ -41,10 +41,10 @@ then
 	fi
 	sudo mv "${WPLIB_BOX_CLI_DIR}" "${WPLIB_BOX_CLI_DIR}-LAST"  >> $WPLIB_BOX_CLI_DEBUG_LOG_FILE
 fi
-sudo mkdir -p ${WPLIB_BOX_CLI_DIR}  >> $WPLIB_BOX_CLI_DEBUG_LOG_FILE
-sudo git clone -q ${WPLIB_BOX_SCRIPTS_REPO} ${WPLIB_BOX_CLI_DIR}  >> $WPLIB_BOX_CLI_DEBUG_LOG_FILE
-cd ${WPLIB_BOX_CLI_DIR}  >> $WPLIB_BOX_CLI_DEBUG_LOG_FILE
-sudo git checkout -q --force ${VERSION}  >> $WPLIB_BOX_CLI_DEBUG_LOG_FILE
+sudo mkdir -p ${WPLIB_BOX_CLI_DIR}
+sudo git clone -q ${WPLIB_BOX_SCRIPTS_REPO} ${WPLIB_BOX_CLI_DIR} > /dev/nul
+cd ${WPLIB_BOX_CLI_DIR}
+sudo git checkout -q --force ${VERSION}  > /dev/nul
 
 if [ ! -f "${WPLIB_BOX_CLI_VERSION_FILE}" ]
 then
