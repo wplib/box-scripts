@@ -11,8 +11,6 @@
 #
 WPLIB_BOX_SCRIPTS_REPO="https://github.com/wplib/box-scripts"
 WPLIB_BOX_CLI_DIR="/opt/box"
-WPLIB_BOX_LOG_DIR="${WPLIB_BOX_CLI_DIR}/log"
-WPLIB_BOX_CLI_DEBUG_LOG_FILE="${WPLIB_BOX_LOG_DIR}/cli-debug.log"
 WPLIB_BOX_CLI_VERSION_FILE="${WPLIB_BOX_CLI_DIR}/version"
 DEFAULT_VERSION="master"
 
