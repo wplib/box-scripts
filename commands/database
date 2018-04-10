@@ -180,11 +180,10 @@ function database_import() {
         # MariaDB does not support 'utf8mb4_unicode_520_ci' but does support 'utf8mb4_unicode_ci'
         # This should become a lot more intelligent but for now it should suffice.
         #
-        output "Stripping '520' from 'utf8mb4_unicode_520_ci' in ${importfilepath}"
+        output "Converting 'utf8mb4_unicode_520_ci' to 'utf8mb4_unicode_ci'"
         if [ ! $(has_arg --dryrun) ]; then
             sed -i -e 's/utf8mb4_unicode_520_ci/utf8mb4_unicode_ci/g' "${importfilepath}"
         fi
-        output "520 stripped"
     fi
 
     #
