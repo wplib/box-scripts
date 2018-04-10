@@ -16,12 +16,6 @@ WPLIB_BOX_CLI_DEBUG_LOG_FILE="${WPLIB_BOX_LOG_DIR}/cli-debug.log"
 WPLIB_BOX_CLI_VERSION_FILE="${WPLIB_BOX_CLI_DIR}/version"
 DEFAULT_VERSION="master"
 
-#
-# Delete the next lines after /opt/box/log exists in VM.
-#
-mkdir -p "${WPLIB_BOX_LOG_DIR}"
-touch "${WPLIB_BOX_CLI_DEBUG_LOG_FILE}"
-
 
 # Determine version to run.
 if [ "" != "$1" ] ; then
