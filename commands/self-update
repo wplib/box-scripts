@@ -14,15 +14,13 @@ WPLIB_BOX_CLI_DEBUG_LOG_FILE="/opt/box/log/cli-debug.log"
 DEFAULT_VERSION="master"
 
 # Determine version to run.
-if [ "$1" == "" ]
-then
+if [ "" != "$1" ] ; then
+	VERSION="$1"
+else
 	VERSION="$(cat "${WPLIB_BOX_CLI_VERSION_FILE}")"
-	if [ "$DEFAULT_VERSION" == "" ]
-	then
+	if [ "$DEFAULT_VERSION" == "" ] ; then
 		VERSION=${DEFAULT_VERSION}
 	fi
-else
-	VERSION="$1"
 fi
 
 echo "# WPLib-Box: Updating ${WPLIB_BOX_CLI_DIR} with version ${VERSION}"
