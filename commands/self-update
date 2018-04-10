@@ -10,13 +10,14 @@
 # Don't reference common variables as they may not exist.
 WPLIB_BOX_SCRIPTS_REPO="https://github.com/wplib/box-scripts"
 WPLIB_BOX_CLI_DIR="/opt/box"
+WPLIB_BOX_CLI_VERSION_FILE="/opt/box/version"
 DEFAULT_VERSION="master"
 
 
 # Determine version to run.
 if [ "$1" == "" ]
 then
-	VERSION="`cat ${WPLIB_BOX_CLI_DIR}/version`"
+	VERSION="$(cat "${WPLIB_BOX_CLI_VERSION_FILE}")"
 	if [ "$DEFAULT_VERSION" == "" ]
 	then
 		VERSION=${DEFAULT_VERSION}
@@ -25,7 +26,7 @@ else
 	VERSION="$1"
 fi
 
-echo "# WPLib-Box: Updating /opt/box with version ${VERSION}"
+echo "# WPLib-Box: Updating ${WPLIB_BOX_CLI_DIR} with version ${VERSION}"
 if [ -d "${WPLIB_BOX_CLI_DIR}" ]
 then
 	if [ -d "${WPLIB_BOX_CLI_DIR}-LAST" ]
@@ -39,16 +40,14 @@ sudo git clone -q ${WPLIB_BOX_SCRIPTS_REPO} ${WPLIB_BOX_CLI_DIR} > /dev/null
 cd ${WPLIB_BOX_CLI_DIR}
 sudo git checkout -q --force ${VERSION} > /dev/null
 
-if [ ! -f /opt/box/version ]
+if [ ! -f "${WPLIB_BOX_CLI_VERSION_FILE}" ]
 then
-	sudo touch /opt/box/version
-	sudo chown vagrant:vagrant /opt/box/version
-	echo $VERSION > /opt/box/version
+	sudo touch "${WPLIB_BOX_CLI_VERSION_FILE}"
+	sudo chown vagrant:vagrant "${WPLIB_BOX_CLI_VERSION_FILE}"
+	echo $VERSION > "${WPLIB_BOX_CLI_VERSION_FILE}"
 fi
 
-sudo chown -R vagrant:vagrant /opt/box
-
-
+sudo chown -R vagrant:vagrant "${WPLIB_BOX_CLI_DIR}"
 
 
 
