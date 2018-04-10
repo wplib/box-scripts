@@ -36,13 +36,6 @@ export WPLIB_BOX_DIR="/vagrant"
 export WPLIB_BOX_LOG_DIR="${WPLIB_BOX_CLI_DIR}/log"
 export WPLIB_BOX_CLI_DEBUG_LOG_FILE="${WPLIB_BOX_LOG_DIR}/cli-debug.log"
 
-#
-# Deleted once the box has a log dir and an empty cli-debug.log
-#
-mkdir -p "${WPLIB_BOX_LOG_DIR}"
-chown vagrant:vagrant "${WPLIB_BOX_LOG_DIR}"
-touch "${WPLIB_BOX_CLI_DEBUG_LOG_FILE}"
-
 
 #
 # These need to be deprecated and replaced with project.json
