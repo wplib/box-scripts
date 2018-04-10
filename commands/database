@@ -166,9 +166,6 @@ function database_import() {
     output "Dropping any prior tables"
 
     if [ ! $(has_arg --dryrun) ]; then
-        #
-        # @TODO: Switch this to using Docker
-        #
         box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
         cat /tmp/mysql-table-list.txt | while read table
 	do
