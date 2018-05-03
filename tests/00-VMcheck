@@ -1,0 +1,25 @@
+#!/bin/bash
+
+case $1 in
+	'info')
+		echo "`basename $0`	- Test: Startup all containers."
+		exit 42
+		;;
+esac
+
+. /opt/box/commands/test
+
+echo_info "Check /var/www mountpoints."
+exec_cmd /opt/box/commands/check-mounts
+
+
+echo_info "Check Docker can stop and start."
+if [ -e /var/run/docker.sock ]
+then
+	exec_cmd service docker stop
+fi
+
+exec_cmd service docker start
+exec_cmd docker info
+
+

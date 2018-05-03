@@ -7,8 +7,6 @@ export WPLIB_BOX_PHPCLI=$(which php7.0)
 export WPLIB_BOX_DIR="/vagrant"
 export WPLIB_BOX_CLI_DIR="/opt/box"
 export WPLIB_BOX_CLI_CMD="/opt/box/box"
-export WPLIB_BOX_CLI_VERSION_FILE="/opt/box/version"
-
 export WPLIB_BOX_WEB_ROOT_DIR="/var/www"
 export WPLIB_BOX_WATCHERS_DIR="${WPLIB_BOX_WEB_ROOT_DIR}/watchers"
 
@@ -31,10 +29,6 @@ export WPLIB_BOX_PLUGINS_DIR=$(find_wp_plugins_dir)
 export WPLIB_BOX_MU_PLUGINS_DIR=$(find_wp_mu_plugins_dir)
 export WPLIB_BOX_VENDOR_DIR=$(find_composer_vendor_dir)
 
-export WPLIB_BOX_DIR="/vagrant"
-
-export WPLIB_BOX_LOG_DIR="${WPLIB_BOX_CLI_DIR}/log"
-export WPLIB_BOX_CLI_DEBUG_LOG_FILE="${WPLIB_BOX_LOG_DIR}/cli-debug.log"
 
 
 #
