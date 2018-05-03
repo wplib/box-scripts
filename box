@@ -5,6 +5,7 @@
 
 source /opt/box/includes/functions
 source /opt/box/includes/constants
+source "${WPLIB_BOX_COLORS_FILE}"
 
 #
 #
@@ -26,7 +27,7 @@ if [ "" == "${error}" ];then
 
     if [ "${WPLIB_BOX_COMMAND}" == "help" ]; then
         source "${command_file}"
-        check_updates_available "$*"
+        #check_updates_available "$*"
         echo 1>&2
         exit
     fi

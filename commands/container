@@ -9,8 +9,6 @@
 
 DEFAULT_PROJECT="wplib"
 
-source "${WPLIB_BOX_COLORS_FILE}"
-
 # Return codes from functions.
 RETURN_OK="0"
 RETURN_NO_IMAGE_NAME="1"
@@ -122,8 +120,8 @@ error_car()
 error_cas()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container already stopped.${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W018/${RESET}"
+	echo "$ECHO_PREFIX ${CYAN}${IMAGE}${GREEN} container already stopped.${RESET}"
+	# echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W018/${RESET}"
 	return $RETURN
 }
 

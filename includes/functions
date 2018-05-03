@@ -14,8 +14,8 @@ function check_updates_available() {
         local latest_remote=$(git ls-remote --heads "${remote_url}" | grep "refs/heads/master" | cut --fields 1)
         if [[ "${latest_local}" != "${latest_remote}" ]]; then
             echo
-            echo -e "\tNOTICE: Your box scripts directory needs updating."
-            echo -e "\tTo update simply run git pull in ${WPLIB_BOX_CLI_DIR}."
+            echo -e "\tNOTICE: Your box scripts needs updating."
+            echo -e "\tTo update simply run box self-update"
         fi
         cd "${save_dir}"
 

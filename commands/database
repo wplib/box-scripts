@@ -8,8 +8,7 @@
 DEFAULT_PROJECT="wplib"
 
 DB_HOST_IP="172.42.0.1"
-source "${WPLIB_BOX_COLORS_FILE}"
-source "${WPLIB_BOX_COMMANDS_DIR}/readJSON"
+source "${WPLIB_BOX_INCLUDES_DIR}/read-json"
 
 trap ctrl_c INT
 
@@ -167,9 +166,6 @@ function database_import() {
     output "Dropping any prior tables"
 
     if [ ! $(has_arg --dryrun) ]; then
-        #
-        # @TODO: Switch this to using Docker
-        #
         box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
         cat /tmp/mysql-table-list.txt | while read table
 	do

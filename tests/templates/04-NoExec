@@ -1,0 +1,12 @@
+#!/bin/bash
+
+case $1 in
+	'info')
+		echo "`basename $0`	- A no exec script"
+		exit 42
+		;;
+esac
+
+echo "You shouldn't ever see this script appear"
+
+exit 7

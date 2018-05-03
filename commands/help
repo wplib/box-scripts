@@ -1,18 +1,21 @@
 #!/usr/bin/env bash
 
-echo
-echo WPLib Box CLI Usage:
-echo
-echo "  - box <command>"
-echo
-echo WPLib Box CLI Commands:
-echo
-for file in $WPLIB_BOX_COMMANDS_DIR/*; do
-    if [ -f "${file}" ]; then
-        basename=$(basename "$file")
-        echo "   - ${basename}"
-    fi
-done
-echo
-echo IMPORTANT!  These commands WILL BE CHANGING in a future release of WPLib Box. Be warned!
+cat <<EOF
 
+${YELLOW}WPLib Box ${GREEN}CLI${RESET} usage:
+
+box ${GREEN}database${RESET} [<args>]   - Manage databases.
+box ${GREEN}container${RESET} [<args>]  - Manage Docker containers.
+
+box ${GREEN}start${RESET}               - Start Docker containers found in project.json's services object.
+box ${GREEN}restart${RESET}             - Restart Docker containers found in project.json's services object.
+box ${GREEN}shutdown${RESET}            - Shutdown all Docker containers.
+
+box ${GREEN}status${RESET}              - Output status of WPLib Box's standard containers.
+box ${GREEN}version${RESET}             - Display the current version of this WPLib Box VM.
+box ${GREEN}self-update${RESET}         - Update this CLI tool to the latest version for this Box version.
+
+box ${GREEN}test${RESET}                - Update this CLI tool to the latest version for this Box version.
+
+box [${GREEN}help${RESET}]              - Display the above information.
+EOF

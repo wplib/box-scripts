@@ -24,6 +24,11 @@ if [ -f "$1" ]; then
        ;;
     esac
 
+    # Replace spaces in name with _
+    containername=${name// /_}
+    # Convert to lower case
+    containername=${containername,,}_${version//./_}
+
     echo "Removing ${containername} container..."
     docker rm ${containername} 2>&1 > /dev/null
     echo "Removing ${container}:${version:-latest} Docker image..."

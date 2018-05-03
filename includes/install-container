@@ -3,14 +3,34 @@
 if [ -f "$1" ]; then
     name=$(jq -r ".name" ${1})
     containername=$(jq -r ".containername" ${1})
-    options=$(jq -r ".options" ${1})
     container=$(jq -r ".download" ${1})
     version=$(jq -r ".version" ${1})
     type=$(jq -r ".type" ${1})
+    working=$(jq -r ".working_directory" ${1})
+    port=$(jq -r ".port" ${1})
     subtype=${type#*\/}
 
+    case "${subtype}" in
+      webserver)
+        if [ -n "${working}" ]; then
+            working=""
+        fi
+        if [ -n "${port}" ]; then
+            port=""
+        fi
+        volume="-v /var/www:${working}"
+        ports="-p 8080:${port}"
+        ;;
+    esac
+
+    # Replace spaces in name with _
+    containername=${name// /_}
+    # Convert to lower case
+    containername=${containername,,}_${version//./_}
+    
     # Create the docker container
     echo "Creating container ${containername} from ${container}"
+    options="${volume} ${ports}"
     docker create ${options} --name ${containername} ${container}:${version}
 
     # Add the commands to the scripts directory
