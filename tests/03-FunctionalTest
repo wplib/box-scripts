@@ -1,0 +1,70 @@
+#!/bin/bash
+
+case $1 in
+	'info')
+		echo "`basename $0`	- Test: Startup all containers."
+		exit 42
+		;;
+esac
+
+. /opt/box/commands/test
+
+
+echo_info "PHP Version:"
+cat > /var/www/test.php <<EOF
+<?php
+echo phpversion();
+echo "\n";
+?>
+EOF
+# exec_cmd curl -sSH "'Host: wplib.box'" http://127.0.0.1/test.php
+exec_cmd curl -sS http://127.0.0.1/test.php
+
+
+echo_info "PHP Extensions:"
+cat > /var/www/test.php <<EOF
+<?php
+print_r(get_loaded_extensions());
+echo "\n";
+?>
+EOF
+exec_cmd curl -sS http://127.0.0.1/test.php
+
+
+echo_info "PHP include path:"
+cat > /var/www/test.php <<EOF
+<?php
+echo get_include_path();
+echo "\n";
+echo ini_get('include_path');
+echo "\n";
+?>
+EOF
+exec_cmd curl -sS http://127.0.0.1/test.php
+
+
+echo_info "PHP user:"
+cat > /var/www/test.php <<EOF
+<?php
+echo get_current_user();
+echo "\n";
+?>
+EOF
+exec_cmd curl -sS http://127.0.0.1/test.php
+
+
+echo_info "PHP constants:"
+cat > /var/www/test.php <<EOF
+<?php
+# print_r(get_defined_constants(true));
+print_r(getenv());
+echo "\n";
+?>
+EOF
+exec_cmd curl -sS http://127.0.0.1/test.php
+
+
+
+rm -f /var/www/test.php
+
+exit 0
