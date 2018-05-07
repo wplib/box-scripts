@@ -25,15 +25,26 @@ After that type `box` to get a list of commands, or explicitly specify `help`:
 
 ![box help](https://github.com/wplib/box-scripts/raw/0.16.1/docs/Help-box.png)
 
-![box help](https://github.com/wplib/box-scripts/raw/0.16.1/docs/Help-container.png)
+![box container](https://github.com/wplib/box-scripts/raw/0.16.1/docs/Help-container.png)
 
-![box help](https://github.com/wplib/box-scripts/raw/0.16.1/docs/Help-database.png)
+![box database](https://github.com/wplib/box-scripts/raw/0.16.1/docs/Help-database.png)
 
-![box help](https://github.com/wplib/box-scripts/raw/0.16.1/docs/Help-test.png)
+![box test](https://github.com/wplib/box-scripts/raw/0.16.1/docs/Help-test.png)
 
 Do NOT forget to first enter the WPLib Box command line by first running this command from your *host* computer's command line:
 
+    vagrant up
+
+![vagrant up](https://github.com/wplib/box-scripts/raw/0.16.1/docs/vagrant-up.png)
+
     vagrant ssh
+
+![vagrant ssh](https://github.com/wplib/box-scripts/raw/0.16.1/docs/vagrant-ssh.png)
+
+    vagrant halt
+
+![vagrant halt](https://github.com/wplib/box-scripts/raw/0.16.1/docs/vagrant-halt.png)
+
 
 ## Status/Disclaimer
 
