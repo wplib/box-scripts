@@ -1,3 +1,15 @@
+```
+ __          _______  _      _ _       ____
+ \ \        / /  __ \| |    (_) |     |  _ \
+  \ \  /\  / /| |__) | |     _| |__   | |_) | _____  __
+   \ \/  \/ / |  ___/| |    | | '_ \  |  _ < / _ \ \/ /
+    \  /\  /  | |    | |____| | |_) | | |_) | (_) >  <
+     \/  \/   |_|    |______|_|_.__/  |____/ \___/_/\_\
+```
+
+![WPLib-Box](https://github.com/wplib/wplib.github.io/raw/master/WPLib-Box-100x.png)
+
+
 # Box Scripts for the WPLib Box
 
 
@@ -10,6 +22,8 @@ If you are using the latest &mdash; [WPLib Box 0.10.9 or later](https://github.c
 After that type `box` to get a list of commands, or explicitly specify `help`:
 
     box help
+
+![box help](https://github.com/wplib/box-scripts/raw/0.16.1/docs/Help-box.png)
 
 Do NOT forget to first enter the WPLib Box command line by first running this command from your *host* computer's command line:
 
