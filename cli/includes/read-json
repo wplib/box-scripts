@@ -28,7 +28,7 @@ RETURN_NO_IMAGE_JSON="3"
 RETURN_INVALID_PROJECT="4"
 
 
-VERSION="`cat ${WPLIB_BOX_CLI_DIR}/version`"
+VERSION="`cat ${WPLIB_BOX_BASE_DIR}/version`"
 DEFAULTS_FILE="${WPLIB_BOX_CLI_DIR}/etc/releases/$VERSION/project.json"
 if [ ! -f $DEFAULTS_FILE ]
 then

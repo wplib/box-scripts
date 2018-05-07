@@ -4,5 +4,5 @@
 #
 #       box version
 #
-echo "WPLib: You are running version $(cat "${WPLIB_BOX_CLI_DIR}/version")"
+echo "WPLib: You are running version $(cat "${WPLIB_BOX_BASE_DIR}/version")"
 
