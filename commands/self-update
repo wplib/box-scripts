@@ -13,6 +13,19 @@ WPLIB_BOX_CLI_DIR="/opt/box"
 DEFAULT_VERSION="master"
 
 
+# Determine version to run.
+if [ "$1" == "" ]
+then
+	VERSION="`cat ${WPLIB_BOX_CLI_DIR}/version`"
+	if [ "$DEFAULT_VERSION" == "" ]
+	then
+		VERSION=${DEFAULT_VERSION}
+	fi
+else
+	VERSION="$1"
+fi
+
+
 ################################################################################
 # Pull from GitHub.
 if [ ! -d ${WPLIB_BOX_CLI_DIR} ]
@@ -36,7 +49,7 @@ git diff --name-only | xargs git checkout -q
 # Add any locally updated and non-tracked files to the cache.
 git add -A .
 # Finally checkout the branch/tag.
-git checkout -q ${VERSION}
+git checkout -q ${VERSION} 2>/dev/null
 echo "Done"
 rm /tmp/self-update.$$
 EOF
