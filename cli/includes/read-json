@@ -29,10 +29,10 @@ RETURN_INVALID_PROJECT="4"
 
 
 VERSION="`cat ${WPLIB_BOX_BASE_DIR}/version`"
-DEFAULTS_FILE="${WPLIB_BOX_CLI_DIR}/etc/releases/$VERSION/project.json"
+DEFAULTS_FILE="${WPLIB_BOX_BASE_DIR}/etc/releases/$VERSION/project.json"
 if [ ! -f $DEFAULTS_FILE ]
 then
-	echo "$ECHO_PREFIX ${RED}Error: Unkown release ${CYAN}${VERSION}${RESET}."
+	echo "$ECHO_PREFIX ${RED}Error: Unknown release ${CYAN}${VERSION}${RESET}."
 	exit 1
 fi
 
