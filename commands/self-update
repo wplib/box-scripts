@@ -35,7 +35,7 @@ git fetch -q --all
 git add -A .
 # Find any locally updated and tracked files - force overwrite.
 git diff --name-only | xargs git checkout -q
-$ Finally checkout the branch/tag.
+# Finally checkout the branch/tag.
 git checkout -q ${VERSION}
 echo "Done"
 rm /tmp/self-update.$$
