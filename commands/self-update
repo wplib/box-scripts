@@ -31,10 +31,10 @@ echo "# WPLib-Box: Updating /opt/box with version ${VERSION}"
 
 # Fetch the latest tags/branches.
 git fetch -q --all
-# Add any locally updated files to the cache.
-git add -A .
 # Find any locally updated and tracked files - force overwrite.
 git diff --name-only | xargs git checkout -q
+# Add any locally updated and non-tracked files to the cache.
+git add -A .
 # Finally checkout the branch/tag.
 git checkout -q ${VERSION}
 echo "Done"
