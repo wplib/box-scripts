@@ -56,4 +56,4 @@ EOF
 
 
 chmod a+x /tmp/self-update.$$
-bash /tmp/self-update.$$
+exec bash /tmp/self-update.$$
