@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source /opt/box/includes/functions
+source /opt/box/includes/constants
+
 case $1 in
 	'info')
 		echo "`basename $0`	- A simple failure test."

@@ -6,6 +6,8 @@
 #	Pull the complete list of WPLib container packages from Docker Hub into local JSON files.
 #	Manage containers - stop/start and most importantly creating containers using the embedded JSON string in the image.
 
+source /opt/box/cli/includes/functions
+source /opt/box/cli/includes/constants
 
 DEFAULT_PROJECT="wplib"
 
@@ -222,21 +224,21 @@ d_exists()
 d_update()
 {
 	echo -n "$ECHO_PREFIX ${GREEN}Updating repository list${RESET}."
-	if [ ! -d /opt/box/etc ]
+	if [ ! -d ${WPLIB_BOX_BASE_DIR}/etc ]
 	then
-		sudo mkdir -p /opt/box/etc
+		sudo mkdir -p ${WPLIB_BOX_BASE_DIR}/etc
 	fi
-	if [ ! -d /opt/box/etc/images ]
+	if [ ! -d ${WPLIB_BOX_BASE_DIR}/etc/images ]
 	then
-		sudo mkdir -p /opt/box/etc/images
+		sudo mkdir -p ${WPLIB_BOX_BASE_DIR}/etc/images
 	fi
 
-	sudo wget -qNO /opt/box/etc/respositories.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/?page_size=256
-	IMAGES="`jq -r '.results|.[]|.name' /opt/box/etc/respositories.json`"
+	sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/respositories.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/?page_size=256
+	IMAGES="`jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/respositories.json`"
 	for IMAGE_NAME in $IMAGES
 	do
 		echo -n "."
-		sudo wget -qNO /opt/box/etc/images/${IMAGE_NAME}.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/${IMAGE_NAME}/tags/?page_size=256
+		sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/${IMAGE_NAME}/tags/?page_size=256
 	done
 	echo "Done"
 }
@@ -245,10 +247,10 @@ d_update()
 d_show()
 {
 	echo "$ECHO_PREFIX ${GREEN}Available images on repository.${RESET}"
-	IMAGES="`jq -r '.results|.[]|.name' /opt/box/etc/respositories.json`"
+	IMAGES="`jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/respositories.json`"
 	for IMAGE_NAME in $IMAGES
 	do
-		VERSIONS="`jq -r '.results|.[]|.name' /opt/box/etc/images/${IMAGE_NAME}.json`"
+		VERSIONS="`jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json`"
 		for IMAGE_VERSION in $VERSIONS
 		do
 			echo "$DEFAULT_PROJECT/${IMAGE_NAME}:$IMAGE_VERSION"

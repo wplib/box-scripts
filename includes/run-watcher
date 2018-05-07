@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-source /opt/box/includes/functions
-source /opt/box/includes/constants
-echo "[${WPLIB_BOX_LOGS_DIR}]"
-source "$@"

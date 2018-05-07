@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source /opt/box/includes/functions
+source /opt/box/includes/constants
+
 case $1 in
 	'info')
 		echo "`basename $0`	- Test: Startup all containers."
@@ -7,10 +10,10 @@ case $1 in
 		;;
 esac
 
-. /opt/box/commands/test
+. ${WPLIB_BOX_CLI_DIR}/commands/test
 
 echo_info "Check /var/www mountpoints."
-exec_cmd /opt/box/commands/check-mounts
+exec_cmd ${WPLIB_BOX_CLI_DIR}/commands/check-mounts
 
 
 echo_info "Check Docker can stop and start."

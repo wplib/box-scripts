@@ -3,6 +3,9 @@
 # Master test script.
 #
 
+source /opt/box/cli/includes/functions
+source /opt/box/cli/includes/constants
+
 
 DEFAULT_PROJECT="wplib"
 
@@ -60,7 +63,7 @@ echo_error()
 
 ################################################################################
 # OK. This is where things get funky, so I need to explain the flow
-# 1. THIS script will call scripts within /opt/box/tests.
+# 1. THIS script will call scripts within ${WPLIB_BOX_CLI_DIR}/tests.
 # 2. Each of those scripts will SOURCE THIS script to pick up some common functions.
 #
 # So place everything above here that should be included in called scripts.
@@ -96,9 +99,9 @@ d_ls()
 {
 	for SCRIPT in $ALLSCRIPTS
 	do
-		if [[ -x "/opt/box/tests/$SCRIPT" &&  -f "/opt/box/tests/$SCRIPT" ]]
+		if [[ -x "${WPLIB_BOX_CLI_DIR}/tests/$SCRIPT" &&  -f "${WPLIB_BOX_CLI_DIR}/tests/$SCRIPT" ]]
 		then
-			STDOUT="`/opt/box/tests/$SCRIPT info`"
+			STDOUT="`${WPLIB_BOX_CLI_DIR}/tests/$SCRIPT info`"
 			if [ "$?" == "$VALID_RETURN" ]
 			then
 				echo "$STDOUT"
@@ -115,13 +118,13 @@ d_exec()
 	SCRIPT="$1"
 	shift
 
-	if [ ! -r "/opt/box/tests/$SCRIPT" ]
+	if [ ! -r "${WPLIB_BOX_CLI_DIR}/tests/$SCRIPT" ]
 	then
 		echo "$ECHO_PREFIX ${YELLOW}NO SCRIPT	- ${CYAN}${SCRIPT}${RESET}"
 		return $RETURN_NOSCRIPT
 	fi
 
-	if [ ! -x "/opt/box/tests/$SCRIPT" ]
+	if [ ! -x "${WPLIB_BOX_CLI_DIR}/tests/$SCRIPT" ]
 	then
 		echo "$ECHO_PREFIX ${YELLOW}NO EXEC	- ${CYAN}${SCRIPT}${RESET}"
 		return $RETURN_NOEXEC
@@ -129,7 +132,7 @@ d_exec()
 
 	echo "################################################################################"
 	echo "$ECHO_PREFIX ${YELLOW}Run${RESET}	- ${CYAN}${SCRIPT}${RESET}"
-	/opt/box/tests/$SCRIPT "$@"
+	${WPLIB_BOX_CLI_DIR}/tests/$SCRIPT "$@"
 	RETURN="$?"
 	if [ "$RETURN" == "$RETURN_OK" ]
 	then
@@ -147,15 +150,15 @@ d_help()
 {
 	cat <<EOF
 box test 		- Show this help.
-box test ${GREEN}list${RESET}		- List all scripts in /opt/box/tests.
-box test ${GREEN}run${RESET}		- Run all tests in /opt/box/tests.
+box test ${GREEN}list${RESET}		- List all scripts in ${WPLIB_BOX_CLI_DIR}/tests.
+box test ${GREEN}run${RESET}		- Run all tests in ${WPLIB_BOX_CLI_DIR}/tests.
 box test ${GREEN}run [script]${RESET}	- Run a specific test.
 EOF
 }
 
 
 ################################################################################
-ALLSCRIPTS="`ls -1 /opt/box/tests`"
+ALLSCRIPTS="`ls -1 ${WPLIB_BOX_CLI_DIR}/tests`"
 
 CMD="$1"
 shift

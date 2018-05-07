@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source /opt/box/includes/functions
+source /opt/box/includes/constants
+
 case $1 in
 	'info')
 		echo "`basename $0`	- A simple Goodbye World test."
@@ -9,6 +12,6 @@ esac
 
 echo "slater"
 sleep 5
-ls -l /opt/box/commands
+ls -l ${WPLIB_BOX_CLI_DIR}/commands
 echo "done"
 

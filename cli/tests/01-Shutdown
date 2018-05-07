@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source /opt/box/includes/functions
+source /opt/box/includes/constants
+
 case $1 in
 	'info')
 		echo "`basename $0`	- Test: Shutdown all containers."
@@ -7,7 +10,7 @@ case $1 in
 		;;
 esac
 
-. /opt/box/commands/test
+. ${WPLIB_BOX_CLI_DIR}/commands/test
 
 
 exec_cmd docker container ls -q

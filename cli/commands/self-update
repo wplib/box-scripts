@@ -9,14 +9,14 @@
 
 # Don't reference common variables as they may not exist.
 WPLIB_BOX_SCRIPTS_REPO="https://github.com/wplib/box-scripts"
-WPLIB_BOX_CLI_DIR="/opt/box"
+WPLIB_BOX_BASE_DIR="/opt/box"
 DEFAULT_VERSION="master"
 
 
 # Determine version to run.
 if [ "$1" == "" ]
 then
-	VERSION="`cat ${WPLIB_BOX_CLI_DIR}/version`"
+	VERSION="`cat ${WPLIB_BOX_BASE_DIR}/version`"
 	if [ "$DEFAULT_VERSION" == "" ]
 	then
 		VERSION=${DEFAULT_VERSION}
@@ -28,19 +28,19 @@ fi
 
 ################################################################################
 # Pull from GitHub.
-if [ ! -d ${WPLIB_BOX_CLI_DIR} ]
+if [ ! -d ${WPLIB_BOX_BASE_DIR} ]
 then
 	cat <<EOF > /tmp/self-update.$$
-echo "# WPLib-Box: Initializing /opt/box with version ${VERSION}"
-sudo git clone -q ${WPLIB_BOX_SCRIPTS_REPO} ${WPLIB_BOX_CLI_DIR} > /dev/null
+echo "# WPLib-Box: Initializing ${WPLIB_BOX_BASE_DIR} with version ${VERSION}"
+sudo git clone -q ${WPLIB_BOX_SCRIPTS_REPO} ${WPLIB_BOX_BASE_DIR} > /dev/null
 
 EOF
 fi
 
 
 cat <<EOF > /tmp/self-update.$$
-cd ${WPLIB_BOX_CLI_DIR}
-echo "# WPLib-Box: Updating /opt/box with version ${VERSION}"
+cd ${WPLIB_BOX_BASE_DIR}
+echo "# WPLib-Box: Updating ${WPLIB_BOX_BASE_DIR} with version ${VERSION}"
 
 # Fetch the latest tags/branches.
 git fetch -q --all
