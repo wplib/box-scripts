@@ -517,7 +517,7 @@ case $CMD in
 	*)
 		if [ "$1" == "" ]
 		then
-			echo "$ECHO_PREFIX ${RED}Error: No database command provided.${RESET}"
+			echo "$ECHO_PREFIX ${WARNING}Warning: No database command provided.${RESET}"
 			database_help
 			exit 1
 		fi
