@@ -114,15 +114,15 @@ error_cai()
 error_car()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container already running.${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W017/${RESET}"
+	echo "$ECHO_PREFIX ${GREEN}Container already running: ${CYAN}${IMAGE}${RESET}"
+	# echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W017/${RESET}"
 	return $RETURN
 }
 
 error_cas()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${CYAN}${IMAGE}${GREEN} container already stopped.${RESET}"
+	echo "$ECHO_PREFIX ${GREEN}Container already stopped: ${CYAN}${IMAGE}${RESET}"
 	# echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W018/${RESET}"
 	return $RETURN
 }
@@ -452,15 +452,20 @@ d_start()
 			then
 				error_car
 			else
-				echo "$ECHO_PREFIX ${GREEN}Starting container: ${CYAN}${IMAGE}${RESET}"
-				docker start ${CONTAINER_NAME}
+				echo -n "$ECHO_PREFIX ${GREEN}Starting container: ${CYAN}${IMAGE}${RESET} ... "
+				TEMPFILE="`mktemp /tmp/box-container.XXX`"
+				docker start ${CONTAINER_NAME} >& $TEMPFILE
+
 				if [ "$?" == "1" ]
 				then
 					echo "${RED}NOT OK${RESET}"
 					error_ccbs
+					cat $TEMPFILE
 				else
 					echo "${GREEN}OK${RESET}"
 				fi
+
+				rm -f $TEMPFILE
 			fi
 			;;
 
@@ -476,7 +481,6 @@ d_start()
 			error_pns
 			;;
 	esac
-	echo ""
 
 	return $RETURN
 }
@@ -492,15 +496,20 @@ d_stop()
 			then
 				error_cas
 			else
-				echo "$ECHO_PREFIX ${GREEN}Stopping container: ${CYAN}${IMAGE}${RESET}"
-				docker stop ${CONTAINER_NAME}
+				echo -n "$ECHO_PREFIX ${GREEN}Stopping container: ${CYAN}${IMAGE}${RESET} ... "
+				TEMPFILE="`mktemp /tmp/box-container.XXX`"
+				docker stop ${CONTAINER_NAME} >& $TEMPFILE
+
 				if [ "$?" == "1" ]
 				then
 					echo "${RED}NOT OK${RESET}"
 					error_ccbd
+					cat $TEMPFILE
 				else
 					echo "${GREEN}OK${RESET}"
 				fi
+
+				rm -f $TEMPFILE
 			fi
 			;;
 
@@ -516,7 +525,6 @@ d_stop()
 			error_pns
 			;;
 	esac
-	echo ""
 
 	return $RETURN
 }
@@ -524,13 +532,18 @@ d_stop()
 
 d_shutdown()
 {
-	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLLib containers${RESET}"
-	docker container ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs docker stop
+	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLLib containers${RESET} ... "
+	TEMPFILE="`mktemp /tmp/box-container.XXX`"
+	docker container ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs docker stop >& $TEMPFILE
 	if [ "$?" == "1" ]
 	then
+		echo "${RED}NOT OK${RESET}"
 		error_csac
+		cat $TEMPFILE
 		return 1
 	fi
+
+	rm -f $TEMPFILE
 
 	return $RETURN_OK
 }
