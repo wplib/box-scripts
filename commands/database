@@ -295,6 +295,7 @@ function database_chunk() {
         --line-bytes="${CHUNK_SIZE}" \
         --numeric-suffixes="1" \
         --additional-suffix=".sql.chunk" \
+        --suffix-length=3 \
         "${backup_file}" \
         "${sql_filename}/${sql_basename}-"
     if [ $? -ne 0 ]; then
