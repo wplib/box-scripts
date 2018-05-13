@@ -156,11 +156,12 @@ function database_import() {
 
     fi
 
+    if [ ! $(has_arg --no-backup) ]; then
         database_backup "${basefile}.bak"
-
         if [ $? -ne 0 ]; then
             output "Error when backing up to ${basefile}.bak"
             return 4
+        fi
     fi
 
     output "Dropping any prior tables"
