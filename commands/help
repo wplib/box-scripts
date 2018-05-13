@@ -19,3 +19,4 @@ box ${GREEN}test${RESET}                - Update this CLI tool to the latest ver
 
 box [${GREEN}help${RESET}]              - Display the above information.
 EOF
+
