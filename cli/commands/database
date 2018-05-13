@@ -164,17 +164,21 @@ function database_import() {
         fi
     fi
 
-    output "Dropping any prior tables"
+    if [ ! $(has_arg --no-droptables) ]; then
 
-    if [ ! $(has_arg --dryrun) ]; then
-        box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
-        cat /tmp/mysql-table-list.txt | while read table
-	do
+        output "Dropping any prior tables"
+
+        if [ ! $(has_arg --dryrun) ]; then
+            box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
+            cat /tmp/mysql-table-list.txt | while read table
+        do
 		box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"
-	done
-        rm /tmp/mysql-table-list.txt
+        done
+            rm /tmp/mysql-table-list.txt
+        fi
+        output "Tables dropped"
+
     fi
-    output "Tables dropped"
 
     if [ "" != "$(cat "${importfilepath}" | grep "utf8mb4_unicode_520_ci")" ]; then
         #
