@@ -50,10 +50,34 @@ d_webadmin="$(jq -r '.services.webadmin' $DEFAULTS_FILE)"
 # Pull in user defined JSON file.
 if [ -f "${WPLIB_BOX_DIR}/project.json" ]
 then
+    #
+    # TODO: Creating these as global variables is very brittle!
+    #       These variables look like local variables in a script
+    #       and they are too easily overwritten by something who
+    #       is not thinking they exists at the time.
+    #
     database="$(jq -r '.services.database' ${WPLIB_BOX_DIR}/project.json)"
     webserver="$(jq -r '.services.webserver' ${WPLIB_BOX_DIR}/project.json)"
     processvm="$(jq -r '.services.processvm' ${WPLIB_BOX_DIR}/project.json)"
     kvstore="$(jq -r '.services.kvstore' ${WPLIB_BOX_DIR}/project.json)"
+    #
+    #       We should change anywhere these are accessed to use
+    #       function calls, or better a recursive call, e.g.
+    #       something like:
+    #
+    #          "$(box project get wordpress/dbserver)"
+    #          "$(box project get wordpress/webserver)"
+    #          "$(box project get wordpress/processvm)"
+    #          "$(box project get wordpress/cacheserver)"
+    #
+    #      Those could be made simplier to call by having the
+    #      following call the above, respectively:
+    #
+    #          "$(get_wordpress_dbserver)"
+    #          "$(get_wordpress_webserver)"
+    #          "$(get_wordpress_processvm)"
+    #          "$(get_wordpress_cacheserver)"
+    #
 fi
 
 
