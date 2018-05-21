@@ -1,0 +1,14 @@
+{
+	"services" :
+	{
+		"database":	"wplib/mysql:5.5.60",
+		"webserver":	"wplib/nginx:1.13.12",
+		"processvm":	"wplib/php-fpm:7.1.16",
+		"kvstore":	"wplib/redis:4.0.9",
+		"mail":		"wplib/mailhog:1.0.0",
+		"proxy":	"wplib/proxy:1.13.12",
+		"cache":	"wplib/memcached:1.5.7",
+		"sqladmin":     "wplib/adminer:4.6.2",
+		"webadmin":	"wplib/wp-cli:1.5.1"
+	}
+}
