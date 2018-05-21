@@ -312,7 +312,15 @@ d_shell()
 				error_cni
 			else
 				# echo "$ECHO_PREFIX ${GREEN}Shell to container: ${CYAN}${IMAGE}${RESET}" 1>&2
-				docker run --name ${CONTAINER_NAME}-shell --rm -i -t ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
+				if [ -t 0 ]
+				then
+					# TTY allocated.
+					docker run --name ${CONTAINER_NAME}-shell --rm -i -t ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
+				else
+					# TTY not allocated.
+					docker run --name ${CONTAINER_NAME}-exec  --rm -i    ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
+				fi
+
 				if [ "$?" == "1" ]
 				then
 					error_ccbi
