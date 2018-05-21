@@ -3,7 +3,7 @@
 # Provisioning and management script for all containers.
 #
 # This is a low level script that will:
-#	Pull the complete list of WPLib container packages from Docker Hub into local JSON files.
+#	Pull the complete list of WPLib Box container packages from Docker Hub into local JSON files.
 #	Manage containers - stop/start and most importantly creating containers using the embedded JSON string in the image.
 
 source /opt/box/cli/includes/functions
@@ -271,11 +271,11 @@ d_reallyclean()
 		read RESPONSE
 		if [ "$RESPONSE" == "Yes please" ]
 		then
-			echo "$ECHO_PREFIX ${GREEN}Shutting down all WPLib containers.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Shutting down all WPLib Box containers.${RESET}"
 			$0 container shutdown
-			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib containers.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib Box containers.${RESET}"
 			docker container ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs -r docker container rm
-			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib images${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib Box images${RESET}"
 			docker image ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs -r docker image rm
 		fi
 	else
@@ -704,8 +704,8 @@ box container ${GREEN}refresh${RESET} <package>	- Refresh an existing container.
 
 box container ${GREEN}update${RESET}		- Update container list from repository.
 box container ${GREEN}show${RESET}		- Show a list of containers available for download.
-box container ${GREEN}shutdown${RESET}		- This will shutdown all WPLib related packages.
-box container ${GREEN}reallyclean${RESET}	- This will remove all WPLib related packages.
+box container ${GREEN}shutdown${RESET}		- This will shutdown all WPLib Box related packages.
+box container ${GREEN}reallyclean${RESET}	- This will remove all WPLib Box related packages.
 box container ${GREEN}inspect${RESET} <package>	- Provide detailed info on image and container.
 box container ${GREEN}log${RESET} <package>	- Show log files from container.
 box container ${GREEN}pull${RESET} <package>	- Just pull a container image. No install.
