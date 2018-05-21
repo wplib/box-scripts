@@ -58,7 +58,7 @@ _box()
 			;;
 
 		'test')
-			COMPREPLY=($(compgen -W "$(find /opt/box/cli/tests -maxdepth 1 -type f -printf '%f\n')" -- $cur))
+			_box_test
 			return 0
 			;;
 
@@ -155,6 +155,42 @@ _box_container_dockerhub()
         done
 
 	COMPREPLY=($(compgen -W "$REPLY" -- $cur))
+	return 0
+}
+
+
+
+
+
+################################################################################
+# Command completion for 'box test'
+_box_test()
+{
+	local cur=${COMP_WORDS[COMP_CWORD]}
+	local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+	case "$prev" in
+		'list'|'ls')
+			_box_container_running
+			return 0
+			;;
+
+
+		'run')
+			_box_test_files
+			return 0
+			;;
+	esac
+
+	COMPREPLY=($(compgen -W "list ls run" -- $cur))
+	return 0
+}
+
+_box_test_files()
+{
+	local cur=${COMP_WORDS[COMP_CWORD]}
+
+	COMPREPLY=($(compgen -W "$(find /opt/box/cli/tests -maxdepth 1 -type f -printf '%f\n')" -- $cur))
 	return 0
 }
 
