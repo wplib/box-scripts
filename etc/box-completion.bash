@@ -51,7 +51,9 @@ _box()
 			;;
 
 		'self-update')
-			COMPREPLY=($(compgen -W "$(git --git-dir=/opt/box/.git tag)" -- $cur))
+			# compgen -W "$(git --git-dir=/opt/box/.git tag)" -- $cur
+			local REPLY="$(git --git-dir=/opt/box/.git for-each-ref --format='%(refname:short)' | cut -d/ -f2- | sort -u | grep '\.')"
+			COMPREPLY=($(compgen -W "$REPLY" -- $cur))
 			return 0
 			;;
 
