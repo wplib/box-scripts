@@ -19,7 +19,6 @@ RETURN_NO_IMAGE_JSON="3"
 RETURN_NO_IMAGE_REPO="4"
 RETURN_INVALID_PROJECT="5"
 
-
 ctrl_c()
 {
         tput sgr0
@@ -542,7 +541,7 @@ d_stop()
 
 d_shutdown()
 {
-	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLLib containers${RESET} ... "
+	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLib Box containers${RESET} ... "
 	TEMPFILE="`mktemp /tmp/box-container.XXX`"
 	docker container ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs docker stop >& $TEMPFILE
 	if [ "$?" == "1" ]
