@@ -22,7 +22,7 @@ check_image()
 
 SCRIPT="`basename $0`"
 REQVERS="`echo $SCRIPT | sed -r 's/wp-([0-9]*\.[0-9]*)/\1/'`"
-EXEC="/usr/local/bin/wp-$REQVERS"
+EXEC="/opt/box/bin/wp-$REQVERS"
 
 
 if [ -x "$EXEC" ]

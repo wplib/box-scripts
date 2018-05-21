@@ -22,7 +22,7 @@ check_image()
 
 SCRIPT="`basename $0`"
 REQVERS="`echo $SCRIPT | sed -r 's/php-([0-9]*\.[0-9]*)/\1/'`"
-EXEC="/usr/local/bin/php-$REQVERS"
+EXEC="/opt/box/bin/php-$REQVERS"
 
 
 if [ -x "$EXEC" ]

@@ -1,0 +1,25 @@
+#!/bin/bash
+
+check_image()
+{
+	# VERSION="`docker container ls -af label=container.class="database" -f "status=running" --format='wplib/{{.Label "container.name"}}:{{.Label "container.version"}}' 2>/dev/null`"
+	VERSION="`docker container ls -af label=container.class="database" -f "status=running" --format='{{.Label "container.version"}}' 2>/dev/null`"
+
+	if [ "$VERSION" == "" ]
+	then
+		echo "WPLib: No MySQL database running."
+		return 1
+	fi
+
+	MAJORVERSION="`docker container ls -af label=container.class="database" -f "status=running" --format='{{.Label "container.majorversion"}}' 2>/dev/null`"
+	IP="`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mysql-${VERSION}`"
+
+	return 0
+}
+
+
+if check_image
+then
+	exec box container shell wplib/mysql:${MAJORVERSION} mysql -h ${IP} "$@"
+fi
+
