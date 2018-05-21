@@ -50,7 +50,7 @@ error_nip()
 error_nfl()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} image not found locally.${RESET}"
+	echo "$ECHO_PREFIX ${RED}Error image not found locally: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W009/${RESET}"
 	return $RETURN
 }
@@ -58,7 +58,7 @@ error_nfl()
 error_dnc()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} image doesn't conform to JSON config format in 0.16 or later.${RESET}"
+	echo "$ECHO_PREFIX ${RED}Error image doesn't conform to JSON config format in 0.16 or later: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W010/${RESET}"
 	return $RETURN
 }
@@ -66,7 +66,7 @@ error_dnc()
 error_dni()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} image does not exist in repository.${RESET}"
+	echo "$ECHO_PREFIX ${RED}Error image does not exist in repository: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W011/${RESET}"
 	return $RETURN
 }
@@ -74,7 +74,7 @@ error_dni()
 error_ccbr()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} container can't be removed.${RESET}"
+	echo "$ECHO_PREFIX ${RED}Error container can't be removed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W012/${RESET}"
 	return $RETURN
 }
@@ -82,7 +82,7 @@ error_ccbr()
 error_ccbi()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Warning ${CYAN}${IMAGE}${RED} container can't be installed.${RESET}"
+	echo "$ECHO_PREFIX ${RED}Error container can't be installed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W013/${RESET}"
 	return $RETURN
 }
@@ -90,7 +90,7 @@ error_ccbi()
 error_ccbs()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} container can't be started.${RESET}"
+	echo "$ECHO_PREFIX ${RED}Error container can't be started: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W014/${RESET}"
 	return $RETURN
 }
@@ -98,7 +98,7 @@ error_ccbs()
 error_ccbd()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error ${CYAN}${IMAGE}${RED} container can't be stopped.${RESET}"
+	echo "$ECHO_PREFIX ${RED}Error container can't be stopped: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W015/${RESET}"
 	return $RETURN
 }
@@ -106,7 +106,7 @@ error_ccbd()
 error_cai()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container already installed.${RESET}"
+	echo "$ECHO_PREFIX ${GREEN}Container already installed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W016/${RESET}"
 	return $RETURN
 }
@@ -115,7 +115,7 @@ error_car()
 {
 	RETURN="$?"
 	echo "$ECHO_PREFIX ${GREEN}Container already running: ${CYAN}${IMAGE}${RESET}"
-	# echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W017/${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W017/${RESET}"
 	return $RETURN
 }
 
@@ -138,7 +138,7 @@ error_csac()
 error_cni()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${YELLOW}Warning ${CYAN}${IMAGE}${YELLOW} container not installed.${RESET}"
+	echo "$ECHO_PREFIX ${YELLOW}Warning container not installed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W020/${RESET}"
 	return $RETURN
 }
@@ -456,10 +456,12 @@ d_start()
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			if [ "$CONTAINER_RUNNING" == "true" ]
+			#if [ "$CONTAINER_RUNNING" == "true" ]
+			#then
+			#	error_car
+			#else
+			if [ "$CONTAINER_RUNNING" != "true" ]
 			then
-				error_car
-			else
 				echo -n "$ECHO_PREFIX ${GREEN}Starting container: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="`mktemp /tmp/box-container.XXX`"
 				docker start ${CONTAINER_NAME} >& $TEMPFILE
