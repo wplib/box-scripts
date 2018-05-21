@@ -38,7 +38,7 @@ EOF
 fi
 
 
-cat <<EOF > /tmp/self-update.$$
+cat <<EOF >> /tmp/self-update.$$
 cd ${WPLIB_BOX_BASE_DIR}
 echo "# WPLib-Box: Updating ${WPLIB_BOX_BASE_DIR} with version ${VERSION}"
 
