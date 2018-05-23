@@ -11,7 +11,7 @@ check_image()
 		return 1
 	fi
 
-	MAJORVERSION="`docker container ls -af label=container.class="database" -f "status=running" --format='{{.Label "container.majorversion"}}' 2>/dev/null`"
+	#MAJORVERSION="`docker container ls -af label=container.class="database" -f "status=running" --format='{{.Label "container.majorversion"}}' 2>/dev/null`"
 	IP="`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' mysql-${VERSION}`"
 
 	return 0
@@ -20,6 +20,6 @@ check_image()
 
 if check_image
 then
-	exec box container shell wplib/mysql:${MAJORVERSION} mysql -h ${IP} "$@"
+	exec box container shell wplib/mysql:${VERSION} mysql -h ${IP} "$@"
 fi
 
