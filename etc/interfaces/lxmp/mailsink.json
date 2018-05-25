@@ -4,8 +4,8 @@
     "network": "pressboxx",
     "restart": "always",
     "ports": [
-        { "host": 8025, "container": 8025 },
-        { "host": 1025, "container": 1025 }
+        { "http": 8025 },
+        { "smtp": 1025 }
     ]
 
 }

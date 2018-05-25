@@ -4,6 +4,6 @@
     "network": "pressboxx",
     "restart": "no",
     "volumes": [
-        { "host": "/var/www", "container": "/var/www", "mount": true }
+        { "files": "/var/www", "mount": true }
     ]
 }

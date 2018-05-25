@@ -6,11 +6,11 @@
     "network": "pressboxx",
     "restart": "unless-stopped",
     "ports": [
-        { "host": 80, "container": 80 },
-        { "host": 443, "container": 443 }
+        { "http": 80 },
+        { "https": 443 }
     ],
     "volumes": [
-        { "host": "/srv/sites", "container": "/srv/sites" }
+        { "projects": "/srv/projects" }
     ],
     "hosts": [
         [ "pressbox/mailhog" ]

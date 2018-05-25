@@ -5,11 +5,11 @@
     "network": "pressboxx",
     "restart": "no",
     "ports": [
-        { "host": 9000, "container": 9000 }
+        { "xdebug": 9000 }
     ],
     "volumes": [
-        { "host": "/var/www", "container": "/var/www" },
-        { "host": "/srv/sites", "container": "/srv/sites" }
+        { "files": "/var/www" },
+        { "projects": "/srv/sites" }
     ],
     "hosts": [
         [ "pressbox/mailhog" ]
