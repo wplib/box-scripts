@@ -1,0 +1,9 @@
+{
+    "type": "container",
+    "description": "The WordPress CLI command line tool",
+    "network": "pressboxx",
+    "restart": "no",
+    "volumes": [
+        { "host": "/var/www", "container": "/var/www", "mount": true }
+    ]
+}

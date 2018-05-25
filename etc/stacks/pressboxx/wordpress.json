@@ -1,0 +1,11 @@
+{
+    "stack": "pressboxx/wordpress",
+    "extends": [ "pressboxx/lxmp" ],
+    "description": "A general-purpose WordPress server",
+    "includes": [
+        "wordpress/cacheserver",
+        "wordpress/wp-cli",
+        "lxmp/dbadmin",
+        "pressboxx/mailsink"
+    ]
+}
