@@ -5,11 +5,12 @@
     "network": "pressboxx",
     "restart": "no",
     "ports": [
-        { "http": 8080 },
-        { "https": 8443 }
+        { "name": "http", "port": 8080, "default": 80 },
+        { "name": "https", "port": 8443, "default": 443 },
+        { "name": "debug", "port": 9999, "default": 9999, "optional": true }
     ],
     "volumes": [
-        { "files": "/var/www" }
+        { "files": "/var/www", "default": "/var/www" }
     ],
     "hosts": [
         [ "pressbox/mailhog" ]

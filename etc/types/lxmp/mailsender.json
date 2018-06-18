@@ -1,10 +1,10 @@
 {
-    "interface": "lxmp/mailsink",
+    "interface": "lxmp/mailsender",
     "description": "An SMTP email capture service such as MailHog or Mail Catcher",
     "network": "pressboxx",
     "restart": "always",
     "ports": [
-        { "http": 8025 },
+        { "http": 8025, "optional": true },
         { "smtp": 1025 }
     ]
 

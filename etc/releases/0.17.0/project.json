@@ -4,13 +4,13 @@
 		"Otherwise the following are the names I have finalized on."
 	],
 	"services" : {
-		"wordpress/dbserver":    "wplib/mysql:5.5.60",
-		"wordpress/webserver":   "wplib/nginx:1.13.12",
-		"wordpress/processvm":   "wplib/php:7.1.16",
-		"wordpress/cacheserver": "wplib/redis:4.0.9",
-		"wordpress/cliapp":      "wplib/wp-cli:1.5.1",
-		"pressboxx/mailproxy":   "wplib/mailhog:1.0.0",
-		"pressboxx/webproxy":    "wplib/proxy:1.13.12",
-		"pressboxx/sqladmin":    "wplib/adminer:4.6.2"
+		"wordpress/dbserver":      "wplib/mysql:5.5.60",
+		"wordpress/webserver":     "wplib/nginx:1.13.12",
+		"wordpress/processvm":     "wplib/php:7.1.16",
+		"wordpress/cacheserver":   "wplib/redis:4.0.9",
+		"wordpress/cliapp":        "wplib/wp-cli:1.5.1",
+		"pressboxx/mailsender": "wplib/mailhog:1.0.0",
+		"pressboxx/webproxy":      "wplib/proxy:1.13.12",
+		"pressboxx/sqladmin":      "wplib/adminer:4.6.2"
 	}
 }

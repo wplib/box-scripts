@@ -6,6 +6,6 @@
         "wordpress/cacheserver",
         "wordpress/wp-cli",
         "lxmp/dbadmin",
-        "pressboxx/mailsink"
+        "lxmp/mailsender"
     ]
 }
