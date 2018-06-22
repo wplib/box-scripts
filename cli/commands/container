@@ -21,7 +21,7 @@ RETURN_INVALID_PROJECT="5"
 
 ctrl_c()
 {
-        tput sgr0
+    tput sgr0
 	echo ""
 	echo "$ECHO_PREFIX Aborting script."
 	exit
