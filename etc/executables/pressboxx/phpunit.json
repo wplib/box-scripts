@@ -1,5 +1,6 @@
 {
-    "type": "php-app",
+    "type": "pressboxx/script",
+    "language": "php",
     "description": "PHPUnit",
     "network": "pressboxx",
     "other": "to-be-determined"

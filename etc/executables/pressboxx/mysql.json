@@ -1,0 +1,8 @@
+{
+    "type": "pressboxx/binexec",
+    "uses": [
+    ],
+    "description": "The MySQL server control command line utility",
+    "volumes": [
+    ]
+}

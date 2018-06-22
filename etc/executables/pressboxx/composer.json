@@ -1,0 +1,9 @@
+{
+    "type": "pressboxx/script",
+    "language": "php",
+    "uses": [
+    ],
+    "description": "The Composer package manager for PHP",
+    "volumes": [
+    ]
+}
