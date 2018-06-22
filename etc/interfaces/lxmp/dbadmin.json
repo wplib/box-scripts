@@ -4,6 +4,6 @@
     "network": "pressboxx",
     "restart": "no",
     "ports": [
-        { "http": 8081 }
+        { "host": 8081, "container": 8080 }
     ]
 }

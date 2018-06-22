@@ -214,15 +214,15 @@ function set_user_var() {
 }
 
 #
-# Reads the config file /vagrant/.wplib.box.json and returns a value
+# Reads the config file ${PROJECT_BASE}/${CURRENT_PROJECT}/.wplib.box.json and returns a value
 #
 # $1 - String The json file to update
 # $2 - String The JQ selector
 # $3 - String The value to assign the JQ selector
 #
-# Usage: set_json_file_var /home/vagrant/wplib.box.json ".user" "Luke Skywalker"
+# Usage: set_json_file_var ${PROJECT_BASE}/${CURRENT_PROJECT}/wplib.box.json ".user" "Luke Skywalker"
 #
-#   Result: /home/vagrant/wplib.box.json ==> "{ "user" : "Luke Skywalker" }
+#   Result: ${PROJECT_BASE}/${CURRENT_PROJECT}/wplib.box.json ==> "{ "user" : "Luke Skywalker" }
 #
 #
 function set_json_file_var() {
@@ -265,7 +265,7 @@ function set_json_file_var() {
 
 
 #
-# Reads the user config file /home/vagrant/.wplib.box.json and echos a value
+# Reads the user config file ${PROJECT_BASE}/${CURRENT_PROJECT}/.wplib.box.json and echos a value
 #
 # $1 - String
 # $2 - String Optional if "require" then error if not there.
@@ -278,7 +278,7 @@ function read_user_config() {
 }
 
 #
-# Reads the config file /vagrant/.wplib.box.json and returns a value
+# Reads the config file ${PROJECT_BASE}/${CURRENT_PROJECT}/.wplib.box.json and returns a value
 #
 # $1 - String
 # $2 - String Optional if "require" then error if not there.

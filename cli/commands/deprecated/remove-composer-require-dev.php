@@ -57,9 +57,9 @@ function remove_composer_require_dev( $root_dir ) {
 		 *
 		 *      Array
 		 *      (
-		 *          [wpackagist-plugin/wp-redis] => [/vagrant/www/content/mu-plugins/wpackagist-plugin/wp-redis],
-		 *          [newclarity/facetwp]         => [/vagrant/www/content/mu-plugins/newclarity/facetwp],
-		 *          [newclarity/bb-plugin]       => [/vagrant/www/content/plugins/newclarity/bb-plugin],
+		 *          [wpackagist-plugin/wp-redis] => [${PROJECT_BASE}/${CURRENT_PROJECT}/www/content/mu-plugins/wpackagist-plugin/wp-redis],
+		 *          [newclarity/facetwp]         => [${PROJECT_BASE}/${CURRENT_PROJECT}/www/content/mu-plugins/newclarity/facetwp],
+		 *          [newclarity/bb-plugin]       => [${PROJECT_BASE}/${CURRENT_PROJECT}/www/content/plugins/newclarity/bb-plugin],
 		 *      )
 		 *
 		 */

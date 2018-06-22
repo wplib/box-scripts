@@ -4,12 +4,12 @@
     "network": "pressboxx",
     "restart": "no",
     "ports": [
-        { "mysql": 3306 }
+        { "host": 3306, "container": 3306 }
     ],
     "volumes": [
-        { "import": "/vagrant/sql" },
-        { "provision": "/vagrant/provision" },
-        { "data": "mysql-5.5" }
+        { "host": "${PROJECT_BASE}/${CURRENT_PROJECT}/sql", "container": "/vagrant/sql" },
+        { "host": "${PROJECT_BASE}/${CURRENT_PROJECT}/provision", "container": "/docker-entrypoint-initdb.d" },
+        { "host": "mysql-5.5", "container": "/var/lib/mysql" }
     ],
     "hosts": [
         [ "pressbox/mailhog" ]

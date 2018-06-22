@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Watch files in /var/www for changes. On change run all scripts in /scripts/guest/watchers
+# Watch files in ${PROJECT_BASE}/${CURRENT_PROJECT}/www for changes. On change run all scripts in /scripts/guest/watchers
 #
 events="--event create,modify,attrib,close_write,move,moved_from,moved_to,move_self,delete,delete_self"
 format="--format {\"path\":\"%w\",\"file\":\"%f\",\"events\":\"%e\",\"timestamp\":\"%t\"}"

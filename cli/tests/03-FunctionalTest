@@ -14,7 +14,7 @@ esac
 
 
 echo_info "PHP Version:"
-cat > /var/www/test.php <<EOF
+cat > ${PROJECT_BASE}/${CURRENT_PROJECT}/www/test.php <<EOF
 <?php
 echo phpversion();
 echo "\n";
@@ -25,7 +25,7 @@ exec_cmd curl -sS http://127.0.0.1/test.php
 
 
 echo_info "PHP Extensions:"
-cat > /var/www/test.php <<EOF
+cat > ${PROJECT_BASE}/${CURRENT_PROJECT}/www/test.php <<EOF
 <?php
 print_r(get_loaded_extensions());
 echo "\n";
@@ -35,7 +35,7 @@ exec_cmd curl -sS http://127.0.0.1/test.php
 
 
 echo_info "PHP include path:"
-cat > /var/www/test.php <<EOF
+cat > ${PROJECT_BASE}/${CURRENT_PROJECT}/www/test.php <<EOF
 <?php
 echo get_include_path();
 echo "\n";
@@ -47,7 +47,7 @@ exec_cmd curl -sS http://127.0.0.1/test.php
 
 
 echo_info "PHP user:"
-cat > /var/www/test.php <<EOF
+cat > ${PROJECT_BASE}/${CURRENT_PROJECT}/www/test.php <<EOF
 <?php
 echo get_current_user();
 echo "\n";
@@ -57,7 +57,7 @@ exec_cmd curl -sS http://127.0.0.1/test.php
 
 
 echo_info "PHP constants:"
-cat > /var/www/test.php <<EOF
+cat > ${PROJECT_BASE}/${CURRENT_PROJECT}/www/test.php <<EOF
 <?php
 # print_r(get_defined_constants(true));
 print_r(getenv());
@@ -68,6 +68,6 @@ exec_cmd curl -sS http://127.0.0.1/test.php
 
 
 
-rm -f /var/www/test.php
+rm -f ${PROJECT_BASE}/${CURRENT_PROJECT}/www/test.php
 
 exit 0

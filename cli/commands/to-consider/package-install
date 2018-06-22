@@ -23,7 +23,7 @@ if [ -f "/tmp/${filename}" ]; then
     esac
 
     # Add package to project.json
-    jq --arg package ${package} --arg version ${version} '.packages[$package]=$version' < /vagrant/project.json >> /tmp/project.json && mv /tmp/project.json /vagrant/project.json
+    jq --arg package ${package} --arg version ${version} '.packages[$package]=$version' < ${PROJECT_BASE}/${CURRENT_PROJECT}/project.json >> /tmp/project.json && mv /tmp/project.json ${PROJECT_BASE}/${CURRENT_PROJECT}/project.json
 
     error=0
 

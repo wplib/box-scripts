@@ -25,7 +25,7 @@ function ctrl_c()
 #
 # Usage: box database import [{dump_file}] [{global-options}]
 #
-#   Result ==> Imports from /vagrant/sql/{dump_file}.sql
+#   Result ==> Imports from ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/{dump_file}.sql
 #
 function database_unchunk() {
 
@@ -45,7 +45,7 @@ function database_unchunk() {
     cd "${WPLIB_BOX_SQL_DIR}"
 
     #
-    # Force import from  /vagrant/sql/
+    # Force import from  ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/
     #
     chunked_file="${WPLIB_BOX_SQL_DIR}/${basefile}.${ext}"
 
@@ -95,11 +95,11 @@ function database_unchunk() {
 }
 
 #
-# Import a database from /vagrant/sql/$1.sql
+# Import a database from ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/$1.sql
 #
 # Usage: box database import [{dump_file}] [{global-options}]
 #
-#   Result ==> Imports from /vagrant/sql/{dump_file}.sql
+#   Result ==> Imports from ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/{dump_file}.sql
 #
 function database_import() {
 
@@ -121,7 +121,7 @@ function database_import() {
     basefile="${importfile%%.*}"
 
     #
-    # Force import from  /vagrant/sql/
+    # Force import from  ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/
     #
     importfilepath="${WPLIB_BOX_SQL_DIR}/${importfile}"
 
@@ -214,7 +214,7 @@ function database_import() {
 #
 # Usage: box database chunk {sql_file} [{global-options}]
 #
-#   Result ==> Generates /vagrant/sql/{sql_file}.sql/{sql_file}-??.sql.chunk
+#   Result ==> Generates ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/{sql_file}.sql/{sql_file}-??.sql.chunk
 #
 #   --quiet - Omits output
 function database_chunk() {
@@ -253,7 +253,7 @@ function database_chunk() {
     sql_filename="${sql_basename}.sql"
 
     #
-    # Calculate the SQL filepath from  /vagrant/sql/
+    # Calculate the SQL filepath from  ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/
     #
     sql_filepath="${WPLIB_BOX_SQL_DIR}/${sql_filename}"
 
@@ -371,7 +371,7 @@ If was generated with the 'box database chunk "${sql_filename}"' command from th
 for WPLib Box[2].
 
 You can reconstitute the orginal file ${sql_filename} if the chuncks are located in
-/vagrant/sql/ as /vagrant/sql/${sql_filename}/ and the files have not been modified
+${PROJECT_BASE}/${CURRENT_PROJECT}/sql/ as ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/${sql_filename}/ and the files have not been modified
 since they were generated using the 'box database unchunk "${sql_filename}"' command
 when inside of WPLib Box which you can acccess from your host computer using the
 bash or batch/Powershell command 'vagrant ssh'.
@@ -412,11 +412,11 @@ EOF
 }
 
 #
-# Backup the database to /vagrant/sql/backup.sql
+# Backup the database to ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/backup.sql
 #
 # Usage: box database backup [{backup_file}] [{global-options}]
 #
-#   Result ==> Backs up to /vagrant/sql/{backup_file}.sql
+#   Result ==> Backs up to ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/{backup_file}.sql
 #
 #   --quiet - Omits status messages
 #   --dryrun - Do everything except actually run it

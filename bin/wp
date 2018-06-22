@@ -34,4 +34,4 @@ then
 	check_image
 fi
 
-exec /usr/bin/docker run --rm -it --name "wp-cli-$REQVERS" --mount type=bind,source=/var/www,target=/var/www $VERSION "$@"
+exec /usr/bin/docker run --rm -it --name "wp-cli-$REQVERS" --mount type=bind,source=${PROJECT_BASE}/${CURRENT_PROJECT}/www,target=/var/www $VERSION "$@"

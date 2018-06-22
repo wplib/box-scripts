@@ -2,7 +2,7 @@
 
 
 DEFAULT_PROJECT="wplib"
-WPLIB_BOX_DIR=/vagrant
+WPLIB_BOX_DIR=${PROJECT_BASE}/${CURRENT_PROJECT}
 WPLIB_BOX_BASE_DIR=/opt/box
 
 # Colour codes.

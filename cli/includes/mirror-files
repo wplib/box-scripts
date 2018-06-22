@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
-# Mirror Files from /var/www to /var/mirror/www
+# Mirror Files from ${PROJECT_BASE}/${CURRENT_PROJECT}/www to /var/mirror/www
 #
 interval=1
 sudo mkdir -p /var/mirror/www
 while true; do
-    sudo watch --interval "${interval}" --differences --no-title --chgexit ls -lR /var/www > /dev/null
+    sudo watch --interval "${interval}" --differences --no-title --chgexit ls -lR ${PROJECT_BASE}/${CURRENT_PROJECT}/www > /dev/null
     echo "Changed detected"
-    sudo rsync --archive --bwlimit=1000 --delete --exclude '.git/' /var/www /var/mirror
+    sudo rsync --archive --bwlimit=1000 --delete --exclude '.git/' ${PROJECT_BASE}/${CURRENT_PROJECT}/www /var/mirror
 done

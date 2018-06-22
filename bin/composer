@@ -34,6 +34,6 @@ then
 	check_image
 fi
 
-exec /usr/bin/docker run --rm -it --name "composer-$REQVERS" --user vagrant:vagrant --volume $PWD:/app $VERSION "$@"
+exec /usr/bin/docker run --rm -it --name "composer-$REQVERS" --user wplibuser:wplibuser --volume $PWD:/app $VERSION "$@"
 # --network wplibbox
 

@@ -34,4 +34,4 @@ then
 	check_image
 fi
 
-exec /usr/bin/docker run --rm -it --name "php-$REQVERS" --mount type=bind,source=/var/www,target=/var/www --mount type=bind,source=/srv/sites,target=/srv/sites $VERSION /usr/bin/php "$@"
+exec /usr/bin/docker run --rm -it --name "php-$REQVERS" --mount type=bind,source=${PROJECT_BASE}/${CURRENT_PROJECT}/www,target=/var/www --mount type=bind,source=/srv/sites,target=/srv/sites $VERSION /usr/bin/php "$@"

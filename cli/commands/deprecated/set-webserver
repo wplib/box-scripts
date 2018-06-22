@@ -2,11 +2,11 @@
 
 echo "Switching web server to $1"
 
-current=$(jq -r '.services.webserver' < /vagrant/project.json)
+current=$(jq -r '.services.webserver' < ${PROJECT_BASE}/${CURRENT_PROJECT}/project.json)
 
 docker stop ${current} 2>&1 > /dev/null \
 && docker start $1 2>&1 > /dev/null \
-&& jq --arg new "${1}" '.services.webserver = $new' < /vagrant/project.json >> /tmp/project.json && mv /tmp/project.json /vagrant/project.json
+&& jq --arg new "${1}" '.services.webserver = $new' < ${PROJECT_BASE}/${CURRENT_PROJECT}/project.json >> /tmp/project.json && mv /tmp/project.json ${PROJECT_BASE}/${CURRENT_PROJECT}/project.json
 
 if [ ${?} -eq 0 ]; then
     echo "Successfully switched webserver to ${1}"

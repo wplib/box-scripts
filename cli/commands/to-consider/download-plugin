@@ -36,7 +36,7 @@ rm "${plugin_zip}"
 rm -rf "${plugin_dir}" 2> /dev/null
 mv "${plugin_name}" "${WPLIB_BOX_PLUGINS_DIR}"
 
-cd "/vagrant"
+cd "${PROJECT_BASE}/${CURRENT_PROJECT}"
 rm -rf "${download_dir}"
 
 echo_if_not_quiet "$*", "=Downloading complete."
