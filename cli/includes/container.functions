@@ -513,7 +513,7 @@ function image_remove()
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK|$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER)
-			echo -n "$ECHO_PREFIX ${GREEN}Removing service image: ${CYAN}${IMAGE}${RESET} ... "
+			echo -n "$ECHO_PREFIX ${GREEN}Removing service download: ${CYAN}${IMAGE}${RESET} ... "
 			TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 			docker image rm -f ${IMAGE} >& $TEMPFILE
 
@@ -676,7 +676,7 @@ function service_list()
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			echo "$ECHO_PREFIX ${GREEN}Service downloads: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Downloaded services: ${CYAN}${IMAGE}${RESET}"
 			echo "Image			Size"
 			docker image ls --format "{{.Repository}}:{{.Tag}}  \t{{.Size}}" $IMAGE
 			echo ""
@@ -686,7 +686,7 @@ function service_list()
 			;;
 
 		$RETURN_NO_IMAGE_NAME)
-			echo "$ECHO_PREFIX ${GREEN}Service downloads: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Downloaded services: ${CYAN}${IMAGE}${RESET}"
 			echo "Image			Size"
 			docker image ls -af "label=container.project=${BOX_NAME}" --format "{{.Repository}}:{{.Tag}}  \t{{.Size}}"
 			echo ""
