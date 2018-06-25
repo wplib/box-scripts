@@ -123,14 +123,14 @@ do
 			case $? in
 				$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
 					service_remove $IMAGE
-					if [ "$?" == "$RETURN_OK" ]
-					then
-						image_remove $IMAGE
-						if [ "$?" == "$RETURN_OK" ]
-						then
-							service_provision $IMAGE
-						fi
-					fi
+					case $? in
+						$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
+							image_remove $IMAGE
+							if [ "$?" == "$RETURN_OK" ]
+							then
+								service_provision $IMAGE
+							fi
+					esac
 					;;
 			esac
 			;;
@@ -141,10 +141,10 @@ do
 			case $? in
 				$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
 					service_remove $IMAGE
-					if [ "$?" == "$RETURN_OK" ]
-					then
-						image_remove $IMAGE
-					fi
+					case $? in
+						$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
+							image_remove $IMAGE
+					esac
 					;;
 			esac
 			;;
