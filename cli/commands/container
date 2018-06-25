@@ -124,7 +124,7 @@ do
 
 		'refresh'|'upgrade')
 			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${CYAN}${IMAGE}${RESET}"
-			d_stop $IMAGE
+			service_stop $IMAGE
 			d_remove $IMAGE
 			docker image rm -f $IMAGE
 			d_provision $IMAGE
@@ -132,7 +132,7 @@ do
 
 		'clean')
 			echo "$ECHO_PREFIX ${GREEN}Cleaning up: ${CYAN}${IMAGE}.${RESET}"
-			d_stop $IMAGE
+			service_stop $IMAGE
 			d_remove $IMAGE
 			docker image rm -f $IMAGE
 			;;
@@ -161,7 +161,7 @@ do
 			;;
 
 		'stop'|'down')
-			d_stop $IMAGE
+			service_stop $IMAGE
 			;;
 
 		'list'|'ls')

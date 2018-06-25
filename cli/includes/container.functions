@@ -131,6 +131,8 @@ function error_cni()
 
 function service_info()
 {
+	local DOCKER IFS
+
 	if [ "${IMAGE}" == "" ]
 	then
 		return $RETURN_NO_IMAGE_NAME
@@ -162,6 +164,7 @@ function service_info()
 	then
 		return $RETURN_NO_IMAGE_JSON
 	fi
+
 	if [ "$PROJECT" != "${BOX_NAME}" ]
 	then
 		return $RETURN_INVALID_PROJECT
@@ -481,15 +484,13 @@ function d_start()
 }
 
 
-function d_stop()
+function service_stop()
 {
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			if [ "$CONTAINER_RUNNING" != "true" ]
-			then
-				error_cas
+			if [ "$CONTAINER_RUNNING" == "true" ]
 			else
 				echo -n "$ECHO_PREFIX ${GREEN}Stopping container: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
