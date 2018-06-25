@@ -1,11 +1,15 @@
 #!/bin/bash
 #
-# Provisioning and management functions for all containers.
+# Provisioning and management script for all containers.
 #
-# Provides:
+# This is a low level script that will:
 #	Pull the complete list of WPLib container packages from Docker Hub into local JSON files.
 #	Manage containers - stop/start and most importantly creating containers using the embedded JSON string in the image.
 
+source /opt/box/cli/includes/constants
+source /opt/box/cli/includes/functions
+
+DEFAULT_PROJECT="wplib"
 
 # Return codes from functions.
 RETURN_OK="0"
@@ -16,133 +20,31 @@ RETURN_NO_IMAGE_REPO="4"
 RETURN_INVALID_PROJECT="5"
 
 
-function error_pns()
+ctrl_c()
 {
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${YELLOW}Warning project not supported.${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W007/${RESET}"
-	return $RETURN
+        tput sgr0
+	echo ""
+	echo "$ECHO_PREFIX Aborting script."
+	exit
 }
 
-function error_nip()
-{
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error no image provided.${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W008/${RESET}"
-	return $RETURN
-}
-
-function error_nfl()
-{
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error image not found locally: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W009/${RESET}"
-	return $RETURN
-}
-
-function error_dnc()
-{
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error image doesn't conform to JSON config format in 0.16 or later: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W010/${RESET}"
-	return $RETURN
-}
-
-function error_dni()
-{
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error image does not exist in repository: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W011/${RESET}"
-	return $RETURN
-}
-
-function error_ccbr()
-{
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error container can't be removed: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W012/${RESET}"
-	return $RETURN
-}
-
-function error_ccbi()
-{
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error container can't be installed: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W013/${RESET}"
-	return $RETURN
-}
-
-function error_ccbs()
-{
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error container can't be started: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W014/${RESET}"
-	return $RETURN
-}
-
-function error_ccbd()
-{
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error container can't be stopped: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W015/${RESET}"
-	return $RETURN
-}
-
-function error_cai()
-{
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${GREEN}Container already installed: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W016/${RESET}"
-	return $RETURN
-}
-
-function error_car()
-{
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${GREEN}Container already running: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W017/${RESET}"
-	return $RETURN
-}
-
-function error_cas()
-{
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${GREEN}Container already stopped: ${CYAN}${IMAGE}${RESET}"
-	# echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W018/${RESET}"
-	return $RETURN
-}
-
-function error_csac()
-{
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error not all containers could be stopped.${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W019/${RESET}"
-	return $RETURN
-}
-
-function error_cni()
-{
-	RETURN="$?"
-	echo "$ECHO_PREFIX ${YELLOW}Warning container not installed: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W020/${RESET}"
-	return $RETURN
-}
+trap ctrl_c INT
 
 
-function service_info()
+deets()
 {
-	if [ "${IMAGE}" == "" ]
+	if [ "$IMAGE" == "" ]
 	then
 		return $RETURN_NO_IMAGE_NAME
 	fi
 
-	RETURN="$(docker image ls -q ${IMAGE})"
+	RETURN="$(docker image ls -q $IMAGE)"
 	if [ "$RETURN" == "" ]
 	then
 		return $RETURN_NO_LOCAL_IMAGE
 	fi
 
-	DOCKER=$(docker inspect --format='{{index .Config.Labels "container.project"}};{{index .Config.Labels "container.name"}};{{index .Config.Labels "container.version"}};{{index .Config.Labels "container.majorversion"}};{{index .Config.Labels "container.latest"}};{{index .Config.Labels "container.class"}};{{index .Config.Labels "container.network"}};{{index .Config.Labels "container.ports"}};{{index .Config.Labels "container.volumes"}};{{index .Config.Labels "container.restart"}};{{index .Config.Labels "container.args"}};{{index .Config.Labels "container.env"}}' ${IMAGE})
+	DOCKER=$(docker inspect --format='{{index .Config.Labels "container.project"}};{{index .Config.Labels "container.name"}};{{index .Config.Labels "container.version"}};{{index .Config.Labels "container.majorversion"}};{{index .Config.Labels "container.latest"}};{{index .Config.Labels "container.class"}};{{index .Config.Labels "container.network"}};{{index .Config.Labels "container.ports"}};{{index .Config.Labels "container.volumes"}};{{index .Config.Labels "container.restart"}};{{index .Config.Labels "container.args"}};{{index .Config.Labels "container.env"}}' $IMAGE)
 	IFS=';' read -r -a state_array <<< "$DOCKER"
 
 	PROJECT="${state_array[0]}"
@@ -162,7 +64,7 @@ function service_info()
 	then
 		return $RETURN_NO_IMAGE_JSON
 	fi
-	if [ "$PROJECT" != "${BOX_NAME}" ]
+	if [ "$PROJECT" != "${DEFAULT_PROJECT}" ]
 	then
 		return $RETURN_INVALID_PROJECT
 	fi
@@ -188,25 +90,25 @@ function service_info()
 }
 
 
-function d_exists()
+d_exists()
 {
-	IFS='/:' read -r -a state_array <<< "${IMAGE}"
+	IFS='/:' read -r -a state_array <<< "$IMAGE"
 	PROJECT="${state_array[0]}"
 	IMAGE_NAME="${state_array[1]}"
 	IMAGE_VERSION="${state_array[2]}"
 
-	wget -qO /dev/null https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/
+	wget -qO /dev/null https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/$IMAGE_NAME/tags/
 	if [ "$?" == "0" ]
 	then
 		return $RETURN_OK
 	else
-		error_dni
+		# error_dni
 		return $RETURN_NO_IMAGE_REPO
 	fi
 }
 
 
-function d_update()
+d_update()
 {
 	echo -n "$ECHO_PREFIX ${GREEN}Updating repository list${RESET}."
 	if [ ! -d ${WPLIB_BOX_BASE_DIR}/etc ]
@@ -218,18 +120,18 @@ function d_update()
 		sudo mkdir -p ${WPLIB_BOX_BASE_DIR}/etc/images
 	fi
 
-	sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/repositories.json https://hub.docker.com/v2/repositories/${BOX_NAME}/?page_size=256
+	sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/repositories.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/?page_size=256
 	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/repositories.json)"
 	for IMAGE_NAME in $IMAGES
 	do
 		echo -n "."
-		sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/?page_size=256
+		sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/${IMAGE_NAME}/tags/?page_size=256
 	done
 	echo "Done"
 }
 
 
-function d_show()
+d_show()
 {
 	echo "$ECHO_PREFIX ${GREEN}Available images on repository.${RESET}"
 	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/repositories.json)"
@@ -238,14 +140,14 @@ function d_show()
 		VERSIONS="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json)"
 		for IMAGE_VERSION in $VERSIONS
 		do
-			echo "${BOX_NAME}/${IMAGE_NAME}:$IMAGE_VERSION"
+			echo "$DEFAULT_PROJECT/${IMAGE_NAME}:$IMAGE_VERSION"
 		done
 		
 	done
 }
 
 
-function d_reallyclean()
+d_reallyclean()
 {
 	echo "${GREEN}Are you really sure? ${RED}Warning: this will remove ALL images and ALL data.${GREEN}"
 	echo -n "Respond with ${YELLOW}Yes please${RESET}: "
@@ -259,9 +161,9 @@ function d_reallyclean()
 			echo "$ECHO_PREFIX ${GREEN}Shutting down all WPLib containers.${RESET}"
 			$0 container shutdown
 			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib containers.${RESET}"
-			docker container ls -qaf "label=container.project=${BOX_NAME}" | xargs -r docker container rm
+			docker container ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs -r docker container rm
 			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib images${RESET}"
-			docker image ls -qaf "label=container.project=${BOX_NAME}" | xargs -r docker image rm
+			docker image ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs -r docker image rm
 		fi
 	else
 		echo "$ECHO_PREFIX ${GREEN}Doing nothing.${RESET}"
@@ -272,13 +174,13 @@ function d_reallyclean()
 }
 
 
-function d_pull()
+d_pull()
 {
 	echo "$ECHO_PREFIX ${GREEN}Pulling ${CYAN}$IMAGE${GREEN} from repository.${RESET}"
 	docker pull $IMAGE
 	if [ "$?" == "1" ]
 	then
-		error_dni
+		# error_dni
 		return $RETURN_NO_IMAGE_REPO
 	fi
 
@@ -286,9 +188,9 @@ function d_pull()
 }
 
 
-function d_shell()
+d_shell()
 {
-	service_info $IMAGE
+	deets $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -330,9 +232,9 @@ function d_shell()
 }
 
 
-function d_exec()
+d_exec()
 {
-	service_info $IMAGE
+	deets $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -366,9 +268,9 @@ function d_exec()
 }
 
 
-function d_install()
+d_install()
 {
-	service_info $IMAGE
+	deets $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -404,9 +306,9 @@ function d_install()
 }
 
 
-function d_remove()
+d_remove()
 {
-	service_info $IMAGE
+	deets $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -435,9 +337,9 @@ function d_remove()
 }
 
 
-function d_start()
+d_start()
 {
-	service_info $IMAGE
+	deets $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -481,9 +383,9 @@ function d_start()
 }
 
 
-function d_stop()
+d_stop()
 {
-	service_info $IMAGE
+	deets $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -525,11 +427,11 @@ function d_stop()
 }
 
 
-function d_shutdown()
+d_shutdown()
 {
 	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLLib containers${RESET} ... "
 	TEMPFILE="$(mktemp /tmp/box-container.XXX)"
-	docker container ls -qaf "label=container.project=${BOX_NAME}" | xargs docker stop >& $TEMPFILE
+	docker container ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs docker stop >& $TEMPFILE
 	if [ "$?" == "1" ]
 	then
 		echo "${RED}NOT OK${RESET}"
@@ -544,9 +446,9 @@ function d_shutdown()
 }
 
 
-function d_ls()
+d_ls()
 {
-	service_info $IMAGE
+	deets $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -562,15 +464,15 @@ function d_ls()
 		$RETURN_NO_IMAGE_NAME)
 			echo "$ECHO_PREFIX ${GREEN}Installed images: ${CYAN}${IMAGE}${RESET}"
 			echo "Image			Size"
-			docker image ls -af "label=container.project=${BOX_NAME}" --format "{{.Repository}}:{{.Tag}}  \t{{.Size}}"
+			docker image ls -af "label=container.project=$DEFAULT_PROJECT" --format "{{.Repository}}:{{.Tag}}  \t{{.Size}}"
 			echo ""
 			echo "$ECHO_PREFIX ${GREEN}Stopped containers: ${CYAN}${IMAGE}${RESET}"
 			echo "Container		Size			Status"
-			docker container ls -af "label=container.project=${BOX_NAME}" -f "status=created" -f "status=exited" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
+			docker container ls -af "label=container.project=$DEFAULT_PROJECT" -f "status=created" -f "status=exited" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
 			echo ""
 			echo "$ECHO_PREFIX ${GREEN}Running containers: ${CYAN}${IMAGE}${RESET}"
 			echo "Container		Size			Status"
-			docker container ls -af "label=container.project=${BOX_NAME}" -f "status=running" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
+			docker container ls -af "label=container.project=$DEFAULT_PROJECT" -f "status=running" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
 			;;
 
 		$RETURN_NO_LOCAL_IMAGE)
@@ -590,9 +492,9 @@ function d_ls()
 }
 
 
-function d_inspect()
+d_inspect()
 {
-	service_info $IMAGE
+	deets $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -620,9 +522,9 @@ function d_inspect()
 }
 
 
-function d_log()
+d_log()
 {
-	service_info $IMAGE
+	deets $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -647,11 +549,23 @@ function d_log()
 }
 
 
-function d_provision()
+d_provision()
 {
-	service_info $IMAGE
+	deets $IMAGE
 	RETURN="$?"
 	case $RETURN in
+		$RETURN_OK)
+			echo "$ECHO_PREFIX ${GREEN}Container already exists: ${CYAN}${IMAGE}${RESET}"
+			;;
+
+		$RETURN_NO_IMAGE_JSON)
+			error_dnc
+			;;
+
+		$RETURN_INVALID_PROJECT)
+			error_pns
+			;;
+
 		$RETURN_NO_LOCAL_IMAGE)
 			d_pull $IMAGE
 			if [ "$?" == "$RETURN_OK" ]
@@ -667,3 +581,156 @@ function d_provision()
 
 	return $RETURN
 }
+
+
+d_help()
+{
+	cat <<EOF
+box container ${GREEN}install${RESET} <package>	- Install and configure a container.
+box container ${GREEN}ls${RESET} [package]	- List current image and container.
+box container ${GREEN}start${RESET} <package>	- Start a container.
+box container ${GREEN}stop${RESET} <package>	- Stop a container.
+box container ${GREEN}rm${RESET} <package>	- Remove the container.
+box container ${GREEN}clean${RESET} <package>	- Remove the container and associated image.
+box container ${GREEN}refresh${RESET} <package>	- Refresh an existing container.
+
+box container ${GREEN}update${RESET}		- Update container list from repository.
+box container ${GREEN}show${RESET}		- Show a list of containers available for download.
+box container ${GREEN}shutdown${RESET}		- This will shutdown all WPLib related packages.
+box container ${GREEN}reallyclean${RESET}	- This will remove all WPLib related packages.
+box container ${GREEN}inspect${RESET} <package>	- Provide detailed info on image and container.
+box container ${GREEN}log${RESET} <package>	- Show log files from container.
+box container ${GREEN}pull${RESET} <package>	- Just pull a container image. No install.
+EOF
+}
+
+
+################################################################################
+CMD="$1"
+shift
+IMAGES="$@"
+
+case $CMD in
+	'list'|'ls')
+		# Only the 'ls' command can accept no image.
+		#echo "$@"
+		if [ "$1" == "" ]
+		then
+			d_ls
+		fi
+		;;
+
+	'show')
+		d_show
+		exit $?
+		;;
+
+	'update')
+		d_update
+		exit $?
+		;;
+
+	'reallyclean')
+		d_reallyclean
+		exit $?
+		;;
+
+	'shutdown')
+		d_shutdown
+		exit $?
+		;;
+
+	'shell')
+		IMAGE="$1"
+		shift
+		ARGS="$@"
+		d_shell "$@"
+		;;
+
+	'exec')
+		IMAGE="$1"
+		shift
+		ARGS="$@"
+		d_exec "$@"
+		;;
+
+	''|'help')
+		d_help
+		;;
+
+	*)
+		if [ "$1" == "" ]
+		then
+			error_nip
+			d_help
+			exit 1
+		fi
+		;;
+esac
+
+
+for IMAGE in $IMAGES
+do
+	case $CMD in
+		'provision')
+			echo "$ECHO_PREFIX ${GREEN}Provisioning ${CYAN}${IMAGE}.${RESET}"
+			d_provision $IMAGE
+			;;
+
+		'refresh'|'upgrade')
+			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${CYAN}${IMAGE}${RESET}"
+			d_stop $IMAGE
+			d_remove $IMAGE
+			docker image rm -f $IMAGE
+			d_provision $IMAGE
+			;;
+
+		'clean')
+			echo "$ECHO_PREFIX ${GREEN}Cleaning up: ${CYAN}${IMAGE}.${RESET}"
+			d_stop $IMAGE
+			d_remove $IMAGE
+			docker image rm -f $IMAGE
+			;;
+
+		'pull')
+			d_pull $IMAGE
+			;;
+
+		'create'|'install')
+			d_pull $IMAGE
+			d_install $IMAGE
+			;;
+
+		'remove'|'rm'|'destroy')
+			d_remove $IMAGE
+			;;
+
+		'start'|'up')
+			deets $IMAGE
+			if [ "$?" == "$RETURN_NO_LOCAL_IMAGE" ]
+			then
+				d_provision $IMAGE
+			else
+				d_start $IMAGE
+			fi
+			;;
+
+		'stop'|'down')
+			d_stop $IMAGE
+			;;
+
+		'list'|'ls')
+			d_ls $IMAGE
+			;;
+
+		'inspect'|'info')
+			d_inspect $IMAGE
+			;;
+
+		'log')
+			d_log $IMAGE
+			;;
+	esac
+done
+
+

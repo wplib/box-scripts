@@ -44,12 +44,12 @@ echo "# WPLib-Box: Updating ${WPLIB_BOX_BASE_DIR} with version ${VERSION}"
 
 # Fetch the latest tags/branches.
 git fetch -q --all
-# Do a pull
-git pull -q
 # Find any locally updated and tracked files - force overwrite.
 git diff --name-only | xargs git checkout -q
 # Add any locally updated and non-tracked files to the cache.
 git add -A .
+# Do a pull
+git pull -q
 # Finally checkout the branch/tag.
 git checkout -q ${VERSION} 2>/dev/null
 echo "Done"

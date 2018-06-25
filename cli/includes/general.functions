@@ -802,9 +802,3 @@ function get_latest_patch_version() {
     echo "${version}"
 }
 
-
-export WPLIB_BOX_CONTENT_DIR=$(find_wp_content_dir)
-export WPLIB_BOX_PLUGINS_DIR=$(find_wp_plugins_dir)
-export WPLIB_BOX_MU_PLUGINS_DIR=$(find_wp_mu_plugins_dir)
-export WPLIB_BOX_VENDOR_DIR=$(find_composer_vendor_dir)
-
