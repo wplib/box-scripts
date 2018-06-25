@@ -829,7 +829,7 @@ spinner()
   local spinstr='\|/-'
   local temp
   # while ps a | awk '{print $1}' | grep -q "${PID}"; do
-  while [ -d /proc/$PID ]
+  while [ -d /proc/$PID ]; do
     temp="${spinstr#?}"
     printf " [%c]  " "${spinstr}"
     spinstr=${temp}${spinstr%"${temp}"}
