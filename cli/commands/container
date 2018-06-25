@@ -120,16 +120,31 @@ do
 		'refresh'|'upgrade')
 			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${CYAN}${IMAGE}${RESET}"
 			service_stop $IMAGE
-			service_image_remove $IMAGE
-			docker image rm -f $IMAGE
-			service_provision $IMAGE
+			if [ "$?" == "$RETURN_OK" ]
+			then
+				service_image_remove $IMAGE
+				if [ "$?" == "$RETURN_OK" ]
+				then
+					docker image rm -f $IMAGE
+					if [ "$?" == "$RETURN_OK" ]
+					then
+						service_provision $IMAGE
+					fi
+				fi
+			fi
 			;;
 
 		'clean')
-			echo "$ECHO_PREFIX ${GREEN}Cleaning up: ${CYAN}${IMAGE}.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Cleaning up: ${CYAN}${IMAGE}${RESET}"
 			service_stop $IMAGE
-			service_image_remove $IMAGE
-			docker image rm -f $IMAGE
+			if [ "$?" == "$RETURN_OK" ]
+			then
+				service_image_remove $IMAGE
+				if [ "$?" == "$RETURN_OK" ]
+				then
+					docker image rm -f $IMAGE
+				fi
+			fi
 			;;
 
 		'pull')
@@ -138,7 +153,10 @@ do
 
 		'install')
 			service_image_pull $IMAGE
-			service_create_container $IMAGE
+			if [ "$?" == "$RETURN_OK" ]
+			then
+				service_create_container $IMAGE
+			fi
 			;;
 
 		'provision')
