@@ -33,7 +33,7 @@ HelpMe()
 	cat <<EOF
 box container ${GREEN}install${RESET} <package>		- Install and configure a service.
 box container ${GREEN}uninstall${RESET} <package>	- Uninstall a service.
-box container ${GREEN}ls${RESET} [package]		- List currently installed services.
+box container ${GREEN}list${RESET} [package]		- List currently installed services.
 box container ${GREEN}start${RESET} <package>		- Start a service.
 box container ${GREEN}stop${RESET} <package>		- Stop a service.
 box container ${GREEN}clean${RESET} <package>		- Remove a service and downloaded image.

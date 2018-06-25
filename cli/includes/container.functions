@@ -578,7 +578,7 @@ function service_start()
 			fi
 			;;
 
-		$RETURN_NO_LOCAL_IMAGE)
+		$RETURN_NO_LOCAL_IMAGE|$RETURN_NO_CONTAINER)
 			service_provision $IMAGE 
 			;;
 
