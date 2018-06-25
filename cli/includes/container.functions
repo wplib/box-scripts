@@ -20,114 +20,114 @@ RETURN_ALREADY_STOPPED="7"
 
 function error_pns()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${YELLOW}Warning project not supported.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W007/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 function error_nip()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: no service provided.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W008/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 function error_nfl()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: service not found locally: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W009/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 function error_dnc()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: service doesn't conform to JSON config format in 0.16 or later: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W010/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 function error_dni()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: service does not exist in repository: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W011/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 function error_ccbr()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: service can't be removed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W012/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 function error_ccbi()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: service can't be installed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W013/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 function error_ccbs()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: service can't be started: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W014/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 function error_ccbd()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: service can't be stopped: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W015/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 function error_cai()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${GREEN}Container already installed: ${CYAN}${IMAGE}${RESET}"
 	# echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W016/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 function error_car()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${GREEN}Container already running: ${CYAN}${IMAGE}${RESET}"
 	# echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W017/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 function error_cas()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${GREEN}Container already stopped: ${CYAN}${IMAGE}${RESET}"
 	# echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W018/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 function error_csac()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: not all services could be stopped.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W019/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 function error_cni()
 {
-	RETURN="$?"
+	#RETURN="$?"
 	echo "$ECHO_PREFIX ${YELLOW}Warning service not installed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W020/${RESET}"
-	return $RETURN
+	#return $RETURN
 }
 
 
