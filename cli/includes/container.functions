@@ -506,7 +506,7 @@ function image_remove()
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
-		$RETURN_OK)
+		$RETURN_OK|$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER)
 			echo -n "$ECHO_PREFIX ${GREEN}Removing service image: ${CYAN}${IMAGE}${RESET} ... "
 			TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 			docker image rm -f -v ${IMAGE_NAME} >& $TEMPFILE
