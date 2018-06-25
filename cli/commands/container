@@ -120,18 +120,19 @@ do
 		'refresh'|'upgrade')
 			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${CYAN}${IMAGE}${RESET}"
 			service_stop $IMAGE
-			if [ "$?" == "$RETURN_OK" ]
-			then
-				service_remove $IMAGE
-				if [ "$?" == "$RETURN_OK" ]
-				then
-					docker image rm -f $IMAGE
+			case $? in
+				$RETURN_ALREADY_STOPPED|$RETURN_OK)
+					service_remove $IMAGE
 					if [ "$?" == "$RETURN_OK" ]
 					then
-						service_provision $IMAGE
+						image_remove $IMAGE
+						if [ "$?" == "$RETURN_OK" ]
+						then
+							service_provision $IMAGE
+						fi
 					fi
-				fi
-			fi
+					;;
+			esac
 			;;
 
 		'clean')
@@ -142,7 +143,7 @@ do
 					service_remove $IMAGE
 					if [ "$?" == "$RETURN_OK" ]
 					then
-						docker image rm -f $IMAGE
+						image_remove $IMAGE
 					fi
 					;;
 			esac

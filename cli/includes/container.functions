@@ -459,9 +459,51 @@ function service_remove()
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
+			echo -n "$ECHO_PREFIX ${GREEN}Removing service: ${CYAN}${IMAGE}${RESET} ... "
+			TEMPFILE="$(mktemp /tmp/box-container.XXX)"
+			docker container rm -v ${CONTAINER_NAME} >& $TEMPFILE
+
+			if [ "$?" == "1" ]
+			then
+				echo "${RED}NOT OK${RESET}"
+				error_ccbr
+				cat $TEMPFILE
+			else
+				echo "${GREEN}OK${RESET}"
+			fi
+
+			rm -f $TEMPFILE
+			;;
+
+		$RETURN_NO_LOCAL_IMAGE)
+			error_nfl
+			;;
+
+		$RETURN_NO_IMAGE_JSON)
+			error_dnc
+			;;
+
+		$RETURN_INVALID_PROJECT)
+			error_pns
+			;;
+	esac
+
+	return $RETURN
+}
+
+
+function image_remove()
+{
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
+	service_info $IMAGE
+	RETURN="$?"
+	case $RETURN in
+		$RETURN_OK)
 			echo -n "$ECHO_PREFIX ${GREEN}Removing service image: ${CYAN}${IMAGE}${RESET} ... "
 			TEMPFILE="$(mktemp /tmp/box-container.XXX)"
-			docker rm -v ${CONTAINER_NAME} >& $TEMPFILE
+			docker image rm -f -v ${IMAGE_NAME} >& $TEMPFILE
 
 			if [ "$?" == "1" ]
 			then
