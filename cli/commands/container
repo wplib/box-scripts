@@ -3,7 +3,7 @@
 # Provisioning and management script for all containers.
 #
 # This is a low level script that will:
-#	Pull the complete list of WPLib container packages from Docker Hub into local JSON files.
+#	Pull the complete list of WPLib container components from Docker Hub into local JSON files.
 #	Manage containers - stop/start and most importantly creating containers using the embedded JSON string in the image.
 
 source /opt/box/cli/includes/functions
@@ -32,23 +32,23 @@ HelpMe()
 {
 	cat <<EOF
 ${GREEN}Service control${RESET}
-box cargo ${GREEN}install${RESET} <package>	- Install and configure a package.
-box cargo ${GREEN}uninstall${RESET} <package>	- Uninstall a package.
-box cargo ${GREEN}list${RESET} [package]	- List currently installed packages.
-box cargo ${GREEN}start${RESET} <package>	- Start a package.
-box cargo ${GREEN}stop${RESET} <package>	- Stop a package.
-box cargo ${GREEN}activate${RESET} <package>	- Activate a package.
-box cargo ${GREEN}deactivate${RESET} <package>	- Activate a package.
-box cargo ${GREEN}upgrade${RESET} <package>	- Upgrade an existing package.
+box component ${GREEN}install${RESET} <component>	- Install and configure a component.
+box component ${GREEN}uninstall${RESET} <component>	- Uninstall a component.
+box component ${GREEN}activate${RESET} <component>	- Activate a component.
+box component ${GREEN}deactivate${RESET} <component>	- Activate a component.
+box component ${GREEN}start${RESET} <component>		- Start a component.
+box component ${GREEN}stop${RESET} <component>		- Stop a component.
+box component ${GREEN}list${RESET} [component]		- List currently installed components.
+box component ${GREEN}upgrade${RESET} <component>	- Upgrade an existing component.
 
 ${GREEN}Service management${RESET}
-box cargo ${GREEN}update${RESET}		- Update available packages list.
-box cargo ${GREEN}show${RESET}			- Show the list of packages available.
-box cargo ${GREEN}shutdown${RESET}		- Shutdown all WPLib related packages.
-box cargo ${GREEN}clean${RESET}			- Remove all WPLib related packages.
-box cargo ${GREEN}inspect${RESET} <package>	- Provide detailed info on a packages.
-box cargo ${GREEN}log${RESET} <package>		- Show log files from packages.
-box cargo ${GREEN}pull${RESET} <package>	- Just pull a package image. No install.
+box component ${GREEN}update${RESET}			- Update available components list.
+box component ${GREEN}show${RESET}			- Show the list of components available.
+box component ${GREEN}shutdown${RESET}			- Shutdown all WPLib related components.
+box component ${GREEN}clean${RESET}			- Remove all WPLib related components.
+box component ${GREEN}inspect${RESET} <component>	- Provide detailed info on a components.
+box component ${GREEN}log${RESET} <component>		- Show log files from components.
+box component ${GREEN}pull${RESET} <component>		- Just pull a component image. No install.
 EOF
 }
 
@@ -64,17 +64,17 @@ case $CMD in
 		#echo "$@"
 		if [ "$1" == "" ]
 		then
-			package_list
+			component_list
 		fi
 		;;
 
 	'show')
-		package_show
+		component_show
 		exit $?
 		;;
 
 	'update')
-		update_packages
+		update_components
 		exit $?
 		;;
 
@@ -92,14 +92,14 @@ case $CMD in
 		IMAGE="$1"
 		shift
 		ARGS="$@"
-		package_shell "$@"
+		component_shell "$@"
 		;;
 
 	'exec')
 		IMAGE="$1"
 		shift
 		ARGS="$@"
-		package_exec "$@"
+		component_exec "$@"
 		;;
 
 	''|'help')
@@ -122,16 +122,16 @@ do
 	case $CMD in
 		'refresh'|'upgrade')
 			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${CYAN}${IMAGE}${RESET}"
-			package_stop $IMAGE
+			component_stop $IMAGE
 			case $? in
 				$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
-					package_remove $IMAGE
+					component_remove $IMAGE
 					case $? in
 						$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
 							image_remove $IMAGE
 							if [ "$?" == "$RETURN_OK" ]
 							then
-								package_provision $IMAGE
+								component_provision $IMAGE
 							fi
 					esac
 					;;
@@ -139,22 +139,22 @@ do
 			;;
 
 		'pull')
-			package_image_pull $IMAGE
+			component_image_pull $IMAGE
 			RETURN="$?"
 			;;
 
 		'install')
 			echo "$ECHO_PREFIX ${GREEN}Installing ${CYAN}${IMAGE}.${RESET}"
-			package_install $IMAGE
+			component_install $IMAGE
 			RETURN="$?"
 			;;
 
 		'uninstall')
 			echo "$ECHO_PREFIX ${GREEN}Uninstalling: ${CYAN}${IMAGE}${RESET}"
-			package_stop $IMAGE
+			component_stop $IMAGE
 			case $? in
 				$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
-					package_remove $IMAGE
+					component_remove $IMAGE
 					case $? in
 						$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
 							image_remove $IMAGE
@@ -165,38 +165,38 @@ do
 
 		'activate')
 			echo "$ECHO_PREFIX ${GREEN}Activating ${CYAN}${IMAGE}.${RESET}"
-			package_provision $IMAGE
+			component_provision $IMAGE
 			RETURN="$?"
 			;;
 
 		'deactivate')
 			echo "$ECHO_PREFIX ${GREEN}Deactivating ${CYAN}${IMAGE}.${RESET}"
-			package_remove $IMAGE
+			component_remove $IMAGE
 			RETURN="$?"
 			;;
 
 		'start')
-			package_start $IMAGE
+			component_start $IMAGE
 			if [ "$?" == "$RETURN_NO_LOCAL_IMAGE" ]
 			then
-				package_provision $IMAGE
+				component_provision $IMAGE
 			fi
 			;;
 
 		'stop')
-			package_stop $IMAGE
+			component_stop $IMAGE
 			;;
 
 		'list'|'ls')
-			package_list $IMAGE
+			component_list $IMAGE
 			;;
 
 		'inspect'|'info')
-			package_inspect $IMAGE
+			component_inspect $IMAGE
 			;;
 
 		'log')
-			package_log $IMAGE
+			component_log $IMAGE
 			;;
 	esac
 done
