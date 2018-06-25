@@ -176,8 +176,6 @@ do
 			if [ "$?" == "$RETURN_NO_LOCAL_IMAGE" ]
 			then
 				service_provision $IMAGE
-			else
-				service_start $IMAGE
 			fi
 			;;
 
