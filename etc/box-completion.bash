@@ -9,6 +9,12 @@ _box()
 
 
 	case "${COMP_WORDS[1]}" in
+		'cargo')
+			# /opt/box/bin/box cargo help
+			_box_container
+			return 0
+			;;
+
 		'container')
 			# /opt/box/bin/box container help
 			_box_container
@@ -68,7 +74,7 @@ _box()
 			;;
 	esac
 
-	COMPREPLY=($(compgen -W "database container startup restart shutdown status shell version self-update test help" -- $cur))
+	COMPREPLY=($(compgen -W "database cargo container startup restart shutdown status shell version self-update test help" -- $cur))
 }
 complete -F _box box
 
