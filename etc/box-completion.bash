@@ -149,16 +149,19 @@ _box_container_dockerhub()
 	local REPLY
 	local cur=${COMP_WORDS[COMP_CWORD]}
 
-        IMAGES="`jq -r '.results|.[]|.name' /opt/box/etc/repositories.json`"
-        for IMAGE_NAME in $IMAGES
-        do
-                VERSIONS="`jq -r '.results|.[]|.name' /opt/box/etc/images/${IMAGE_NAME}.json`"
-                for IMAGE_VERSION in $VERSIONS
-                do
-                        REPLY="$REPLY wplib/${IMAGE_NAME}:$IMAGE_VERSION"
-                done
+	IMAGES="$(jq -r '.results|.[]|.name' /opt/box/etc/repositories.json | sort -u)"
+	for IMAGE_NAME in $IMAGES
+	do
+		VERSIONS="$(jq -r '.results|.[]|.name' /opt/box/etc/images/${IMAGE_NAME}.json)"
+		for IMAGE_VERSION in $VERSIONS
+		do
+			if [ "${IMAGE_VERSION}" != "latest" ]
+			then
+				REPLY="$REPLY wplib/${IMAGE_NAME}:$IMAGE_VERSION"
+			fi
+		done
 
-        done
+	done
 
 	COMPREPLY=($(compgen -W "$REPLY" -- $cur))
 	return 0
