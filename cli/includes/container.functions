@@ -60,7 +60,7 @@ function error_dni()
 function error_ccbr()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: container can't be removed: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: service can't be removed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W012/${RESET}"
 	return $RETURN
 }
@@ -68,7 +68,7 @@ function error_ccbr()
 function error_ccbi()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: container can't be installed: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: service can't be installed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W013/${RESET}"
 	return $RETURN
 }
@@ -76,7 +76,7 @@ function error_ccbi()
 function error_ccbs()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: container can't be started: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: service can't be started: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W014/${RESET}"
 	return $RETURN
 }
@@ -84,7 +84,7 @@ function error_ccbs()
 function error_ccbd()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: container can't be stopped: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: service can't be stopped: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W015/${RESET}"
 	return $RETURN
 }
@@ -116,7 +116,7 @@ function error_cas()
 function error_csac()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: not all containers could be stopped.${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: not all services could be stopped.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W019/${RESET}"
 	return $RETURN
 }
@@ -124,7 +124,7 @@ function error_csac()
 function error_cni()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${YELLOW}Warning container not installed: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${YELLOW}Warning service not installed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W020/${RESET}"
 	return $RETURN
 }
@@ -269,11 +269,11 @@ function d_reallyclean()
 		read RESPONSE
 		if [ "$RESPONSE" == "Yes please" ]
 		then
-			echo "$ECHO_PREFIX ${GREEN}Shutting down all WPLib containers.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Shutting down all WPLib services.${RESET}"
 			$0 container shutdown
-			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib containers.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib services.${RESET}"
 			docker container ls -qaf "label=container.project=${BOX_NAME}" | xargs -r docker container rm
-			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib images${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib service downloads.${RESET}"
 			docker image ls -qaf "label=container.project=${BOX_NAME}" | xargs -r docker image rm
 		fi
 	else
@@ -329,7 +329,7 @@ function d_shell()
 			then
 				error_cni
 			else
-				# echo "$ECHO_PREFIX ${GREEN}Shell to container: ${CYAN}${IMAGE}${RESET}" 1>&2
+				# echo "$ECHO_PREFIX ${GREEN}Shell to service: ${CYAN}${IMAGE}${RESET}" 1>&2
 				if [ -t 0 ]
 				then
 					# TTY allocated.
@@ -376,7 +376,7 @@ function d_exec()
 			then
 				error_cni
 			else
-				# echo "$ECHO_PREFIX ${GREEN}Shell to container: ${CYAN}${IMAGE}${RESET}" 1>&2
+				# echo "$ECHO_PREFIX ${GREEN}Shell to service: ${CYAN}${IMAGE}${RESET}" 1>&2
 				docker run --name ${CONTAINER_NAME}-exec --rm ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
 				if [ "$?" == "1" ]
 				then
@@ -459,7 +459,7 @@ function d_remove()
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			echo "$ECHO_PREFIX ${GREEN}Removing container: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Removing service download: ${CYAN}${IMAGE}${RESET}"
 			docker rm -v ${CONTAINER_NAME}
 			if [ "$?" == "1" ]
 			then
@@ -495,7 +495,7 @@ function service_start()
 		$RETURN_OK)
 			if [ "$CONTAINER_RUNNING" != "true" ]
 			then
-				echo -n "$ECHO_PREFIX ${GREEN}Starting container: ${CYAN}${IMAGE}${RESET} ... "
+				echo -n "$ECHO_PREFIX ${GREEN}Starting service: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 				docker start ${CONTAINER_NAME} >& $TEMPFILE
 
@@ -510,7 +510,7 @@ function service_start()
 
 				rm -f $TEMPFILE
 			else
-				echo "$ECHO_PREFIX ${GREEN}Starting container: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already running.${RESET}"
+				echo "$ECHO_PREFIX ${GREEN}Starting service: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already running.${RESET}"
 			fi
 			;;
 
@@ -542,7 +542,7 @@ function service_stop()
 		$RETURN_OK)
 			if [ "$CONTAINER_RUNNING" == "true" ]
 			then
-				echo -n "$ECHO_PREFIX ${GREEN}Stopping container: ${CYAN}${IMAGE}${RESET} ... "
+				echo -n "$ECHO_PREFIX ${GREEN}Stopping service: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 				docker stop ${CONTAINER_NAME} >& $TEMPFILE
 
@@ -557,7 +557,7 @@ function service_stop()
 
 				rm -f $TEMPFILE
 			else
-				echo "$ECHO_PREFIX ${GREEN}Stopping container: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already stopped.${RESET}"
+				echo "$ECHO_PREFIX ${GREEN}Stopping service: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already stopped.${RESET}"
 			fi
 			;;
 
@@ -583,7 +583,7 @@ function d_shutdown()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLLib containers${RESET} ... "
+	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLLib services. ${RESET} ... "
 	TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 	docker container ls -qaf "label=container.project=${BOX_NAME}" | xargs docker stop >& $TEMPFILE
 	if [ "$?" == "1" ]
@@ -609,25 +609,25 @@ function service_ls()
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			echo "$ECHO_PREFIX ${GREEN}Installed image: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Service downloads: ${CYAN}${IMAGE}${RESET}"
 			echo "Image			Size"
 			docker image ls --format "{{.Repository}}:{{.Tag}}  \t{{.Size}}" $IMAGE
 			echo ""
-			echo "$ECHO_PREFIX ${GREEN}Installed container: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Installed services: ${CYAN}${IMAGE}${RESET}"
 			echo "Container		Size			Status"
 			docker container ls -af "name=${CONTAINER_NAME}" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
 			;;
 
 		$RETURN_NO_IMAGE_NAME)
-			echo "$ECHO_PREFIX ${GREEN}Installed images: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Service downloads: ${CYAN}${IMAGE}${RESET}"
 			echo "Image			Size"
 			docker image ls -af "label=container.project=${BOX_NAME}" --format "{{.Repository}}:{{.Tag}}  \t{{.Size}}"
 			echo ""
-			echo "$ECHO_PREFIX ${GREEN}Stopped containers: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Stopped services: ${CYAN}${IMAGE}${RESET}"
 			echo "Container		Size			Status"
 			docker container ls -af "label=container.project=${BOX_NAME}" -f "status=created" -f "status=exited" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
 			echo ""
-			echo "$ECHO_PREFIX ${GREEN}Running containers: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Running services: ${CYAN}${IMAGE}${RESET}"
 			echo "Container		Size			Status"
 			docker container ls -af "label=container.project=${BOX_NAME}" -f "status=running" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
 			;;
@@ -658,10 +658,10 @@ function d_inspect()
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			echo "$ECHO_PREFIX ${GREEN}Installed image: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Downloaded service: ${CYAN}${IMAGE}${RESET}"
 			docker image inspect $IMAGE
 			echo ""
-			echo "$ECHO_PREFIX ${GREEN}Running container: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Installed service: ${CYAN}${IMAGE}${RESET}"
 			docker container inspect ${CONTAINER_NAME}
 			;;
 
@@ -691,7 +691,7 @@ function d_log()
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			echo "$ECHO_PREFIX ${GREEN}Logs for container: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Logs for service: ${CYAN}${IMAGE}${RESET}"
 			docker container logs ${CONTAINER_NAME}
 			;;
 
