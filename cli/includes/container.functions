@@ -92,7 +92,7 @@ function error_cai()
 {
 	RETURN="$?"
 	echo "$ECHO_PREFIX ${GREEN}Container already installed: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W016/${RESET}"
+	# echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W016/${RESET}"
 	return $RETURN
 }
 
@@ -100,7 +100,7 @@ function error_car()
 {
 	RETURN="$?"
 	echo "$ECHO_PREFIX ${GREEN}Container already running: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W017/${RESET}"
+	# echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W017/${RESET}"
 	return $RETURN
 }
 
@@ -460,6 +460,8 @@ function service_start()
 				fi
 
 				rm -f $TEMPFILE
+			else
+				error_car
 			fi
 			;;
 
@@ -502,6 +504,8 @@ function service_stop()
 				fi
 
 				rm -f $TEMPFILE
+			else
+				error_cas
 			fi
 			;;
 
