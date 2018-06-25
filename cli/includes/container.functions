@@ -438,16 +438,12 @@ function d_remove()
 }
 
 
-function d_start()
+function service_start()
 {
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			#if [ "$CONTAINER_RUNNING" == "true" ]
-			#then
-			#	error_car
-			#else
 			if [ "$CONTAINER_RUNNING" != "true" ]
 			then
 				echo -n "$ECHO_PREFIX ${GREEN}Starting container: ${CYAN}${IMAGE}${RESET} ... "
@@ -467,17 +463,17 @@ function d_start()
 			fi
 			;;
 
-		$RETURN_NO_LOCAL_IMAGE)
-			error_nfl
-			;;
-
 		$RETURN_NO_IMAGE_JSON)
 			error_dnc
 			;;
 
-		$RETURN_INVALID_PROJECT)
-			error_pns
-			;;
+#		$RETURN_NO_LOCAL_IMAGE)
+#			error_nfl
+#			;;
+#
+#		$RETURN_INVALID_PROJECT)
+#			error_pns
+#			;;
 	esac
 
 	return $RETURN
@@ -509,17 +505,17 @@ function service_stop()
 			fi
 			;;
 
-		$RETURN_NO_LOCAL_IMAGE)
-			error_nfl
-			;;
-
 		$RETURN_NO_IMAGE_JSON)
 			error_dnc
 			;;
 
-		$RETURN_INVALID_PROJECT)
-			error_pns
-			;;
+#		$RETURN_NO_LOCAL_IMAGE)
+#			error_nfl
+#			;;
+#
+#		$RETURN_INVALID_PROJECT)
+#			error_pns
+#			;;
 	esac
 
 	return $RETURN
@@ -660,7 +656,7 @@ function d_provision()
 				d_install $IMAGE
 				if [ "$?" == "$RETURN_OK" ]
 				then
-					d_start $IMAGE
+					service_start $IMAGE
 				fi
 			fi
 			;;

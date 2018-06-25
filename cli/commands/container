@@ -156,7 +156,7 @@ do
 			then
 				d_provision $IMAGE
 			else
-				d_start $IMAGE
+				service_start $IMAGE
 			fi
 			;;
 
