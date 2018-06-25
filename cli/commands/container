@@ -31,21 +31,24 @@ trap ctrl_c INT
 HelpMe()
 {
 	cat <<EOF
-box container ${GREEN}install${RESET} <package>		- Install and configure a service.
-box container ${GREEN}uninstall${RESET} <package>	- Uninstall a service.
-box container ${GREEN}list${RESET} [package]		- List currently installed services.
-box container ${GREEN}start${RESET} <package>		- Start a service.
-box container ${GREEN}stop${RESET} <package>		- Stop a service.
-box container ${GREEN}clean${RESET} <package>		- Remove a service and downloaded image.
-box container ${GREEN}refresh${RESET} <package>		- Refresh an existing service.
+${GREEN}Service control${RESET}
+box cargo ${GREEN}install${RESET} <package>	- Install and configure a service.
+box cargo ${GREEN}uninstall${RESET} <package>	- Uninstall a service.
+box cargo ${GREEN}list${RESET} [package]	- List currently installed services.
+box cargo ${GREEN}start${RESET} <package>	- Start a service.
+box cargo ${GREEN}stop${RESET} <package>	- Stop a service.
+box cargo ${GREEN}activate${RESET} <package>	- Activate a service.
+box cargo ${GREEN}deactivate${RESET} <package>	- Activate a service.
+box cargo ${GREEN}upgrade${RESET} <package>	- Upgrade an existing service.
 
-box container ${GREEN}update${RESET}			- Update service list from repository.
-box container ${GREEN}show${RESET}			- Show a list of services available for download.
-box container ${GREEN}shutdown${RESET}			- Shutdown all WPLib related packages.
-box container ${GREEN}reallyclean${RESET}		- Remove all WPLib related packages.
-box container ${GREEN}inspect${RESET} <package>		- Provide detailed info on a service.
-box container ${GREEN}log${RESET} <package>		- Show log files from services.
-box container ${GREEN}pull${RESET} <package>		- Just pull a service image. No install.
+${GREEN}Service management${RESET}
+box cargo ${GREEN}update${RESET}		- Update available services list.
+box cargo ${GREEN}show${RESET}			- Show the list of services available.
+box cargo ${GREEN}shutdown${RESET}		- Shutdown all WPLib related packages.
+box cargo ${GREEN}clean${RESET}			- Remove all WPLib related packages.
+box cargo ${GREEN}inspect${RESET} <package>	- Provide detailed info on a service.
+box cargo ${GREEN}log${RESET} <package>		- Show log files from services.
+box cargo ${GREEN}pull${RESET} <package>	- Just pull a service image. No install.
 EOF
 }
 
