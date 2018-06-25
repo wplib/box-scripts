@@ -170,7 +170,7 @@ do
 			service_remove $IMAGE
 			;;
 
-		'start'|'up')
+		'start')
 			service_start $IMAGE
 			if [ "$?" == "$RETURN_NO_LOCAL_IMAGE" ]
 			then
@@ -180,7 +180,7 @@ do
 			fi
 			;;
 
-		'stop'|'down')
+		'stop')
 			service_stop $IMAGE
 			;;
 
