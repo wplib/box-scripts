@@ -93,12 +93,12 @@ _box_component()
 			return 0
 			;;
 
-		'start'|'clean'|'refresh')
+		'start')
 			_box_component_stopped
 			return 0
 			;;
 
-		'ls'|'inspect'|'log'|'uninstall')
+		'list'|'ls'|'inspect'|'log'|'uninstall'|'activate'|'deactivate'|'refresh')
 			_box_component_all
 			return 0
 			;;
@@ -109,7 +109,7 @@ _box_component()
 			;;
 	esac
 
-	COMPREPLY=($(compgen -W "install ls start stop rm clean refresh update show shutdown reallyclean inspect log pull" -- $cur))
+	COMPREPLY=($(compgen -W "install uninstall activate deactivate start stop list ls refresh update show shutdown reallyclean inspect log pull" -- $cur))
 	return 0
 }
 
