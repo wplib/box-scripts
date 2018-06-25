@@ -208,7 +208,7 @@ function is_service_in_repo()
 	IMAGE_VERSION="${state_array[2]}"
 
 	# wget -qO /dev/null https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/
-	jq --raw-output ".results | .[] | .name" /opt/box/etc/images/php.json | grep "^${IMAGE_VERSION}\$"
+	jq --raw-output ".results | .[] | .name" ${WPLIB_BOX_CONFIG}/images/${IMAGE_NAME}.json | grep "^${IMAGE_VERSION}\$"
 	if [ "$?" == "0" ]
 	then
 		return $RETURN_OK
