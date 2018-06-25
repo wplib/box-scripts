@@ -421,7 +421,7 @@ function service_create_container()
 	RETURN="$?"
 	case $RETURN in
 		#$RETURN_OK)
-		$RETURN_NO_LOCAL_IMAGE)
+		$RETURN_NO_CONTAINER)
 			if [ "$CONTAINER_HOSTNAME" == "" ]
 			then
 				echo -n "$ECHO_PREFIX ${GREEN}Installing service: ${CYAN}${IMAGE}${RESET} ... "
