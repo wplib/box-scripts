@@ -14,6 +14,7 @@ RETURN_NO_LOCAL_IMAGE="2"
 RETURN_NO_IMAGE_JSON="3"
 RETURN_NO_IMAGE_REPO="4"
 RETURN_INVALID_PROJECT="5"
+RETURN_CANT_INSTALL_IMAGE="6"
 
 
 function error_pns()
@@ -27,7 +28,7 @@ function error_pns()
 function error_nip()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error no image provided.${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: no service provided.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W008/${RESET}"
 	return $RETURN
 }
@@ -35,7 +36,7 @@ function error_nip()
 function error_nfl()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error image not found locally: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: service not found locally: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W009/${RESET}"
 	return $RETURN
 }
@@ -43,7 +44,7 @@ function error_nfl()
 function error_dnc()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error image doesn't conform to JSON config format in 0.16 or later: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: service doesn't conform to JSON config format in 0.16 or later: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W010/${RESET}"
 	return $RETURN
 }
@@ -51,7 +52,7 @@ function error_dnc()
 function error_dni()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error image does not exist in repository: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: service does not exist in repository: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W011/${RESET}"
 	return $RETURN
 }
@@ -59,7 +60,7 @@ function error_dni()
 function error_ccbr()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error container can't be removed: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: container can't be removed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W012/${RESET}"
 	return $RETURN
 }
@@ -67,7 +68,7 @@ function error_ccbr()
 function error_ccbi()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error container can't be installed: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: container can't be installed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W013/${RESET}"
 	return $RETURN
 }
@@ -75,7 +76,7 @@ function error_ccbi()
 function error_ccbs()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error container can't be started: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: container can't be started: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W014/${RESET}"
 	return $RETURN
 }
@@ -83,7 +84,7 @@ function error_ccbs()
 function error_ccbd()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error container can't be stopped: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: container can't be stopped: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W015/${RESET}"
 	return $RETURN
 }
@@ -115,7 +116,7 @@ function error_cas()
 function error_csac()
 {
 	RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}Error not all containers could be stopped.${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: not all containers could be stopped.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W019/${RESET}"
 	return $RETURN
 }
@@ -191,19 +192,23 @@ function service_info()
 }
 
 
-function d_exists()
+function is_service_in_repo()
 {
+	local RETURN IFS PROJECT IMAGE_NAME IMAGE_VERSION IMAGE
+	IMAGE=$1
+
 	IFS='/:' read -r -a state_array <<< "${IMAGE}"
 	PROJECT="${state_array[0]}"
 	IMAGE_NAME="${state_array[1]}"
 	IMAGE_VERSION="${state_array[2]}"
 
-	wget -qO /dev/null https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/
+	# wget -qO /dev/null https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/
+	jq --raw-output ".results | .[] | .name" /opt/box/etc/images/php.json | grep "^${IMAGE_VERSION}\$"
 	if [ "$?" == "0" ]
 	then
 		return $RETURN_OK
 	else
-		error_dni
+		# error_dni
 		return $RETURN_NO_IMAGE_REPO
 	fi
 }
@@ -234,14 +239,16 @@ function d_update()
 
 function d_show()
 {
+	local RETURN IMAGES IMAGE_NAME VERSIONS IMAGE_VERSION
+
 	echo "$ECHO_PREFIX ${GREEN}Available images on repository.${RESET}"
 	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/repositories.json)"
-	for IMAGE_NAME in $IMAGES
+	for IMAGE_NAME in ${IMAGES}
 	do
 		VERSIONS="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json)"
-		for IMAGE_VERSION in $VERSIONS
+		for IMAGE_VERSION in ${VERSIONS}
 		do
-			echo "${BOX_NAME}/${IMAGE_NAME}:$IMAGE_VERSION"
+			echo "${BOX_NAME}/${IMAGE_NAME}:${IMAGE_VERSION}"
 		done
 		
 	done
@@ -250,6 +257,9 @@ function d_show()
 
 function d_reallyclean()
 {
+	local RETURN TEMPFILE IMAGE RESPONSE
+	IMAGE=$1
+
 	echo "${GREEN}Are you really sure? ${RED}Warning: this will remove ALL images and ALL data.${GREEN}"
 	echo -n "Respond with ${YELLOW}Yes please${RESET}: "
 	read RESPONSE
@@ -275,22 +285,42 @@ function d_reallyclean()
 }
 
 
-function d_pull()
+function service_image_pull()
 {
-	echo "$ECHO_PREFIX ${GREEN}Pulling ${CYAN}$IMAGE${GREEN} from repository.${RESET}"
-	docker pull $IMAGE
-	if [ "$?" == "1" ]
-	then
-		error_dni
-		return $RETURN_NO_IMAGE_REPO
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
+	is_service_in_repo $IMAGE
+	RETURN="$?"
+	if [ "$RETURN" == "$RETURN_OK" ]
+	then 
+		echo -n "$ECHO_PREFIX ${GREEN}Downloading service: ${CYAN}${IMAGE}${RESET} ... "
+		TEMPFILE="$(mktemp /tmp/box-container.XXX)"
+		docker pull $IMAGE >& $TEMPFILE
+
+		if [ "$?" == "1" ]
+		then
+			RETURN="$RETURN_NO_IMAGE_REPO"
+			echo "${RED}NOT OK${RESET}"
+			error_dni
+			cat $TEMPFILE
+		else
+			RETURN="$RETURN_OK"
+			echo "${GREEN}OK${RESET}"
+		fi
+
+		rm -f $TEMPFILE
 	fi
 
-	return $RETURN_OK
+	return $RETURN
 }
 
 
 function d_shell()
 {
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
@@ -316,10 +346,10 @@ function d_shell()
 			fi
 			;;
 
-		$RETURN_NO_LOCAL_IMAGE)
-			error_nfl
-			;;
-
+#		$RETURN_NO_LOCAL_IMAGE)
+#			error_nfl
+#			;;
+#
 		$RETURN_NO_IMAGE_JSON)
 			error_dnc
 			;;
@@ -335,6 +365,9 @@ function d_shell()
 
 function d_exec()
 {
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
@@ -369,30 +402,40 @@ function d_exec()
 }
 
 
-function d_install()
+function service_create_container()
 {
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			#if [ "$CONTAINER_HOSTNAME" != "" ]
-			#then
-			#	error_cai
-			#else
 			if [ "$CONTAINER_HOSTNAME" == "" ]
 			then
-				echo "$ECHO_PREFIX ${GREEN}Installing container: ${CYAN}${IMAGE}${RESET}"
-				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE}
+				echo -n "$ECHO_PREFIX ${GREEN}Installing service: ${CYAN}${IMAGE}${RESET} ... "
+				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
+				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} >& $TEMPFILE
+
 				if [ "$?" == "1" ]
 				then
+					echo "${RED}NOT OK${RESET}"
 					error_ccbi
+					cat $TEMPFILE
+					RETURN="$RETURN_CANT_INSTALL_IMAGE"
+				else
+					echo "${GREEN}OK${RESET}"
+					RETURN="$RETURN_OK"
+				fi
+
+				rm -f $TEMPFILE
 				fi
 			fi
 			;;
-
-		$RETURN_NO_LOCAL_IMAGE)
-			error_nfl
-			;;
+#
+#		$RETURN_NO_LOCAL_IMAGE)
+#			error_nfl
+#			;;
 
 		$RETURN_NO_IMAGE_JSON)
 			error_dnc
@@ -409,6 +452,9 @@ function d_install()
 
 function d_remove()
 {
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
@@ -440,6 +486,9 @@ function d_remove()
 
 function service_start()
 {
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
@@ -461,7 +510,7 @@ function service_start()
 
 				rm -f $TEMPFILE
 			else
-				error_car
+				echo "$ECHO_PREFIX ${GREEN}Starting container: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already running.${RESET}"
 			fi
 			;;
 
@@ -469,13 +518,13 @@ function service_start()
 			error_dnc
 			;;
 
-#		$RETURN_NO_LOCAL_IMAGE)
-#			error_nfl
-#			;;
-#
-#		$RETURN_INVALID_PROJECT)
-#			error_pns
-#			;;
+		$RETURN_NO_LOCAL_IMAGE)
+			error_nfl
+			;;
+
+		$RETURN_INVALID_PROJECT)
+			error_pns
+			;;
 	esac
 
 	return $RETURN
@@ -484,6 +533,9 @@ function service_start()
 
 function service_stop()
 {
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
@@ -505,7 +557,7 @@ function service_stop()
 
 				rm -f $TEMPFILE
 			else
-				error_cas
+				echo "$ECHO_PREFIX ${GREEN}Stopping container: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already stopped.${RESET}"
 			fi
 			;;
 
@@ -513,13 +565,13 @@ function service_stop()
 			error_dnc
 			;;
 
-#		$RETURN_NO_LOCAL_IMAGE)
-#			error_nfl
-#			;;
-#
-#		$RETURN_INVALID_PROJECT)
-#			error_pns
-#			;;
+		$RETURN_NO_LOCAL_IMAGE)
+			error_nfl
+			;;
+
+		$RETURN_INVALID_PROJECT)
+			error_pns
+			;;
 	esac
 
 	return $RETURN
@@ -528,6 +580,9 @@ function service_stop()
 
 function d_shutdown()
 {
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
 	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLLib containers${RESET} ... "
 	TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 	docker container ls -qaf "label=container.project=${BOX_NAME}" | xargs docker stop >& $TEMPFILE
@@ -547,6 +602,9 @@ function d_shutdown()
 
 function service_ls()
 {
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
@@ -593,6 +651,9 @@ function service_ls()
 
 function d_inspect()
 {
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
@@ -623,6 +684,9 @@ function d_inspect()
 
 function d_log()
 {
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
@@ -648,16 +712,19 @@ function d_log()
 }
 
 
-function d_provision()
+function service_provision()
 {
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_NO_LOCAL_IMAGE)
-			d_pull $IMAGE
+			service_image_pull $IMAGE
 			if [ "$?" == "$RETURN_OK" ]
 			then
-				d_install $IMAGE
+				service_create_container $IMAGE
 				if [ "$?" == "$RETURN_OK" ]
 				then
 					service_start $IMAGE
@@ -668,3 +735,4 @@ function d_provision()
 
 	return $RETURN
 }
+

@@ -117,17 +117,12 @@ esac
 for IMAGE in $IMAGES
 do
 	case $CMD in
-		'provision')
-			echo "$ECHO_PREFIX ${GREEN}Provisioning ${CYAN}${IMAGE}.${RESET}"
-			d_provision $IMAGE
-			;;
-
 		'refresh'|'upgrade')
 			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${CYAN}${IMAGE}${RESET}"
 			service_stop $IMAGE
 			d_remove $IMAGE
 			docker image rm -f $IMAGE
-			d_provision $IMAGE
+			service_provision $IMAGE
 			;;
 
 		'clean')
@@ -138,12 +133,17 @@ do
 			;;
 
 		'pull')
-			d_pull $IMAGE
+			service_image_pull $IMAGE
 			;;
 
-		'create'|'install')
-			d_pull $IMAGE
-			d_install $IMAGE
+		'install')
+			service_image_pull $IMAGE
+			service_create_container $IMAGE
+			;;
+
+		'provision')
+			echo "$ECHO_PREFIX ${GREEN}Provisioning ${CYAN}${IMAGE}.${RESET}"
+			service_provision $IMAGE
 			;;
 
 		'remove'|'rm'|'destroy')
@@ -151,10 +151,10 @@ do
 			;;
 
 		'start'|'up')
-			service_info $IMAGE
+			service_start $IMAGE
 			if [ "$?" == "$RETURN_NO_LOCAL_IMAGE" ]
 			then
-				d_provision $IMAGE
+				service_provision $IMAGE
 			else
 				service_start $IMAGE
 			fi
