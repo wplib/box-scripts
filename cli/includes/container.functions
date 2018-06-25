@@ -556,7 +556,12 @@ function service_start()
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
-		$RETURN_OK)
+		$RETURN_OK|$RETURN_NO_LOCAL_IMAGE)
+			if [ "$RETURN" == "$RETURN_NO_LOCAL_IMAGE" ]
+			then
+				service_install $IMAGE 
+			fi
+
 			if [ "$CONTAINER_RUNNING" != "true" ]
 			then
 				echo -n "$ECHO_PREFIX ${GREEN}Starting service: ${CYAN}${IMAGE}${RESET} ... "
@@ -580,11 +585,6 @@ function service_start()
 
 		$RETURN_NO_IMAGE_JSON)
 			error_dnc
-			;;
-
-		$RETURN_NO_LOCAL_IMAGE)
-			# error_nfl
-			service_provision $IMAGE 
 			;;
 
 		$RETURN_INVALID_PROJECT)
@@ -780,7 +780,7 @@ function service_log()
 }
 
 
-function service_provision()
+function service_install()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
@@ -799,11 +799,7 @@ function service_provision()
 	esac
 
 	service_create_container $IMAGE
-	if [ "$?" == "$RETURN_OK" ]
-	then
-		service_start $IMAGE
-		RETURN="$?"
-	fi
+	RETURN="$?"
 
 	return $RETURN
 }
@@ -811,17 +807,19 @@ function service_provision()
 
 spinner()
 {
-  local -r pid="${1}"
+  local -r PID="${1}"
   local -r delay='0.75'
   local spinstr='\|/-'
   local temp
-  while ps a | awk '{print $1}' | grep -q "${pid}"; do
+  # while ps a | awk '{print $1}' | grep -q "${PID}"; do
+  while [ -d /proc/$PID ]
     temp="${spinstr#?}"
     printf " [%c]  " "${spinstr}"
     spinstr=${temp}${spinstr%"${temp}"}
     sleep "${delay}"
-    printf "\b\b\b\b\b\b"
+    #printf "\b\b\b\b\b\b"
   done
-  printf "    \b\b\b\b"
+  #printf "    \b\b\b\b"
+  #printf "\n"
 }
 

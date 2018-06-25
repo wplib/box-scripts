@@ -154,16 +154,18 @@ do
 			;;
 
 		'install')
-			service_image_pull $IMAGE
-			if [ "$?" == "$RETURN_OK" ]
-			then
-				service_create_container $IMAGE
-			fi
+			echo "$ECHO_PREFIX ${GREEN}Installing ${CYAN}${IMAGE}.${RESET}"
+			service_provision $IMAGE
 			;;
 
 		'provision')
 			echo "$ECHO_PREFIX ${GREEN}Provisioning ${CYAN}${IMAGE}.${RESET}"
 			service_provision $IMAGE
+			if [ "$?" == "$RETURN_OK" ]
+			then
+				service_start $IMAGE
+				RETURN="$?"
+			fi
 			;;
 
 		'uninstall')
