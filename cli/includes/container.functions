@@ -491,7 +491,7 @@ function service_stop()
 	case $RETURN in
 		$RETURN_OK)
 			if [ "$CONTAINER_RUNNING" == "true" ]
-			else
+			then
 				echo -n "$ECHO_PREFIX ${GREEN}Stopping container: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 				docker stop ${CONTAINER_NAME} >& $TEMPFILE
