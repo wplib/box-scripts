@@ -31,21 +31,22 @@ trap ctrl_c INT
 d_help()
 {
 	cat <<EOF
-box container ${GREEN}install${RESET} <package>	- Install and configure a container.
-box container ${GREEN}ls${RESET} [package]	- List current image and container.
-box container ${GREEN}start${RESET} <package>	- Start a container.
-box container ${GREEN}stop${RESET} <package>	- Stop a container.
-box container ${GREEN}rm${RESET} <package>	- Remove the container.
-box container ${GREEN}clean${RESET} <package>	- Remove the container and associated image.
-box container ${GREEN}refresh${RESET} <package>	- Refresh an existing container.
+box container ${GREEN}install${RESET} <package>		- Install and configure a service.
+box container ${GREEN}uninstall${RESET} <package>	- Uninstall a service.
+box container ${GREEN}ls${RESET} [package]		- List currently installed services.
+box container ${GREEN}start${RESET} <package>		- Start a service.
+box container ${GREEN}stop${RESET} <package>		- Stop a service.
+box container ${GREEN}rm${RESET} <package>		- Remove a service.
+box container ${GREEN}clean${RESET} <package>		- Remove a saervice and downloaded image.
+box container ${GREEN}refresh${RESET} <package>		- Refresh an existing service.
 
-box container ${GREEN}update${RESET}		- Update container list from repository.
-box container ${GREEN}show${RESET}		- Show a list of containers available for download.
-box container ${GREEN}shutdown${RESET}		- This will shutdown all WPLib related packages.
-box container ${GREEN}reallyclean${RESET}	- This will remove all WPLib related packages.
-box container ${GREEN}inspect${RESET} <package>	- Provide detailed info on image and container.
-box container ${GREEN}log${RESET} <package>	- Show log files from container.
-box container ${GREEN}pull${RESET} <package>	- Just pull a container image. No install.
+box container ${GREEN}update${RESET}			- Update service list from repository.
+box container ${GREEN}show${RESET}			- Show a list of services available for download.
+box container ${GREEN}shutdown${RESET}			- Shutdown all WPLib related packages.
+box container ${GREEN}reallyclean${RESET}		- Remove all WPLib related packages.
+box container ${GREEN}inspect${RESET} <package>		- Provide detailed info on a service.
+box container ${GREEN}log${RESET} <package>		- Show log files from services.
+box container ${GREEN}pull${RESET} <package>		- Just pull a service image. No install.
 EOF
 }
 
@@ -166,7 +167,7 @@ do
 			service_provision $IMAGE
 			;;
 
-		'remove'|'rm'|'destroy')
+		'uninstall')
 			service_remove $IMAGE
 			;;
 
