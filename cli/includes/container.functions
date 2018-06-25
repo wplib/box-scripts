@@ -16,6 +16,7 @@ RETURN_NO_IMAGE_REPO="4"
 RETURN_INVALID_PROJECT="5"
 RETURN_CANT_INSTALL_IMAGE="6"
 RETURN_ALREADY_STOPPED="7"
+RETURN_NO_CONTAINER="7"
 
 
 function error_pns()
@@ -133,7 +134,7 @@ function error_cni()
 
 function service_info()
 {
-	local DOCKER IFS
+	local DOCKER IFS RETURN
 
 	if [ "${IMAGE}" == "" ]
 	then
@@ -183,13 +184,15 @@ function service_info()
 		CONTAINER_RUNNING="${state_array[0]}"
 		CONTAINER_IP="${state_array[1]}"
 		CONTAINER_HOSTNAME="${state_array[2]}"
+		RETURN="$RETURN_OK"
 	else
 		CONTAINER_RUNNING=""
 		CONTAINER_IP=""
 		CONTAINER_HOSTNAME=""
+		RETURN="$RETURN_NO_CONTAINER"
 	fi
 
-	return $RETURN_OK
+	return $RETURN
 }
 
 
@@ -461,7 +464,7 @@ function service_remove()
 		$RETURN_OK)
 			echo -n "$ECHO_PREFIX ${GREEN}Removing service: ${CYAN}${IMAGE}${RESET} ... "
 			TEMPFILE="$(mktemp /tmp/box-container.XXX)"
-			docker container rm -v ${CONTAINER_NAME} >& $TEMPFILE
+			docker container rm -f -v ${CONTAINER_NAME} >& $TEMPFILE
 
 			if [ "$?" == "1" ]
 			then
