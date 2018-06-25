@@ -333,6 +333,7 @@ function component_shell()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
+	shift
 
 	component_info $IMAGE
 	RETURN="$?"

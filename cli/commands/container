@@ -92,7 +92,7 @@ case $CMD in
 		IMAGE="$1"
 		shift
 		ARGS="$@"
-		component_shell "$@"
+		component_shell $IMAGE "$ARGS"
 		;;
 
 	'exec')
