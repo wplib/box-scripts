@@ -219,7 +219,7 @@ function is_service_in_repo()
 }
 
 
-function d_update()
+function update_services()
 {
 	echo -n "$ECHO_PREFIX ${GREEN}Updating repository list${RESET}."
 	if [ ! -d ${WPLIB_BOX_BASE_DIR}/etc ]
@@ -260,7 +260,7 @@ function d_show()
 }
 
 
-function d_reallyclean()
+function reallyclean()
 {
 	local RETURN TEMPFILE IMAGE RESPONSE
 	IMAGE=$1
@@ -321,7 +321,7 @@ function service_image_pull()
 }
 
 
-function d_shell()
+function service_shell()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
@@ -368,7 +368,7 @@ function d_shell()
 }
 
 
-function d_exec()
+function service_exec()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
@@ -639,7 +639,7 @@ function service_stop()
 }
 
 
-function d_shutdown()
+function shutdown()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1

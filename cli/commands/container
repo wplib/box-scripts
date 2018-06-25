@@ -28,7 +28,7 @@ ctrl_c()
 trap ctrl_c INT
 
 
-d_help()
+HelpMe()
 {
 	cat <<EOF
 box container ${GREEN}install${RESET} <package>		- Install and configure a service.
@@ -66,22 +66,22 @@ case $CMD in
 		;;
 
 	'show')
-		d_show
+		service_show
 		exit $?
 		;;
 
 	'update')
-		d_update
+		update_services
 		exit $?
 		;;
 
 	'reallyclean')
-		d_reallyclean
+		reallyclean
 		exit $?
 		;;
 
 	'shutdown')
-		d_shutdown
+		shutdown
 		exit $?
 		;;
 
@@ -89,25 +89,25 @@ case $CMD in
 		IMAGE="$1"
 		shift
 		ARGS="$@"
-		d_shell "$@"
+		service_shell "$@"
 		;;
 
 	'exec')
 		IMAGE="$1"
 		shift
 		ARGS="$@"
-		d_exec "$@"
+		service_exec "$@"
 		;;
 
 	''|'help')
-		d_help
+		HelpMe
 		;;
 
 	*)
 		if [ "$1" == "" ]
 		then
 			error_nip
-			d_help
+			HelpMe
 			exit 1
 		fi
 		;;
@@ -189,11 +189,11 @@ do
 			;;
 
 		'inspect'|'info')
-			d_inspect $IMAGE
+			service_inspect $IMAGE
 			;;
 
 		'log')
-			d_log $IMAGE
+			service_log $IMAGE
 			;;
 	esac
 done
