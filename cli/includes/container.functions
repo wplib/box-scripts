@@ -520,7 +520,6 @@ function image_remove()
 			else
 				echo "${GREEN}OK${RESET}"
 				RETURN="$RETURN_OK"
-				cat $TEMPFILE
 			fi
 
 			rm -f $TEMPFILE
