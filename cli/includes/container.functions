@@ -734,7 +734,7 @@ function service_provision()
 		$RETURN_NO_LOCAL_IMAGE)
 			service_image_pull $IMAGE
 			RETURN="$?"
-			if [ "$RETURN != "$RETURN_OK" ]
+			if [ "$RETURN" != "$RETURN_OK" ]
 			then
 				return $RETURN
 			fi
