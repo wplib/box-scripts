@@ -93,12 +93,12 @@ _box_container()
 			return 0
 			;;
 
-		'start'|'restart'|'rm'|'clean'|'refresh')
+		'start'|'clean'|'refresh')
 			_box_container_stopped
 			return 0
 			;;
 
-		'ls'|'inspect'|'log')
+		'ls'|'inspect'|'log'|'uninstall')
 			_box_container_all
 			return 0
 			;;
