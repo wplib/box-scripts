@@ -9,15 +9,15 @@ _box()
 
 
 	case "${COMP_WORDS[1]}" in
-		'cargo')
-			# /opt/box/bin/box cargo help
-			_box_container
+		'component')
+			# /opt/box/bin/box component help
+			_box_component
 			return 0
 			;;
 
 		'container')
-			# /opt/box/bin/box container help
-			_box_container
+			# /opt/box/bin/box component help
+			_box_component
 			return 0
 			;;
 
@@ -74,37 +74,37 @@ _box()
 			;;
 	esac
 
-	COMPREPLY=($(compgen -W "database cargo container startup restart shutdown status shell version self-update test help" -- $cur))
+	COMPREPLY=($(compgen -W "database component comp container startup restart shutdown status shell version self-update test help" -- $cur))
 }
 complete -F _box box
 
 
 
 ################################################################################
-# Command completion for 'box container'
-_box_container()
+# Command completion for 'box component'
+_box_component()
 {
 	local cur=${COMP_WORDS[COMP_CWORD]}
 	local prev=${COMP_WORDS[COMP_CWORD-1]}
 
 	case "$prev" in
 		'stop'|'restart')
-			_box_container_running
+			_box_component_running
 			return 0
 			;;
 
 		'start'|'clean'|'refresh')
-			_box_container_stopped
+			_box_component_stopped
 			return 0
 			;;
 
 		'ls'|'inspect'|'log'|'uninstall')
-			_box_container_all
+			_box_component_all
 			return 0
 			;;
 
 		'pull'|'install')
-			_box_container_dockerhub
+			_box_component_dockerhub
 			return 0
 			;;
 	esac
@@ -113,7 +113,7 @@ _box_container()
 	return 0
 }
 
-_box_container_running()
+_box_component_running()
 {
 	local cur=${COMP_WORDS[COMP_CWORD]}
 
@@ -122,7 +122,7 @@ _box_container_running()
 }
 
 
-_box_container_stopped()
+_box_component_stopped()
 {
 	local cur=${COMP_WORDS[COMP_CWORD]}
 
@@ -131,7 +131,7 @@ _box_container_stopped()
 }
 
 
-_box_container_all()
+_box_component_all()
 {
 	local cur=${COMP_WORDS[COMP_CWORD]}
 
@@ -140,7 +140,7 @@ _box_container_all()
 }
 
 
-_box_container_dockerhub()
+_box_component_dockerhub()
 {
 	local IMAGES
 	local IMAGE_NAME
@@ -180,7 +180,7 @@ _box_test()
 
 	case "$prev" in
 		'list'|'ls')
-			_box_container_running
+			_box_component_running
 			return 0
 			;;
 
