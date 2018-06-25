@@ -16,7 +16,7 @@ RETURN_NO_IMAGE_REPO="4"
 RETURN_INVALID_PROJECT="5"
 RETURN_CANT_INSTALL_IMAGE="6"
 RETURN_ALREADY_STOPPED="7"
-RETURN_NO_CONTAINER="7"
+RETURN_NO_CONTAINER="8"
 
 
 function error_pns()
@@ -30,7 +30,7 @@ function error_pns()
 function error_nip()
 {
 	#RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: no service provided.${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: Invalid command.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W008/${RESET}"
 	#return $RETURN
 }

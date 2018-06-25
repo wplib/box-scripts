@@ -121,7 +121,7 @@ do
 			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${CYAN}${IMAGE}${RESET}"
 			service_stop $IMAGE
 			case $? in
-				$RETURN_ALREADY_STOPPED|$RETURN_OK)
+				$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
 					service_remove $IMAGE
 					if [ "$?" == "$RETURN_OK" ]
 					then
@@ -139,7 +139,7 @@ do
 			echo "$ECHO_PREFIX ${GREEN}Cleaning up: ${CYAN}${IMAGE}${RESET}"
 			service_stop $IMAGE
 			case $? in
-				$RETURN_ALREADY_STOPPED|$RETURN_OK)
+				$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
 					service_remove $IMAGE
 					if [ "$?" == "$RETURN_OK" ]
 					then
