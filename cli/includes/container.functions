@@ -576,7 +576,8 @@ function service_stop()
 			;;
 
 		$RETURN_NO_LOCAL_IMAGE)
-			error_nfl
+			echo "$ECHO_PREFIX ${GREEN}Stopping service: ${CYAN}${IMAGE}${RESET} ... ${GREEN}no image present.${RESET}"
+			# error_nfl
 			;;
 
 		$RETURN_INVALID_PROJECT)
@@ -732,17 +733,20 @@ function service_provision()
 	case $RETURN in
 		$RETURN_NO_LOCAL_IMAGE)
 			service_image_pull $IMAGE
-			if [ "$?" == "$RETURN_OK" ]
+			RETURN="$?"
+			if [ "$RETURN != "$RETURN_OK" ]
 			then
-				service_create_container $IMAGE
-				if [ "$?" == "$RETURN_OK" ]
-				then
-					service_start $IMAGE
-					RETURN="$?"
-				fi
+				return $RETURN
 			fi
 			;;
 	esac
+
+	service_create_container $IMAGE
+	if [ "$?" == "$RETURN_OK" ]
+	then
+		service_start $IMAGE
+		RETURN="$?"
+	fi
 
 	return $RETURN
 }
