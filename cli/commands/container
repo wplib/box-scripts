@@ -145,7 +145,6 @@ do
 						docker image rm -f $IMAGE
 					fi
 					;;
-			fi
 			;;
 
 		'pull')
