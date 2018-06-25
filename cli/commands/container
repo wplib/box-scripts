@@ -32,23 +32,23 @@ HelpMe()
 {
 	cat <<EOF
 ${GREEN}Service control${RESET}
-box cargo ${GREEN}install${RESET} <package>	- Install and configure a service.
-box cargo ${GREEN}uninstall${RESET} <package>	- Uninstall a service.
-box cargo ${GREEN}list${RESET} [package]	- List currently installed services.
-box cargo ${GREEN}start${RESET} <package>	- Start a service.
-box cargo ${GREEN}stop${RESET} <package>	- Stop a service.
-box cargo ${GREEN}activate${RESET} <package>	- Activate a service.
-box cargo ${GREEN}deactivate${RESET} <package>	- Activate a service.
-box cargo ${GREEN}upgrade${RESET} <package>	- Upgrade an existing service.
+box cargo ${GREEN}install${RESET} <package>	- Install and configure a package.
+box cargo ${GREEN}uninstall${RESET} <package>	- Uninstall a package.
+box cargo ${GREEN}list${RESET} [package]	- List currently installed packages.
+box cargo ${GREEN}start${RESET} <package>	- Start a package.
+box cargo ${GREEN}stop${RESET} <package>	- Stop a package.
+box cargo ${GREEN}activate${RESET} <package>	- Activate a package.
+box cargo ${GREEN}deactivate${RESET} <package>	- Activate a package.
+box cargo ${GREEN}upgrade${RESET} <package>	- Upgrade an existing package.
 
 ${GREEN}Service management${RESET}
-box cargo ${GREEN}update${RESET}		- Update available services list.
-box cargo ${GREEN}show${RESET}			- Show the list of services available.
+box cargo ${GREEN}update${RESET}		- Update available packages list.
+box cargo ${GREEN}show${RESET}			- Show the list of packages available.
 box cargo ${GREEN}shutdown${RESET}		- Shutdown all WPLib related packages.
 box cargo ${GREEN}clean${RESET}			- Remove all WPLib related packages.
-box cargo ${GREEN}inspect${RESET} <package>	- Provide detailed info on a service.
-box cargo ${GREEN}log${RESET} <package>		- Show log files from services.
-box cargo ${GREEN}pull${RESET} <package>	- Just pull a service image. No install.
+box cargo ${GREEN}inspect${RESET} <package>	- Provide detailed info on a packages.
+box cargo ${GREEN}log${RESET} <package>		- Show log files from packages.
+box cargo ${GREEN}pull${RESET} <package>	- Just pull a package image. No install.
 EOF
 }
 
@@ -64,17 +64,17 @@ case $CMD in
 		#echo "$@"
 		if [ "$1" == "" ]
 		then
-			service_list
+			package_list
 		fi
 		;;
 
 	'show')
-		service_show
+		package_show
 		exit $?
 		;;
 
 	'update')
-		update_services
+		update_packages
 		exit $?
 		;;
 
@@ -92,14 +92,14 @@ case $CMD in
 		IMAGE="$1"
 		shift
 		ARGS="$@"
-		service_shell "$@"
+		package_shell "$@"
 		;;
 
 	'exec')
 		IMAGE="$1"
 		shift
 		ARGS="$@"
-		service_exec "$@"
+		package_exec "$@"
 		;;
 
 	''|'help')
@@ -122,28 +122,39 @@ do
 	case $CMD in
 		'refresh'|'upgrade')
 			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${CYAN}${IMAGE}${RESET}"
-			service_stop $IMAGE
+			package_stop $IMAGE
 			case $? in
 				$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
-					service_remove $IMAGE
+					package_remove $IMAGE
 					case $? in
 						$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
 							image_remove $IMAGE
 							if [ "$?" == "$RETURN_OK" ]
 							then
-								service_provision $IMAGE
+								package_provision $IMAGE
 							fi
 					esac
 					;;
 			esac
 			;;
 
-		'clean')
-			echo "$ECHO_PREFIX ${GREEN}Cleaning up: ${CYAN}${IMAGE}${RESET}"
-			service_stop $IMAGE
+		'pull')
+			package_image_pull $IMAGE
+			RETURN="$?"
+			;;
+
+		'install')
+			echo "$ECHO_PREFIX ${GREEN}Installing ${CYAN}${IMAGE}.${RESET}"
+			package_install $IMAGE
+			RETURN="$?"
+			;;
+
+		'uninstall')
+			echo "$ECHO_PREFIX ${GREEN}Uninstalling: ${CYAN}${IMAGE}${RESET}"
+			package_stop $IMAGE
 			case $? in
 				$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
-					service_remove $IMAGE
+					package_remove $IMAGE
 					case $? in
 						$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
 							image_remove $IMAGE
@@ -152,50 +163,40 @@ do
 			esac
 			;;
 
-		'pull')
-			service_image_pull $IMAGE
+		'activate')
+			echo "$ECHO_PREFIX ${GREEN}Activating ${CYAN}${IMAGE}.${RESET}"
+			package_provision $IMAGE
 			RETURN="$?"
 			;;
 
-		'install')
-			echo "$ECHO_PREFIX ${GREEN}Installing ${CYAN}${IMAGE}.${RESET}"
-			service_install $IMAGE
-			RETURN="$?"
-			;;
-
-		'provision')
-			echo "$ECHO_PREFIX ${GREEN}Provisioning ${CYAN}${IMAGE}.${RESET}"
-			service_provision $IMAGE
-			RETURN="$?"
-			;;
-
-		'uninstall')
-			service_remove $IMAGE
+		'deactivate')
+			echo "$ECHO_PREFIX ${GREEN}Deactivating ${CYAN}${IMAGE}.${RESET}"
+			package_remove $IMAGE
 			RETURN="$?"
 			;;
 
 		'start')
-			service_start $IMAGE
+			package_start $IMAGE
 			if [ "$?" == "$RETURN_NO_LOCAL_IMAGE" ]
 			then
-				service_provision $IMAGE
+				package_provision $IMAGE
 			fi
 			;;
 
 		'stop')
-			service_stop $IMAGE
+			package_stop $IMAGE
 			;;
 
 		'list'|'ls')
-			service_list $IMAGE
+			package_list $IMAGE
 			;;
 
 		'inspect'|'info')
-			service_inspect $IMAGE
+			package_inspect $IMAGE
 			;;
 
 		'log')
-			service_log $IMAGE
+			package_log $IMAGE
 			;;
 	esac
 done

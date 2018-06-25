@@ -39,7 +39,7 @@ function error_nip()
 function error_nfl()
 {
 	#RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: service not found locally: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: package not found locally: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W009/${RESET}"
 	#return $RETURN
 }
@@ -47,7 +47,7 @@ function error_nfl()
 function error_dnc()
 {
 	#RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: service doesn't conform to JSON config format in 0.16 or later: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: package doesn't conform to JSON config format in 0.16 or later: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W010/${RESET}"
 	#return $RETURN
 }
@@ -55,7 +55,7 @@ function error_dnc()
 function error_dni()
 {
 	#RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: service does not exist in repository: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: package does not exist in repository: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W011/${RESET}"
 	#return $RETURN
 }
@@ -63,7 +63,7 @@ function error_dni()
 function error_ccbr()
 {
 	#RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: service can't be removed: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: package can't be removed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W012/${RESET}"
 	#return $RETURN
 }
@@ -71,7 +71,7 @@ function error_ccbr()
 function error_ccbi()
 {
 	#RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: service can't be installed: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: package can't be installed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W013/${RESET}"
 	#return $RETURN
 }
@@ -79,7 +79,7 @@ function error_ccbi()
 function error_ccbs()
 {
 	#RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: service can't be started: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: package can't be started: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W014/${RESET}"
 	#return $RETURN
 }
@@ -87,7 +87,7 @@ function error_ccbs()
 function error_ccbd()
 {
 	#RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: service can't be stopped: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: package can't be stopped: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W015/${RESET}"
 	#return $RETURN
 }
@@ -119,7 +119,7 @@ function error_cas()
 function error_csac()
 {
 	#RETURN="$?"
-	echo "$ECHO_PREFIX ${RED}ERROR: not all services could be stopped.${RESET}"
+	echo "$ECHO_PREFIX ${RED}ERROR: not all packages could be stopped.${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W019/${RESET}"
 	#return $RETURN
 }
@@ -127,13 +127,13 @@ function error_csac()
 function error_cni()
 {
 	#RETURN="$?"
-	echo "$ECHO_PREFIX ${YELLOW}Warning service not installed: ${CYAN}${IMAGE}${RESET}"
+	echo "$ECHO_PREFIX ${YELLOW}Warning package not installed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W020/${RESET}"
 	#return $RETURN
 }
 
 
-function service_info()
+function package_info()
 {
 	local DOCKER IFS RETURN
 
@@ -197,7 +197,7 @@ function service_info()
 }
 
 
-function is_service_in_repo()
+function is_package_in_repo()
 {
 	local RETURN IFS PROJECT IMAGE_NAME IMAGE_VERSION IMAGE
 	IMAGE=$1
@@ -219,7 +219,7 @@ function is_service_in_repo()
 }
 
 
-function update_services()
+function update_packages()
 {
 	echo -n "$ECHO_PREFIX ${GREEN}Updating repository list${RESET}."
 	if [ ! -d ${WPLIB_BOX_BASE_DIR}/etc ]
@@ -242,11 +242,11 @@ function update_services()
 }
 
 
-function service_show()
+function package_show()
 {
 	local RETURN IMAGES IMAGE_NAME VERSIONS IMAGE_VERSION
 
-	echo "$ECHO_PREFIX ${GREEN}Available service downloads.${RESET}"
+	echo "$ECHO_PREFIX ${GREEN}Available package downloads.${RESET}"
 	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/repositories.json | sort -u)"
 	for IMAGE_NAME in ${IMAGES}
 	do
@@ -277,11 +277,11 @@ function reallyclean()
 		read RESPONSE
 		if [ "$RESPONSE" == "Yes please" ]
 		then
-			echo "$ECHO_PREFIX ${GREEN}Shutting down all WPLib services.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Shutting down all WPLib packages.${RESET}"
 			$0 container shutdown
-			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib services.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib packages.${RESET}"
 			docker container ls -qaf "label=container.project=${BOX_NAME}" | xargs -r docker container rm
-			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib service downloads.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib package downloads.${RESET}"
 			docker image ls -qaf "label=container.project=${BOX_NAME}" | xargs -r docker image rm
 		fi
 	else
@@ -293,16 +293,16 @@ function reallyclean()
 }
 
 
-function service_image_pull()
+function package_image_pull()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	is_service_in_repo $IMAGE
+	is_package_in_repo $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			echo -n "$ECHO_PREFIX ${GREEN}Downloading service: ${CYAN}${IMAGE}${RESET} ... "
+			echo -n "$ECHO_PREFIX ${GREEN}Downloading package: ${CYAN}${IMAGE}${RESET} ... "
 			TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 			docker pull $IMAGE >& $TEMPFILE
 
@@ -321,7 +321,7 @@ function service_image_pull()
 			;;
 
 		$RETURN_NO_IMAGE_REPO)
-			echo "$ECHO_PREFIX ${GREEN}Downloading service: ${CYAN}${IMAGE}${RESET} ... ${RED}no service found.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Downloading package: ${CYAN}${IMAGE}${RESET} ... ${RED}no package found.${RESET}"
 			;;
 	esac
 
@@ -329,12 +329,12 @@ function service_image_pull()
 }
 
 
-function service_shell()
+function package_shell()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	service_info $IMAGE
+	package_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -342,7 +342,7 @@ function service_shell()
 			then
 				error_cni
 			else
-				# echo "$ECHO_PREFIX ${GREEN}Shell to service: ${CYAN}${IMAGE}${RESET}" 1>&2
+				# echo "$ECHO_PREFIX ${GREEN}Shell to package: ${CYAN}${IMAGE}${RESET}" 1>&2
 				if [ -t 0 ]
 				then
 					# TTY allocated.
@@ -376,12 +376,12 @@ function service_shell()
 }
 
 
-function service_exec()
+function package_exec()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	service_info $IMAGE
+	package_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -389,7 +389,7 @@ function service_exec()
 			then
 				error_cni
 			else
-				# echo "$ECHO_PREFIX ${GREEN}Shell to service: ${CYAN}${IMAGE}${RESET}" 1>&2
+				# echo "$ECHO_PREFIX ${GREEN}Shell to package: ${CYAN}${IMAGE}${RESET}" 1>&2
 				docker run --name ${CONTAINER_NAME}-exec --rm ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
 				if [ "$?" == "1" ]
 				then
@@ -415,19 +415,19 @@ function service_exec()
 }
 
 
-function service_create_container()
+function package_create_container()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	service_info $IMAGE
+	package_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		#$RETURN_OK)
 		$RETURN_NO_CONTAINER)
 			if [ "$CONTAINER_HOSTNAME" == "" ]
 			then
-				echo -n "$ECHO_PREFIX ${GREEN}Installing service: ${CYAN}${IMAGE}${RESET} ... "
+				echo -n "$ECHO_PREFIX ${GREEN}Installing package: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} >& $TEMPFILE
 
@@ -463,16 +463,16 @@ function service_create_container()
 }
 
 
-function service_remove()
+function package_remove()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	service_info $IMAGE
+	package_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			echo -n "$ECHO_PREFIX ${GREEN}Removing service: ${CYAN}${IMAGE}${RESET} ... "
+			echo -n "$ECHO_PREFIX ${GREEN}Removing package: ${CYAN}${IMAGE}${RESET} ... "
 			TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 			docker container rm -f -v ${CONTAINER_NAME} >& $TEMPFILE
 
@@ -491,7 +491,7 @@ function service_remove()
 			;;
 
 		$RETURN_NO_LOCAL_IMAGE)
-			echo "$ECHO_PREFIX ${GREEN}Removing service: ${CYAN}${IMAGE}${RESET} ... ${GREEN}no service installed.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Removing package: ${CYAN}${IMAGE}${RESET} ... ${GREEN}no package installed.${RESET}"
 			;;
 
 		$RETURN_NO_IMAGE_JSON)
@@ -512,11 +512,11 @@ function image_remove()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	service_info $IMAGE
+	package_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK|$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER)
-			echo -n "$ECHO_PREFIX ${GREEN}Removing service download: ${CYAN}${IMAGE}${RESET} ... "
+			echo -n "$ECHO_PREFIX ${GREEN}Removing package download: ${CYAN}${IMAGE}${RESET} ... "
 			TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 			docker image rm -f ${IMAGE} >& $TEMPFILE
 
@@ -551,18 +551,18 @@ function image_remove()
 }
 
 
-function service_start()
+function package_start()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	service_info $IMAGE
+	package_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
 			if [ "$CONTAINER_RUNNING" != "true" ]
 			then
-				echo -n "$ECHO_PREFIX ${GREEN}Starting service: ${CYAN}${IMAGE}${RESET} ... "
+				echo -n "$ECHO_PREFIX ${GREEN}Starting package: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 				docker start ${CONTAINER_NAME} >& $TEMPFILE
 
@@ -577,12 +577,12 @@ function service_start()
 
 				rm -f $TEMPFILE
 			else
-				echo "$ECHO_PREFIX ${GREEN}Starting service: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already running.${RESET}"
+				echo "$ECHO_PREFIX ${GREEN}Starting package: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already running.${RESET}"
 			fi
 			;;
 
 		$RETURN_NO_LOCAL_IMAGE|$RETURN_NO_CONTAINER)
-			service_provision $IMAGE 
+			package_provision $IMAGE 
 			;;
 
 		$RETURN_NO_IMAGE_JSON)
@@ -598,18 +598,18 @@ function service_start()
 }
 
 
-function service_stop()
+function package_stop()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	service_info $IMAGE
+	package_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
 			if [ "$CONTAINER_RUNNING" == "true" ]
 			then
-				echo -n "$ECHO_PREFIX ${GREEN}Stopping service: ${CYAN}${IMAGE}${RESET} ... "
+				echo -n "$ECHO_PREFIX ${GREEN}Stopping package: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 				docker stop ${CONTAINER_NAME} >& $TEMPFILE
 
@@ -625,7 +625,7 @@ function service_stop()
 
 				RETURN="$RETURN_OK"
 			else
-				echo "$ECHO_PREFIX ${GREEN}Stopping service: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already stopped.${RESET}"
+				echo "$ECHO_PREFIX ${GREEN}Stopping package: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already stopped.${RESET}"
 				RETURN="$RETURN_ALREADY_STOPPED"
 			fi
 			;;
@@ -635,7 +635,7 @@ function service_stop()
 			;;
 
 		$RETURN_NO_LOCAL_IMAGE)
-			echo "$ECHO_PREFIX ${GREEN}Stopping service: ${CYAN}${IMAGE}${RESET} ... ${GREEN}no image present.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Stopping package: ${CYAN}${IMAGE}${RESET} ... ${GREEN}no image present.${RESET}"
 			# error_nfl
 			;;
 
@@ -653,7 +653,7 @@ function shutdown()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLLib services. ${RESET} ... "
+	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLLib packages. ${RESET} ... "
 	TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 	docker container ls -qaf "label=container.project=${BOX_NAME}" | xargs docker stop >& $TEMPFILE
 	if [ "$?" == "1" ]
@@ -670,34 +670,34 @@ function shutdown()
 }
 
 
-function service_list()
+function package_list()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	service_info $IMAGE
+	package_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			echo "$ECHO_PREFIX ${GREEN}Downloaded services: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Downloaded packages: ${CYAN}${IMAGE}${RESET}"
 			echo "Image			Size"
 			docker image ls --format "{{.Repository}}:{{.Tag}}  \t{{.Size}}" $IMAGE
 			echo ""
-			echo "$ECHO_PREFIX ${GREEN}Installed services: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Installed packages: ${CYAN}${IMAGE}${RESET}"
 			echo "Container		Size			Status"
 			docker container ls -af "name=${CONTAINER_NAME}" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
 			;;
 
 		$RETURN_NO_IMAGE_NAME)
-			echo "$ECHO_PREFIX ${GREEN}Downloaded services: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Downloaded packages: ${CYAN}${IMAGE}${RESET}"
 			echo "Image			Size"
 			docker image ls -af "label=container.project=${BOX_NAME}" --format "{{.Repository}}:{{.Tag}}  \t{{.Size}}"
 			echo ""
-			echo "$ECHO_PREFIX ${GREEN}Stopped services: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Stopped packages: ${CYAN}${IMAGE}${RESET}"
 			echo "Container		Size			Status"
 			docker container ls -af "label=container.project=${BOX_NAME}" -f "status=created" -f "status=exited" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
 			echo ""
-			echo "$ECHO_PREFIX ${GREEN}Running services: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Running packages: ${CYAN}${IMAGE}${RESET}"
 			echo "Container		Size			Status"
 			docker container ls -af "label=container.project=${BOX_NAME}" -f "status=running" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
 			;;
@@ -719,19 +719,19 @@ function service_list()
 }
 
 
-function service_inspect()
+function package_inspect()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	service_info $IMAGE
+	package_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			echo "$ECHO_PREFIX ${GREEN}Downloaded service: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Downloaded package: ${CYAN}${IMAGE}${RESET}"
 			docker image inspect $IMAGE
 			echo ""
-			echo "$ECHO_PREFIX ${GREEN}Installed service: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Installed package: ${CYAN}${IMAGE}${RESET}"
 			docker container inspect ${CONTAINER_NAME}
 			;;
 
@@ -752,16 +752,16 @@ function service_inspect()
 }
 
 
-function service_log()
+function package_log()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	service_info $IMAGE
+	package_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			echo "$ECHO_PREFIX ${GREEN}Logs for service: ${CYAN}${IMAGE}${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Logs for package: ${CYAN}${IMAGE}${RESET}"
 			docker container logs ${CONTAINER_NAME}
 			;;
 
@@ -782,16 +782,16 @@ function service_log()
 }
 
 
-function service_install()
+function package_install()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	service_info $IMAGE
+	package_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_NO_LOCAL_IMAGE)
-			service_image_pull $IMAGE
+			package_image_pull $IMAGE
 			RETURN="$?"
 			if [ "$RETURN" != "$RETURN_OK" ]
 			then
@@ -800,23 +800,23 @@ function service_install()
 			;;
 	esac
 
-	service_create_container $IMAGE
+	package_create_container $IMAGE
 	RETURN="$?"
 
 	return $RETURN
 }
 
 
-function service_provision()
+function package_provision()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	service_install $IMAGE
+	package_install $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
-			service_start $IMAGE
+			package_start $IMAGE
 			RETURN="$?"
 			;;
 	esac
