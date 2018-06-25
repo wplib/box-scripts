@@ -225,7 +225,7 @@ function d_update()
 		echo -n "."
 		sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/?page_size=256
 	done
-	echo "Done"
+	echo " ${GREEN}OK${RESET}"
 }
 
 
@@ -544,7 +544,7 @@ function d_shutdown()
 }
 
 
-function d_ls()
+function service_ls()
 {
 	service_info $IMAGE
 	RETURN="$?"
