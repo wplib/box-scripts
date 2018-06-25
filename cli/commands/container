@@ -122,7 +122,7 @@ do
 			service_stop $IMAGE
 			if [ "$?" == "$RETURN_OK" ]
 			then
-				service_image_remove $IMAGE
+				service_remove $IMAGE
 				if [ "$?" == "$RETURN_OK" ]
 				then
 					docker image rm -f $IMAGE
@@ -139,7 +139,7 @@ do
 			service_stop $IMAGE
 			if [ "$?" == "$RETURN_OK" ]
 			then
-				service_image_remove $IMAGE
+				service_remove $IMAGE
 				if [ "$?" == "$RETURN_OK" ]
 				then
 					docker image rm -f $IMAGE
@@ -165,7 +165,7 @@ do
 			;;
 
 		'remove'|'rm'|'destroy')
-			service_image_remove $IMAGE
+			service_remove $IMAGE
 			;;
 
 		'start'|'up')

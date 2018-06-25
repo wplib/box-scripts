@@ -15,6 +15,7 @@ RETURN_NO_IMAGE_JSON="3"
 RETURN_NO_IMAGE_REPO="4"
 RETURN_INVALID_PROJECT="5"
 RETURN_CANT_INSTALL_IMAGE="6"
+RETURN_ALREADY_STOPPED="7"
 
 
 function error_pns()
@@ -449,7 +450,7 @@ function service_create_container()
 }
 
 
-function service_image_remove()
+function service_remove()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
@@ -561,10 +562,12 @@ function service_stop()
 				else
 					echo "${GREEN}OK${RESET}"
 				fi
-
 				rm -f $TEMPFILE
+
+				RETURN="$RETURN_OK"
 			else
 				echo "$ECHO_PREFIX ${GREEN}Stopping service: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already stopped.${RESET}"
+				RETURN="$RETURN_ALREADY_STOPPED"
 			fi
 			;;
 
@@ -735,6 +738,7 @@ function service_provision()
 				if [ "$?" == "$RETURN_OK" ]
 				then
 					service_start $IMAGE
+					RETURN="$?"
 				fi
 			fi
 			;;
