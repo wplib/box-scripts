@@ -242,7 +242,7 @@ function update_services()
 }
 
 
-function d_show()
+function service_show()
 {
 	local RETURN IMAGES IMAGE_NAME VERSIONS IMAGE_VERSION
 
@@ -577,7 +577,8 @@ function service_start()
 			;;
 
 		$RETURN_NO_LOCAL_IMAGE)
-			error_nfl
+			# error_nfl
+			service_provision $IMAGE 
 			;;
 
 		$RETURN_INVALID_PROJECT)
@@ -710,7 +711,7 @@ function service_list()
 }
 
 
-function d_inspect()
+function service_inspect()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
@@ -743,7 +744,7 @@ function d_inspect()
 }
 
 
-function d_log()
+function service_log()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
