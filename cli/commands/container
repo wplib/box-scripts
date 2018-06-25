@@ -140,11 +140,9 @@ do
 			service_stop $IMAGE
 			case $? in
 				$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
-					echo "B:"
 					service_remove $IMAGE
 					case $? in
 						$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
-							echo "C:"
 							image_remove $IMAGE
 					esac
 					;;

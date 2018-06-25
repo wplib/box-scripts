@@ -516,8 +516,11 @@ function image_remove()
 				echo "${RED}NOT OK${RESET}"
 				error_ccbr
 				cat $TEMPFILE
+				RETURN="$RETURN_CANT_REMOVE_IMAGE"
 			else
 				echo "${GREEN}OK${RESET}"
+				RETURN="$RETURN_OK"
+				cat $TEMPFILE
 			fi
 
 			rm -f $TEMPFILE
