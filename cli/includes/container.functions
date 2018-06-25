@@ -556,12 +556,7 @@ function service_start()
 	service_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
-		$RETURN_OK|$RETURN_NO_LOCAL_IMAGE)
-			if [ "$RETURN" == "$RETURN_NO_LOCAL_IMAGE" ]
-			then
-				service_install $IMAGE 
-			fi
-
+		$RETURN_OK)
 			if [ "$CONTAINER_RUNNING" != "true" ]
 			then
 				echo -n "$ECHO_PREFIX ${GREEN}Starting service: ${CYAN}${IMAGE}${RESET} ... "
@@ -581,6 +576,10 @@ function service_start()
 			else
 				echo "$ECHO_PREFIX ${GREEN}Starting service: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already running.${RESET}"
 			fi
+			;;
+
+		$RETURN_NO_LOCAL_IMAGE)
+			service_provision $IMAGE 
 			;;
 
 		$RETURN_NO_IMAGE_JSON)
@@ -800,6 +799,24 @@ function service_install()
 
 	service_create_container $IMAGE
 	RETURN="$?"
+
+	return $RETURN
+}
+
+
+function service_provision()
+{
+	local RETURN TEMPFILE IMAGE
+	IMAGE=$1
+
+	service_install $IMAGE
+	RETURN="$?"
+	case $RETURN in
+		$RETURN_OK)
+			service_start $IMAGE
+			RETURN="$?"
+			;;
+	esac
 
 	return $RETURN
 }
