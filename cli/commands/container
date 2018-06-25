@@ -120,8 +120,8 @@ d_update()
 		sudo mkdir -p ${WPLIB_BOX_BASE_DIR}/etc/images
 	fi
 
-	sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/respositories.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/?page_size=256
-	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/respositories.json)"
+	sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/repositories.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/?page_size=256
+	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/repositories.json)"
 	for IMAGE_NAME in $IMAGES
 	do
 		echo -n "."
@@ -134,7 +134,7 @@ d_update()
 d_show()
 {
 	echo "$ECHO_PREFIX ${GREEN}Available images on repository.${RESET}"
-	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/respositories.json)"
+	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/repositories.json)"
 	for IMAGE_NAME in $IMAGES
 	do
 		VERSIONS="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json)"

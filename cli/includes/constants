@@ -38,11 +38,6 @@ export WPLIB_BOX_FILES_DIR="${WPLIB_BOX_CLI_DIR}/files"
 
 export WPLIB_BOX_SCRIPTS_REPO="https://github.com/wplib/box-scripts/"
 
-export WPLIB_BOX_CONTENT_DIR=$(find_wp_content_dir)
-export WPLIB_BOX_PLUGINS_DIR=$(find_wp_plugins_dir)
-export WPLIB_BOX_MU_PLUGINS_DIR=$(find_wp_mu_plugins_dir)
-export WPLIB_BOX_VENDOR_DIR=$(find_composer_vendor_dir)
-
 
 
 #

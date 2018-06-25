@@ -143,7 +143,7 @@ _box_container_dockerhub()
 	local REPLY
 	local cur=${COMP_WORDS[COMP_CWORD]}
 
-        IMAGES="`jq -r '.results|.[]|.name' /opt/box/etc/respositories.json`"
+        IMAGES="`jq -r '.results|.[]|.name' /opt/box/etc/repositories.json`"
         for IMAGE_NAME in $IMAGES
         do
                 VERSIONS="`jq -r '.results|.[]|.name' /opt/box/etc/images/${IMAGE_NAME}.json`"

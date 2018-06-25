@@ -230,8 +230,8 @@ d_update()
 		sudo mkdir -p ${WPLIB_BOX_BASE_DIR}/etc/images
 	fi
 
-	sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/respositories.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/?page_size=256
-	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/respositories.json)"
+	sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/repositories.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/?page_size=256
+	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/repositories.json)"
 	for IMAGE_NAME in $IMAGES
 	do
 		echo -n "."
@@ -244,7 +244,7 @@ d_update()
 d_show()
 {
 	echo "$ECHO_PREFIX ${GREEN}Available images on repository.${RESET}"
-	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/respositories.json)"
+	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/repositories.json)"
 	for IMAGE_NAME in $IMAGES
 	do
 		VERSIONS="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json)"
@@ -713,134 +713,3 @@ box container ${GREEN}log${RESET} <package>	- Show log files from container.
 box container ${GREEN}pull${RESET} <package>	- Just pull a container image. No install.
 EOF
 }
-
-
-################################################################################
-CMD="$1"
-shift
-IMAGES="$@"
-
-case $CMD in
-	'list'|'ls')
-		# Only the 'ls' command can accept no image.
-		#echo "$@"
-		if [ "$1" == "" ]
-		then
-			d_ls
-		fi
-		;;
-
-	'show')
-		d_show
-		exit $?
-		;;
-
-	'update')
-		d_update
-		exit $?
-		;;
-
-	'reallyclean')
-		d_reallyclean
-		exit $?
-		;;
-
-	'shutdown')
-		d_shutdown
-		exit $?
-		;;
-
-	'shell')
-		IMAGE="$1"
-		shift
-		ARGS="$@"
-		d_shell "$@"
-		;;
-
-	'exec')
-		IMAGE="$1"
-		shift
-		ARGS="$@"
-		d_exec "$@"
-		;;
-
-	''|'help')
-		d_help
-		;;
-
-	*)
-		if [ "$1" == "" ]
-		then
-			error_nip
-			d_help
-			exit 1
-		fi
-		;;
-esac
-
-
-for IMAGE in $IMAGES
-do
-	case $CMD in
-		'provision')
-			echo "$ECHO_PREFIX ${GREEN}Provisioning ${CYAN}${IMAGE}.${RESET}"
-			d_provision $IMAGE
-			;;
-
-		'refresh'|'upgrade')
-			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${CYAN}${IMAGE}${RESET}"
-			d_stop $IMAGE
-			d_remove $IMAGE
-			docker image rm -f $IMAGE
-			d_provision $IMAGE
-			;;
-
-		'clean')
-			echo "$ECHO_PREFIX ${GREEN}Cleaning up: ${CYAN}${IMAGE}.${RESET}"
-			d_stop $IMAGE
-			d_remove $IMAGE
-			docker image rm -f $IMAGE
-			;;
-
-		'pull')
-			d_pull $IMAGE
-			;;
-
-		'create'|'install')
-			d_pull $IMAGE
-			d_install $IMAGE
-			;;
-
-		'remove'|'rm'|'destroy')
-			d_remove $IMAGE
-			;;
-
-		'start'|'up')
-			deets $IMAGE
-			if [ "$?" == "$RETURN_NO_LOCAL_IMAGE" ]
-			then
-				d_provision $IMAGE
-			else
-				d_start $IMAGE
-			fi
-			;;
-
-		'stop'|'down')
-			d_stop $IMAGE
-			;;
-
-		'list'|'ls')
-			d_ls $IMAGE
-			;;
-
-		'inspect'|'info')
-			d_inspect $IMAGE
-			;;
-
-		'log')
-			d_log $IMAGE
-			;;
-	esac
-done
-
-
