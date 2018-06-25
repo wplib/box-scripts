@@ -297,25 +297,30 @@ function service_image_pull()
 
 	is_service_in_repo $IMAGE
 	RETURN="$?"
-	if [ "$RETURN" == "$RETURN_OK" ]
-	then 
-		echo -n "$ECHO_PREFIX ${GREEN}Downloading service: ${CYAN}${IMAGE}${RESET} ... "
-		TEMPFILE="$(mktemp /tmp/box-container.XXX)"
-		docker pull $IMAGE >& $TEMPFILE
+	case $RETURN in
+		$RETURN_OK)
+			echo -n "$ECHO_PREFIX ${GREEN}Downloading service: ${CYAN}${IMAGE}${RESET} ... "
+			TEMPFILE="$(mktemp /tmp/box-container.XXX)"
+			docker pull $IMAGE >& $TEMPFILE
 
-		if [ "$?" == "1" ]
-		then
-			RETURN="$RETURN_NO_IMAGE_REPO"
-			echo "${RED}NOT OK${RESET}"
-			error_dni
-			cat $TEMPFILE
-		else
-			RETURN="$RETURN_OK"
-			echo "${GREEN}OK${RESET}"
-		fi
+			if [ "$?" == "1" ]
+			then
+				RETURN="$RETURN_NO_IMAGE_REPO"
+				echo "${RED}NOT OK${RESET}"
+				error_dni
+				cat $TEMPFILE
+			else
+				RETURN="$RETURN_OK"
+				echo "${GREEN}OK${RESET}"
+			fi
 
-		rm -f $TEMPFILE
-	fi
+			rm -f $TEMPFILE
+			;;
+
+		$RETURN_NO_IMAGE_REPO)
+			echo "$ECHO_PREFIX ${GREEN}Downloading service: ${CYAN}${IMAGE}${RESET} ... ${RED}no service found.${RESET}"
+			;;
+	esac
 
 	return $RETURN
 }
