@@ -487,9 +487,9 @@ function service_remove()
 			rm -f $TEMPFILE
 			;;
 
-#		$RETURN_NO_LOCAL_IMAGE)
-#			error_nfl
-#			;;
+		$RETURN_NO_LOCAL_IMAGE)
+			echo "$ECHO_PREFIX ${GREEN}Removing service: ${CYAN}${IMAGE}${RESET} ... ${GREEN}no service installed.${RESET}"
+			;;
 
 		$RETURN_NO_IMAGE_JSON)
 			error_dnc
