@@ -247,10 +247,10 @@ function service_show()
 	local RETURN IMAGES IMAGE_NAME VERSIONS IMAGE_VERSION
 
 	echo "$ECHO_PREFIX ${GREEN}Available service downloads.${RESET}"
-	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/repositories.json)"
+	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/repositories.json | sort -u)"
 	for IMAGE_NAME in ${IMAGES}
 	do
-		VERSIONS="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json)"
+		VERSIONS="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json | sort -u)"
 		for IMAGE_VERSION in ${VERSIONS}
 		do
 			if [ "${IMAGE_VERSION}" != "latest" ]
