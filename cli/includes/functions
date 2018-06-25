@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
 
 
-export WPLIB_BOX_ARGS_ALL="$*"
+export BOX_NAME="wplib"
 
-export WPLIB_BOX_PHPCLI=$(which php7.0)
+export WPLIB_BOX_ARGS_ALL="$*"
 
 if [ "${PROJECT_BASE}" == "" ]
 then
+	# Defines the root directory of all projects.
 	PROJECT_BASE="/projects"
 fi
 
 if [ "${CURRENT_PROJECT}" == "" ]
 then
+	# Defines the current project in use for a single project box.
 	CURRENT_PROJECT="wplib.box"
 fi
+
 
 export WPLIB_BOX_PROJECT_BASE="${PROJECT_BASE}"
 export WPLIB_BOX_CURRENT_PROJECT="${CURRENT_PROJECT}"
@@ -24,6 +27,7 @@ export WPLIB_BOX_CLI_DIR="${WPLIB_BOX_BASE_DIR}/cli"
 export WPLIB_BOX_CLI_CMD="${WPLIB_BOX_BASE_DIR}/bin/box"
 export WPLIB_BOX_WEB_ROOT_DIR="${PROJECT_BASE}/${CURRENT_PROJECT}/www"
 export WPLIB_BOX_WATCHERS_DIR="${WPLIB_BOX_WEB_ROOT_DIR}/watchers"
+export WPLIB_BOX_PHPCLI=${WPLIB_BOX_BASE_DIR}/bin/php
 
 export WPLIB_BOX_GIT_DIR="${WPLIB_BOX_DIR}/.git"
 export WPLIB_BOX_LOGS_DIR="${WPLIB_BOX_DIR}/logs"
@@ -40,8 +44,10 @@ export WPLIB_BOX_FILES_DIR="${WPLIB_BOX_CLI_DIR}/files"
 export WPLIB_BOX_SCRIPTS_REPO="https://github.com/wplib/box-scripts/"
 
 
-source /opt/box/cli/includes/general.functions
-source /opt/box/cli/includes/container.functions
+source ${WPLIB_BOX_INCLUDES_DIR}/colors
+
+source ${WPLIB_BOX_INCLUDES_DIR}/general.functions
+source ${WPLIB_BOX_INCLUDES_DIR}/container.functions
 
 
 export WPLIB_BOX_CONTENT_DIR=$(find_wp_content_dir)

@@ -1,12 +1,11 @@
 #!/bin/bash
 #
-# Provisioning and management script for all containers.
+# Provisioning and management functions for all containers.
 #
-# This is a low level script that will:
+# Provides:
 #	Pull the complete list of WPLib container packages from Docker Hub into local JSON files.
 #	Manage containers - stop/start and most importantly creating containers using the embedded JSON string in the image.
 
-DEFAULT_PROJECT="wplib"
 
 # Return codes from functions.
 RETURN_OK="0"
@@ -15,17 +14,6 @@ RETURN_NO_LOCAL_IMAGE="2"
 RETURN_NO_IMAGE_JSON="3"
 RETURN_NO_IMAGE_REPO="4"
 RETURN_INVALID_PROJECT="5"
-
-
-ctrl_c()
-{
-        tput sgr0
-	echo ""
-	echo "$ECHO_PREFIX Aborting script."
-	exit
-}
-
-trap ctrl_c INT
 
 
 error_pns()
@@ -174,7 +162,7 @@ deets()
 	then
 		return $RETURN_NO_IMAGE_JSON
 	fi
-	if [ "$PROJECT" != "${DEFAULT_PROJECT}" ]
+	if [ "$PROJECT" != "${BOX_NAME}" ]
 	then
 		return $RETURN_INVALID_PROJECT
 	fi
@@ -207,7 +195,7 @@ d_exists()
 	IMAGE_NAME="${state_array[1]}"
 	IMAGE_VERSION="${state_array[2]}"
 
-	wget -qO /dev/null https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/$IMAGE_NAME/tags/
+	wget -qO /dev/null https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/
 	if [ "$?" == "0" ]
 	then
 		return $RETURN_OK
@@ -230,12 +218,12 @@ d_update()
 		sudo mkdir -p ${WPLIB_BOX_BASE_DIR}/etc/images
 	fi
 
-	sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/repositories.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/?page_size=256
+	sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/repositories.json https://hub.docker.com/v2/repositories/${BOX_NAME}/?page_size=256
 	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/repositories.json)"
 	for IMAGE_NAME in $IMAGES
 	do
 		echo -n "."
-		sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json https://hub.docker.com/v2/repositories/$DEFAULT_PROJECT/${IMAGE_NAME}/tags/?page_size=256
+		sudo wget -qNO ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/?page_size=256
 	done
 	echo "Done"
 }
@@ -250,7 +238,7 @@ d_show()
 		VERSIONS="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_BASE_DIR}/etc/images/${IMAGE_NAME}.json)"
 		for IMAGE_VERSION in $VERSIONS
 		do
-			echo "$DEFAULT_PROJECT/${IMAGE_NAME}:$IMAGE_VERSION"
+			echo "${BOX_NAME}/${IMAGE_NAME}:$IMAGE_VERSION"
 		done
 		
 	done
@@ -271,9 +259,9 @@ d_reallyclean()
 			echo "$ECHO_PREFIX ${GREEN}Shutting down all WPLib containers.${RESET}"
 			$0 container shutdown
 			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib containers.${RESET}"
-			docker container ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs -r docker container rm
+			docker container ls -qaf "label=container.project=${BOX_NAME}" | xargs -r docker container rm
 			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib images${RESET}"
-			docker image ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs -r docker image rm
+			docker image ls -qaf "label=container.project=${BOX_NAME}" | xargs -r docker image rm
 		fi
 	else
 		echo "$ECHO_PREFIX ${GREEN}Doing nothing.${RESET}"
@@ -541,7 +529,7 @@ d_shutdown()
 {
 	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLLib containers${RESET} ... "
 	TEMPFILE="$(mktemp /tmp/box-container.XXX)"
-	docker container ls -qaf "label=container.project=${DEFAULT_PROJECT}" | xargs docker stop >& $TEMPFILE
+	docker container ls -qaf "label=container.project=${BOX_NAME}" | xargs docker stop >& $TEMPFILE
 	if [ "$?" == "1" ]
 	then
 		echo "${RED}NOT OK${RESET}"
@@ -574,15 +562,15 @@ d_ls()
 		$RETURN_NO_IMAGE_NAME)
 			echo "$ECHO_PREFIX ${GREEN}Installed images: ${CYAN}${IMAGE}${RESET}"
 			echo "Image			Size"
-			docker image ls -af "label=container.project=$DEFAULT_PROJECT" --format "{{.Repository}}:{{.Tag}}  \t{{.Size}}"
+			docker image ls -af "label=container.project=${BOX_NAME}" --format "{{.Repository}}:{{.Tag}}  \t{{.Size}}"
 			echo ""
 			echo "$ECHO_PREFIX ${GREEN}Stopped containers: ${CYAN}${IMAGE}${RESET}"
 			echo "Container		Size			Status"
-			docker container ls -af "label=container.project=$DEFAULT_PROJECT" -f "status=created" -f "status=exited" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
+			docker container ls -af "label=container.project=${BOX_NAME}" -f "status=created" -f "status=exited" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
 			echo ""
 			echo "$ECHO_PREFIX ${GREEN}Running containers: ${CYAN}${IMAGE}${RESET}"
 			echo "Container		Size			Status"
-			docker container ls -af "label=container.project=$DEFAULT_PROJECT" -f "status=running" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
+			docker container ls -af "label=container.project=${BOX_NAME}" -f "status=running" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
 			;;
 
 		$RETURN_NO_LOCAL_IMAGE)

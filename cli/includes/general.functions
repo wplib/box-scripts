@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-source /opt/box/cli/includes/container.functions
-
 #
 # Checks to see if there is a new commit available for this Box Script repo.
 #
