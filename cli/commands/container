@@ -61,7 +61,7 @@ case $CMD in
 		#echo "$@"
 		if [ "$1" == "" ]
 		then
-			service_ls
+			service_list
 		fi
 		;;
 
@@ -120,7 +120,7 @@ do
 		'refresh'|'upgrade')
 			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${CYAN}${IMAGE}${RESET}"
 			service_stop $IMAGE
-			d_remove $IMAGE
+			service_image_remove $IMAGE
 			docker image rm -f $IMAGE
 			service_provision $IMAGE
 			;;
@@ -128,7 +128,7 @@ do
 		'clean')
 			echo "$ECHO_PREFIX ${GREEN}Cleaning up: ${CYAN}${IMAGE}.${RESET}"
 			service_stop $IMAGE
-			d_remove $IMAGE
+			service_image_remove $IMAGE
 			docker image rm -f $IMAGE
 			;;
 
@@ -147,7 +147,7 @@ do
 			;;
 
 		'remove'|'rm'|'destroy')
-			d_remove $IMAGE
+			service_image_remove $IMAGE
 			;;
 
 		'start'|'up')
@@ -165,7 +165,7 @@ do
 			;;
 
 		'list'|'ls')
-			service_ls $IMAGE
+			service_list $IMAGE
 			;;
 
 		'inspect'|'info')
