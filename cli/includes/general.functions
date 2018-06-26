@@ -18,7 +18,7 @@ function link_file()
 	fi
 
 	TEMP="$(readlink ${DST})"
-	if [ "${TEMP}" != "${DST}" ]
+	if [ "${TEMP}" != "${SRC}" ]
 	then
 		if [ "${TEMP}" == "" ]
 		then
@@ -26,7 +26,8 @@ function link_file()
 			ln -s ${SRC} ${DST}
 		else
 			echo "$ECHO_PREFIX ${YELLOW}Updating symlink: ${GREEN}${SRC} -> ${DST}${RESET}"
-			ln -sf ${SRC} ${DST}
+			rm ${DST}
+			ln -s ${SRC} ${DST}
 		fi
 	fi
 }
