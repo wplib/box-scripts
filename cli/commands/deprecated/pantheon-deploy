@@ -104,9 +104,9 @@ fi
 #
 # If there is a /pantheon.yaml, don't forget it
 #
-if [ -f "${WPLIB_BOX_DIR}/pantheon.yaml" ]; then
+if [ -f "${WPLIB_BOX_PROJECT_DIR}/pantheon.yaml" ]; then
     echo_if_not_quiet "$*" "=Copying pantheon.yaml from ${PROJECT_BASE}/${CURRENT_PROJECT}..."
-    cp "${WPLIB_BOX_DIR}/pantheon.yaml" "${build_dir}/pantheon.yaml"
+    cp "${WPLIB_BOX_PROJECT_DIR}/pantheon.yaml" "${build_dir}/pantheon.yaml"
 fi
 
 #

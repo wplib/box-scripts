@@ -492,8 +492,8 @@ function find_composer_vendor_dir() {
         return
     fi
 
-    if [ -d "${WPLIB_BOX_DIR}/vendor" ]; then
-        echo "${WPLIB_BOX_DIR}/vendor"
+    if [ -d "${WPLIB_BOX_PROJECT_DIR}/vendor" ]; then
+        echo "${WPLIB_BOX_PROJECT_DIR}/vendor"
         return
     fi
 }

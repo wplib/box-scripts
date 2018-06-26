@@ -8,14 +8,6 @@
 
 source /opt/box/cli/includes/functions
 
-# Return codes from functions.
-RETURN_OK="0"
-RETURN_NO_IMAGE_NAME="1"
-RETURN_NO_LOCAL_IMAGE="2"
-RETURN_NO_IMAGE_JSON="3"
-RETURN_NO_IMAGE_REPO="4"
-RETURN_INVALID_PROJECT="5"
-
 
 ctrl_c()
 {

@@ -18,6 +18,7 @@ RETURN_CANT_INSTALL_IMAGE="6"
 RETURN_ALREADY_STOPPED="7"
 RETURN_NO_CONTAINER="8"
 RETURN_CANT_REMOVE_CONTAINER="9"
+RETURN_NO_JSON_FILE="10"
 
 
 function error_pns()
@@ -130,6 +131,24 @@ function error_cni()
 	echo "$ECHO_PREFIX ${YELLOW}Warning component not installed: ${CYAN}${IMAGE}${RESET}"
 	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W020/${RESET}"
 	#return $RETURN
+}
+
+
+function readJSON()
+{
+	local JSON DOCKER IFS RETURN
+	JSON="$1"
+
+	if [ -f "${JSON}" ]
+	then
+		IMAGES="$(jq --raw-output ".services | .[]" ${JSON})"
+		jq -s '.[0] * .[1]' ${WPLIB_BOX_RELEASE_JSON} ${WPLIB_BOX_PROJECT_FILE} > ${WPLIB_BOX_PROJECT_DIR}/project.lock
+		RETURN=$RETURN_OK
+	else
+		RETURN=$RETURN_NO_JSON_FILE
+	fi
+
+	return $RETURN
 }
 
 

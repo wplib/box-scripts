@@ -2,7 +2,7 @@
 #
 # Add lines to .gitignore to ignore composed files.
 #
-gitignore="${WPLIB_BOX_DIR}/.gitignore"
+gitignore="${WPLIB_BOX_PROJECT_DIR}/.gitignore"
 added=$(grep "/www/\*" $gitignore)
 if [ "" == "${added}" ]; then
     echo_if_not_quiet "$*" "=Appending to ${gitignore}..."
