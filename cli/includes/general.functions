@@ -11,11 +11,7 @@ function link_file()
 	DST="$2"
 
 	TEMP="$(dirname ${DST})"
-	if [ ! -d "${TEMP}" ]
-	then
-		echo "$ECHO_PREFIX ${YELLOW}Creating symlink directory: ${GREEN}${DST}${RESET}"
-		mkdir -p $TEMP
-	fi
+	create_dir ${TEMP}
 
 	TEMP="$(readlink ${DST})"
 	if [ "${TEMP}" != "${SRC}" ]
@@ -29,6 +25,23 @@ function link_file()
 			rm ${DST}
 			ln -s ${SRC} ${DST}
 		fi
+	fi
+}
+
+
+#
+# Creates a directory, if it doesn't exist.
+#
+function create_dir()
+{
+	local DIR TEMP
+	DIR="$1"
+
+	# TEMP="$(dirname ${DIR})"
+	if [ ! -d "${DIR}" ]
+	then
+		echo "$ECHO_PREFIX ${YELLOW}Creating directory: ${GREEN}${DIR}${RESET}"
+		mkdir -p $DIR
 	fi
 }
 

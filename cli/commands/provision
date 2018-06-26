@@ -2,6 +2,8 @@
 #
 # Provisioning script that usually gets run after a `box self-update`
 #
+# This HAS to be run as root!
+
 
 source /opt/box/cli/includes/functions
 
@@ -30,13 +32,48 @@ EOF
 function provision_fix()
 {
 	# Create symlinks
-	link_file /opt/box/etc/box-completion.bash /etc/bash_completion.d/box-completion.bash
-	link_file /opt/box/etc/box-motd.sh /etc/update-motd.d/00-box-motd
-	link_file /opt/box/etc/box-profile.sh /etc/profile.d/box-profile.sh
-	link_file /opt/box /box
+	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-completion.bash /etc/bash_completion.d/box-completion.bash
+	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-motd.sh /etc/update-motd.d/00-box-motd
+	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-profile.sh /etc/profile.d/box-profile.sh
+	link_file ${WPLIB_BOX_BASE_DIR} /box
+
+	# Offer forwards / backwards compat.
+	if [ -L /vagrant ]
+	then
+		# We have a new layout - offer backwards compat.
+		link_file /projects/wplib.box /vagrant
+		link_file /projects/wplib.box/www /var/www
+	else
+		# We have an old layout - offer forwards compat.
+		link_file /vagrant /projects/wplib.box
+	fi
 
 	# Temporary workaround.
-	sudo ln -sf /opt/box/etc/cron/boxuser /var/spool/cron/crontabs/boxuser
+	ln -sf ${WPLIB_BOX_ETC}/cron/${WPLIB_BOX_USER} /var/spool/cron/crontabs/${WPLIB_BOX_USER}
+
+	# Setup boxuser, if not there.
+	USERID="$(id -u ${WPLIB_BOX_USER})"
+	if [ "${USERID}" == "" ]
+	then
+		useradd -o -d ${WPLIB_BOX_USER_HOME} -c "WPLib Box user" -u ${WPLIB_BOX_USER_UID} -g ${WPLIB_BOX_USER_GID} -N -s /bin/bash ${WPLIB_BOX_USER}
+		usermod -aG docker ${WPLIB_BOX_USER}
+	fi
+	if [ ! -d ${WPLIB_BOX_USER_HOME}/.ssh ]
+	then
+		mkdir -pm 700 ${WPLIB_BOX_USER_HOME}/.ssh
+	fi
+
+	if [ ! -f ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys ]
+	then
+		wget -nv --no-check-certificate 'https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub' -
+O /home.ssh/authorized_keys
+		chmod 0600 ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys
+	fi
+	touch ${WPLIB_BOX_USER_HOME}/.Xauthority
+	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_USER_HOME}
+
+	# Change permissions.
+	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_BASE_DIR}
 }
 
 
