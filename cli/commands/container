@@ -111,6 +111,7 @@ esac
 
 for IMAGE in $IMAGES
 do
+	IMAGE="$(get_image_name ${IMAGE})"
 	case $CMD in
 		'refresh'|'upgrade')
 			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${CYAN}${IMAGE}${RESET}"
