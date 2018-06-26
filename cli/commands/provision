@@ -50,8 +50,6 @@ function provision_fix()
 
 	# cron jobs
 	ln -sf ${WPLIB_BOX_ETC}/cron/${WPLIB_BOX_USER} /var/spool/cron/crontabs/${WPLIB_BOX_USER}
-	cp ${WPLIB_BOX_ETC}/environment /etc/environment
-	cp ${WPLIB_BOX_ETC}/inputrc /etc/inputrc
 
 	# Setup boxuser, if not there.
 	USERID="$(id -u ${WPLIB_BOX_USER})"
@@ -76,6 +74,9 @@ function provision_fix()
 	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_USER_HOME}
 	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_BASE_DIR}
 	chown ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_PROJECT_BASE} ${WPLIB_BOX_PROJECT_BASE}/*
+
+	cp ${WPLIB_BOX_ETC}/environment /etc/environment
+	cp ${WPLIB_BOX_ETC}/inputrc /etc/inputrc
 }
 
 
