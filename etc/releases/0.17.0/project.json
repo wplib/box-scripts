@@ -1,8 +1,4 @@
 {
-	"Note To Mick": [
-		"Before changing any of the property values below, please discuss with me first.",
-		"Otherwise the following are the names I have finalized on."
-	],
 	"services" : {
 		"wordpress/dbserver":      "wplib/mysql:5.5.60",
 		"wordpress/webserver":     "wplib/nginx:1.15.0",
