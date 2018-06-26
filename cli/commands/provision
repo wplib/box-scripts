@@ -65,8 +65,7 @@ function provision_fix()
 
 	if [ ! -f ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys ]
 	then
-		wget -nv --no-check-certificate 'https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub' -
-O /home.ssh/authorized_keys
+		wget -q --no-check-certificate 'https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub' -O /home.ssh/authorized_keys >&/dev/null
 		chmod 0600 ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys
 	fi
 	touch ${WPLIB_BOX_USER_HOME}/.Xauthority
