@@ -139,10 +139,15 @@ function readJSON()
 	local JSON DOCKER IFS RETURN
 	JSON="$1"
 
+	if [ "${JSON}" == "" ]
+	then
+		JSON="${WPLIB_BOX_PROJECT_FILE}"
+	fi
+
 	if [ -f "${JSON}" ]
 	then
 		IMAGES="$(jq --raw-output ".services | .[]" ${JSON})"
-		jq -s '.[0] * .[1]' ${WPLIB_BOX_RELEASE_JSON} ${WPLIB_BOX_PROJECT_FILE} > ${WPLIB_BOX_PROJECT_DIR}/project.lock
+		jq -s '.[0] * .[1]' ${WPLIB_BOX_RELEASE_JSON} ${JSON} > ${JSON}.lock
 		RETURN=$RETURN_OK
 	else
 		RETURN=$RETURN_NO_JSON_FILE
