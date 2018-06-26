@@ -829,10 +829,16 @@ function component_install()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
+	echo -n "$ECHO_PREFIX ${GREEN}Installing ${CYAN}${IMAGE}${RESET} ... "
 	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
+		$RETURN_OK)
+			echo "${GREEN}already installed.${RESET}"
+			;;
+
 		$RETURN_NO_LOCAL_IMAGE)
+			echo "${GREEN}requires download.${RESET}"
 			component_image_pull $IMAGE
 			RETURN="$?"
 			if [ "$RETURN" != "$RETURN_OK" ]

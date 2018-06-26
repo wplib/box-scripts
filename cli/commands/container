@@ -147,13 +147,13 @@ do
 			;;
 
 		'install')
-			echo "$ECHO_PREFIX ${GREEN}Installing ${CYAN}${IMAGE}${RESET}"
+			# echo "$ECHO_PREFIX ${GREEN}Installing ${CYAN}${IMAGE}${RESET}"
 			component_install $IMAGE
 			RETURN="$?"
 			;;
 
 		'uninstall')
-			echo "$ECHO_PREFIX ${GREEN}Uninstalling: ${CYAN}${IMAGE}${RESET}"
+			# echo "$ECHO_PREFIX ${GREEN}Uninstalling: ${CYAN}${IMAGE}${RESET}"
 			component_stop $IMAGE
 			case $? in
 				$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
