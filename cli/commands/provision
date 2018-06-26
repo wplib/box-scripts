@@ -69,10 +69,11 @@ function provision_fix()
 		chmod 0600 ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys
 	fi
 	touch ${WPLIB_BOX_USER_HOME}/.Xauthority
-	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_USER_HOME}
 
 	# Change permissions.
+	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_USER_HOME}
 	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_BASE_DIR}
+	chown ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_PROJECT_BASE} ${WPLIB_BOX_PROJECT_BASE}/*
 }
 
 
