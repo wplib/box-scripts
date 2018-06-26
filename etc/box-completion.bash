@@ -112,7 +112,7 @@ _box_component()
 			;;
 	esac
 
-	COMPREPLY=($(compgen -W "install uninstall activate deactivate start stop list ls refresh update show shutdown reallyclean inspect log pull" -- $cur))
+	COMPREPLY=($(compgen -W "install uninstall activate deactivate start stop list ls refresh update available shutdown reallyclean inspect log pull" -- $cur))
 	return 0
 }
 
@@ -155,15 +155,17 @@ _box_component_dockerhub()
 	IMAGES="$(jq -r '.results|.[]|.name' /opt/box/etc/repositories.json | sort -u)"
 	for IMAGE_NAME in $IMAGES
 	do
-		VERSIONS="$(jq -r '.results|.[]|.name' /opt/box/etc/images/${IMAGE_NAME}.json)"
-		for IMAGE_VERSION in $VERSIONS
-		do
-			if [ "${IMAGE_VERSION}" != "latest" ]
-			then
-				REPLY="$REPLY wplib/${IMAGE_NAME}:$IMAGE_VERSION"
-			fi
-		done
-
+		if [ -f /opt/box/etc/images/${IMAGE_NAME}.json ]
+		then
+			VERSIONS="$(jq -r '.results|.[]|.name' /opt/box/etc/images/${IMAGE_NAME}.json)"
+			for IMAGE_VERSION in $VERSIONS
+			do
+				if [ "${IMAGE_VERSION}" != "latest" ]
+				then
+					REPLY="$REPLY wplib/${IMAGE_NAME}:$IMAGE_VERSION"
+				fi
+			done
+		fi
 	done
 
 	COMPREPLY=($(compgen -W "$REPLY" -- $cur))

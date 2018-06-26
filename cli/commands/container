@@ -42,8 +42,8 @@ box component ${GREEN}list${RESET} [component]		- List currently installed compo
 box component ${GREEN}upgrade${RESET} <component>	- Upgrade an existing component.
 
 ${GREEN}Service management${RESET}
-box component ${GREEN}update${RESET}			- Update available components list.
-box component ${GREEN}show${RESET}			- Show the list of components available.
+box component ${GREEN}update${RESET}			- Download latest list of available components.
+box component ${GREEN}available${RESET}			- Show the list of available components.
 box component ${GREEN}shutdown${RESET}			- Shutdown all WPLib related components.
 box component ${GREEN}clean${RESET}			- Remove all WPLib related components.
 box component ${GREEN}inspect${RESET} <component>	- Provide detailed info on a components.
@@ -68,8 +68,8 @@ case $CMD in
 		fi
 		;;
 
-	'show')
-		component_show
+	'available')
+		available_components
 		exit $?
 		;;
 
