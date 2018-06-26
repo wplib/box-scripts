@@ -33,7 +33,7 @@ function provision_fix()
 	link_file /opt/box/etc/box-completion.bash /etc/bash_completion.d/box-completion.bash
 	link_file /opt/box/etc/box-motd.sh /etc/update-motd.d/00-box-motd
 	link_file /opt/box/etc/box-profile.sh /etc/profile.d/box-profile.sh
-	link_file /opt/box /
+	link_file /opt/box /box
 
 	# Temporary workaround.
 	sudo ln -sf /opt/box/etc/cron/boxuser /var/spool/cron/crontabs/boxuser
