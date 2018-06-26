@@ -40,8 +40,7 @@ fi
 
 cat <<EOF >> /tmp/self-update.$$
 cd ${WPLIB_BOX_BASE_DIR}
-echo "# WPLib-Box: Updating ${WPLIB_BOX_BASE_DIR} with version ${VERSION}"
-
+echo -n "# WPLib-Box: Updating ${WPLIB_BOX_BASE_DIR} with version ${VERSION} ... "
 # Fetch the latest tags/branches.
 git fetch -q --all
 # Reset branch - force local changes to be removed.
@@ -55,6 +54,11 @@ git pull -q
 # Finally checkout the branch/tag.
 git checkout -q ${VERSION} 2>/dev/null
 echo "Done"
+
+echo -n "# WPLib-Box: Fixing links ... "
+/opt/box/bin/box provision fix
+echo "Done"
+
 rm /tmp/self-update.$$
 EOF
 
