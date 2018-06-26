@@ -469,7 +469,7 @@ function component_create_container()
 		$RETURN_NO_CONTAINER)
 			if [ "$CONTAINER_HOSTNAME" == "" ]
 			then
-				echo -n "$ECHO_PREFIX ${GREEN}Installing component: ${CYAN}${IMAGE}${RESET} ... "
+				echo -n "$ECHO_PREFIX ${GREEN}Creating component: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} >& $TEMPFILE
 
@@ -829,12 +829,18 @@ function component_install()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	echo -n "$ECHO_PREFIX ${GREEN}Installing ${CYAN}${IMAGE}${RESET} ... "
+	echo -n "$ECHO_PREFIX ${GREEN}Installing component: ${CYAN}${IMAGE}${RESET} ... "
 	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
 			echo "${GREEN}already installed.${RESET}"
+			;;
+
+		$RETURN_NO_CONTAINER)
+			echo "${GREEN}OK.${RESET}"
+			component_create_container $IMAGE
+			RETURN="$?"
 			;;
 
 		$RETURN_NO_LOCAL_IMAGE)
@@ -843,13 +849,11 @@ function component_install()
 			RETURN="$?"
 			if [ "$RETURN" != "$RETURN_OK" ]
 			then
-				return $RETURN
+				component_create_container $IMAGE
+				RETURN="$?"
 			fi
 			;;
 	esac
-
-	component_create_container $IMAGE
-	RETURN="$?"
 
 	return $RETURN
 }
