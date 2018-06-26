@@ -208,14 +208,20 @@ function is_component_in_repo()
 	IMAGE_VERSION="${state_array[2]}"
 
 	# wget -qO /dev/null https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/
-	jq --raw-output ".results | .[] | .name" ${WPLIB_BOX_ETC}/images/${IMAGE_NAME}.json | grep -q "^${IMAGE_VERSION}\$"
-	if [ "$?" == "0" ]
+	if [ -f ${WPLIB_BOX_ETC}/images/${IMAGE_NAME}.json ]
 	then
-		return $RETURN_OK
+		jq --raw-output ".results | .[] | .name" ${WPLIB_BOX_ETC}/images/${IMAGE_NAME}.json | grep -q "^${IMAGE_VERSION}\$"
+		if [ "$?" == "0" ]
+		then
+			RETURN=$RETURN_OK
+		else
+			RETURN=$RETURN_NO_IMAGE_REPO
+		fi
 	else
-		# error_dni
-		return $RETURN_NO_IMAGE_REPO
+		RETURN=$RETURN_NO_IMAGE_REPO
 	fi
+
+	return $RETURN
 }
 
 
