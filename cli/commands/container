@@ -23,7 +23,7 @@ trap ctrl_c INT
 HelpMe()
 {
 	cat <<EOF
-${GREEN}Service control${RESET}
+${GREEN}Component control${RESET}
 box component ${GREEN}install${RESET} <component>	- Install and configure a component.
 box component ${GREEN}uninstall${RESET} <component>	- Uninstall a component.
 box component ${GREEN}activate${RESET} <component>	- Activate a component.
@@ -33,7 +33,7 @@ box component ${GREEN}stop${RESET} <component>		- Stop a component.
 box component ${GREEN}list${RESET} [component]		- List currently installed components.
 box component ${GREEN}upgrade${RESET} <component>	- Upgrade an existing component.
 
-${GREEN}Service management${RESET}
+${GREEN}Component management${RESET}
 box component ${GREEN}update${RESET}			- Download latest list of available components.
 box component ${GREEN}available${RESET}			- Show the list of available components.
 box component ${GREEN}shutdown${RESET}			- Shutdown all WPLib related components.
@@ -41,6 +41,9 @@ box component ${GREEN}clean${RESET}			- Remove all WPLib related components.
 box component ${GREEN}inspect${RESET} <component>	- Provide detailed info on a components.
 box component ${GREEN}log${RESET} <component>		- Show log files from components.
 box component ${GREEN}pull${RESET} <component>		- Just pull a component image. No install.
+
+If <component> is set to ${GREEN}all${RESET}, then all components will be used in the file:
+${WPLIB_BOX_PROJECT_FILE}
 EOF
 }
 
@@ -109,6 +112,13 @@ case $CMD in
 esac
 
 
+# Magic keyword to specify all.
+if [ "$1" == "all" ]
+then
+	IMAGES="$(readJSON)"
+fi
+
+
 for IMAGE in $IMAGES
 do
 	IMAGE="$(get_image_name ${IMAGE})"
@@ -137,7 +147,7 @@ do
 			;;
 
 		'install')
-			echo "$ECHO_PREFIX ${GREEN}Installing ${CYAN}${IMAGE}.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Installing ${CYAN}${IMAGE}${RESET}"
 			component_install $IMAGE
 			RETURN="$?"
 			;;
