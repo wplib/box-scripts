@@ -1,5 +1,8 @@
 #/usr/bin/env bash
 
+LESS="-SinR"
+export LESS
+
 ################################################################################ 
 # Command completion for 'box'
 _box()
