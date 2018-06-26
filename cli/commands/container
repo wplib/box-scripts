@@ -169,10 +169,10 @@ do
 
 		'start')
 			component_start $IMAGE
-			if [ "$?" == "$RETURN_NO_LOCAL_IMAGE" ]
-			then
-				component_provision $IMAGE
-			fi
+			#if [ "$?" == "$RETURN_NO_LOCAL_IMAGE" ]
+			#then
+			#	component_provision $IMAGE
+			#fi
 			;;
 
 		'stop')
