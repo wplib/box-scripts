@@ -136,7 +136,7 @@ function error_cni()
 
 function readJSON()
 {
-	local JSON DOCKER IFS RETURN
+	local JSON RETURN MERGED
 	JSON="$1"
 
 	if [ "${JSON}" == "" ]
@@ -146,8 +146,13 @@ function readJSON()
 
 	if [ -f "${JSON}" ]
 	then
-		IMAGES="$(jq --raw-output ".services | .[]" ${JSON})"
 		jq -s '.[0] * .[1]' ${WPLIB_BOX_RELEASE_JSON} ${JSON} > ${JSON}.lock
+		IMAGES="$(jq --raw-output ".services | .[]" ${JSON}.lock)"
+		for IMAGE_NAME in ${IMAGES}
+		do
+			MERGED="${MERGED} $(get_image_name $IMAGE_NAME)"
+		done
+		echo "${MERGED}"
 		RETURN=$RETURN_OK
 	else
 		RETURN=$RETURN_NO_JSON_FILE

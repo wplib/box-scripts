@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-source "${WPLIB_BOX_INCLUDES_DIR}/read-json"
-box container start $mail $proxy $database $webserver $processvm $kvstore $cache $sqladmin $webadmin
+source /opt/box/cli/includes/functions
+
+IMAGES="$(readJSON)"
+
+box container start ${IMAGES}
 
 if [[ ! -e "${WPLIB_BOX_CLI_DIR}/PROVISION" && -e "${WPLIB_BOX_SQL_DIR}/provision.sql" ]] ; then
 
