@@ -146,20 +146,21 @@ function readJSON()
 
 	if [ -f "${JSON}" ]
 	then
-		jq -s '.[0] * .[1]' ${WPLIB_BOX_RELEASE_JSON} ${JSON} > ${JSON}.lock
-		IMAGES="$(jq --raw-output ".services | .[]" ${JSON}.lock)"
-		for IMAGE_NAME in ${IMAGES}
-		do
-			MERGED="${MERGED} $(get_image_name $IMAGE_NAME)"
-		done
-
-		# Remove duplicates.
-		MERGED="$(echo ${MERGED} | awk -v RS="[ \n]+" '!n[$0]++')"
-		echo "${MERGED}"
-		RETURN=$RETURN_OK
-	else
-		RETURN=$RETURN_NO_JSON_FILE
+		${WPLIB_BOX_RELEASE_JSON} ${JSON}
 	fi
+
+	jq -s '.[0] * .[1]' ${WPLIB_BOX_RELEASE_JSON} ${JSON} > ${JSON}.lock
+	IMAGES="$(jq --raw-output ".services | .[]" ${JSON}.lock)"
+	for IMAGE_NAME in ${IMAGES}
+	do
+		MERGED="${MERGED} $(get_image_name $IMAGE_NAME)"
+	done
+
+	# Remove duplicates.
+	MERGED="$(echo ${MERGED} | awk -v RS="[ \n]+" '!n[$0]++')"
+	echo "${MERGED}"
+	RETURN=$RETURN_OK
+	# RETURN=$RETURN_NO_JSON_FILE
 
 	return $RETURN
 }
