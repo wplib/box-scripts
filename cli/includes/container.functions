@@ -146,7 +146,7 @@ function readJSON()
 
 	if [ -f "${JSON}" ]
 	then
-		${WPLIB_BOX_RELEASE_JSON} ${JSON}
+		cp ${WPLIB_BOX_RELEASE_JSON} ${JSON}
 	fi
 
 	jq -s '.[0] * .[1]' ${WPLIB_BOX_RELEASE_JSON} ${JSON} > ${JSON}.lock
