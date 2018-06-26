@@ -328,6 +328,7 @@ function component_image_pull()
 
 		$RETURN_NO_IMAGE_REPO)
 			echo "$ECHO_PREFIX ${GREEN}Downloading component: ${CYAN}${IMAGE}${RESET} ... ${RED}no component found.${RESET}"
+			echo "$ECHO_PREFIX ${GREEN}Try updating the component catalog: ${CYAN}box comp update${RESET}"
 			;;
 	esac
 
