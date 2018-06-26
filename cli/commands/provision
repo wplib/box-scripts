@@ -48,8 +48,10 @@ function provision_fix()
 		link_file /vagrant /projects/wplib.box
 	fi
 
-	# Temporary workaround.
+	# cron jobs
 	ln -sf ${WPLIB_BOX_ETC}/cron/${WPLIB_BOX_USER} /var/spool/cron/crontabs/${WPLIB_BOX_USER}
+	cp ${WPLIB_BOX_ETC}/environment /etc/environment
+	cp ${WPLIB_BOX_ETC}/inputrc /etc/inputrc
 
 	# Setup boxuser, if not there.
 	USERID="$(id -u ${WPLIB_BOX_USER})"
