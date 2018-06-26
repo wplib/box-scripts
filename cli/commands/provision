@@ -1,0 +1,70 @@
+#!/bin/bash
+#
+# Provisioning script that usually gets run after a `box self-update`
+#
+
+source /opt/box/cli/includes/functions
+
+function ctrl_c()
+{
+        tput sgr0
+	echo ""
+	echo "$ECHO_PREFIX Aborting script."
+	exit
+}
+
+trap ctrl_c INT
+
+
+function HelpMe()
+{
+	cat <<EOF
+box provision ${GREEN}check${RESET}		- Check everything is OK.
+box provision ${GREEN}fix${RESET}		- Look for and fix issues.
+
+EOF
+}
+
+
+# This is here for now, should be put somewhere else later.
+function provision_fix()
+{
+	# Create symlinks
+	link_file /opt/box/etc/box-completion.bash /etc/bash_completion.d/box-completion.bash
+	link_file /opt/box/etc/box-motd.sh /etc/update-motd.d/00-box-motd
+	link_file /opt/box/etc/box-profile.sh /etc/profile.d/box-profile.sh
+	link_file /opt/box /
+
+	# Temporary workaround.
+	sudo ln -sf /opt/box/etc/cron/boxuser /var/spool/cron/crontabs/boxuser
+}
+
+
+################################################################################
+CMD="$1"
+shift
+
+case $CMD in
+	'check')
+		exit $?
+		;;
+
+	'fix')
+		provision_fix
+		exit $?
+		;;
+
+	''|'help')
+		HelpMe
+		;;
+
+	*)
+		if [ "$1" == "" ]
+		then
+			HelpMe
+			exit 1
+		fi
+		;;
+esac
+
+

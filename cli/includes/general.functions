@@ -1,5 +1,37 @@
 #!/usr/bin/env bash
 
+
+#
+# Creates a symlink to a file, with checks for directory. Will also update a symlink if it's different.
+#
+function link_file()
+{
+	local SRC DST TEMP
+	SRC="$1"
+	DST="$2"
+
+	TEMP="$(dirname ${DST})"
+	if [ ! -d "${TEMP}" ]
+	then
+		echo "$ECHO_PREFIX ${YELLOW}Creating symlink directory: ${GREEN}${DST}${RESET}"
+		mkdir -p $TEMP
+	fi
+
+	TEMP="$(readlink ${DST})"
+	if [ "${TEMP}" != "${DST}" ]
+	then
+		if [ "${TEMP}" == "" ]
+		then
+			echo "$ECHO_PREFIX ${YELLOW}Adding symlink: ${GREEN}${SRC} -> ${DST}${RESET}"
+			ln -s ${SRC} ${DST}
+		else
+			echo "$ECHO_PREFIX ${YELLOW}Updating symlink: ${GREEN}${SRC} -> ${DST}${RESET}"
+			ln -sf ${SRC} ${DST}
+		fi
+	fi
+}
+
+
 #
 # Checks to see if there is a new commit available for this Box Script repo.
 #
