@@ -152,6 +152,9 @@ function readJSON()
 		do
 			MERGED="${MERGED} $(get_image_name $IMAGE_NAME)"
 		done
+
+		# Remove duplicates.
+		MERGED="$(echo ${MERGED} | awk -v RS="[ \n]+" '!n[$0]++')"
 		echo "${MERGED}"
 		RETURN=$RETURN_OK
 	else
