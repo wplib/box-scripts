@@ -835,21 +835,181 @@ function component_provision()
 }
 
 
-spinner()
+# Displays a fancy spinner while something is happening.
+show_spinner()
 {
-  local -r PID="${1}"
-  local -r delay='0.75'
-  local spinstr='\|/-'
-  local temp
-  # while ps a | awk '{print $1}' | grep -q "${PID}"; do
-  while [ -d /proc/$PID ]; do
-    temp="${spinstr#?}"
-    printf " [%c]  " "${spinstr}"
-    spinstr=${temp}${spinstr%"${temp}"}
-    sleep "${delay}"
-    #printf "\b\b\b\b\b\b"
-  done
-  #printf "    \b\b\b\b"
-  #printf "\n"
+	local PID
+	local -r delay='0.75'
+	local spinstr='\|/-'
+	local temp
+
+	set +m
+	("$@" || false) &
+	PID="$!"
+
+	while [ -d /proc/$PID ]
+	do
+		temp="${spinstr#?}"
+		printf "\b%c" "${spinstr}"
+		spinstr=${temp}${spinstr%"${temp}"}
+		sleep "${delay}"
+	done
+
+	printf "\b"
+	set -m
 }
+
+
+# Displays a fancy spinner while something is happening.
+show_dots()
+{
+	local PID TEMPFILE
+	local -r delay='0.75'
+
+	set +m
+	set +b
+	($@) & 2>/dev/null
+	PID="$!"
+
+	while [ -d /proc/$PID ]
+	do
+		printf "."
+		sleep "${delay}"
+	done
+	set -b
+	set -m
+}
+
+
+#
+# Returns a Docker container name from either a container name or an image name
+#
+#  @param string $image_name - Name of image or container.
+#  @param int $max_version - Allows specifying a max version to return so testing can
+#                            continue work even if a newer version is released later.
+#
+#   get_image_name wplib/mysql:5.5.60 60 => mysql-5.5.60
+#   get_image_name mysql:5.5.60       60 => mysql-5.5.60
+#   get_image_name mysql-5.5.60       60 => mysql-5.5.60
+#   get_image_name mysql-5.5          60 => mysql-5.5.60
+#
+#  @TODO Add ability to also accept a container ID or image ID
+#
+function get_container_name() {
+    local name="$1"
+    local max_version="$2"
+    if [ "" == "${max_version}" ] ; then
+        max_version=999999
+    fi
+    local org="${name%%/*}"
+    if [ "${name}" == "${org}" ] ; then
+        container_name="${name}"
+    else
+        container_name="${name#*/}"
+    fi
+    container_name="${container_name//\-/\:}"
+    local repo="${container_name%:*}"
+    repo="${repo//\:/\-}"
+    image_name="$(get_image_name "${name}")"
+    local version="${image_name##*:}"
+    echo "${repo}-${version}"
+}
+
+
+#
+# Returns a Docker image name from either a container name or an image name
+#
+#  @param string $image_name - Name of image or container.
+#  @param int $max_version - Allows specifying a max version to return so testing can
+#                            continue work even if a newer version is released later.
+#
+#   get_image_name wplib/mysql:5.5.60 60 => wplib/mysql:5.5.60
+#   get_image_name mysql:5.5.60       60 => wplib/mysql:5.5.60
+#   get_image_name mysql-5.5.60       60 => wplib/mysql:5.5.60
+#   get_image_name mysql-5.5          60 => wplib/mysql:5.5.60
+#
+#  @TODO Add ability to also accept a container ID or image ID
+#
+function get_image_name() {
+    local name="$1"
+    local max_version="$2"
+    if [ "" == "${max_version}" ] ; then
+        max_version=999999
+    fi
+    local org="${name%%/*}"
+    local image_name="${name}"
+    if [ "${name}" == "${org}" ] ; then
+        org="wplib"
+    else
+        local image_name="${name#*/}"
+    fi
+    image_name="${image_name//\-/\:}"
+    local version="${image_name##*:}"
+    local length=$(( ${#image_name} - ${#version} - 1 ))
+    local repo="${image_name:0:$length}"
+    repo="${repo/\:/\-}"
+    version=$(get_latest_patch_version "${org}/${repo}:${version}" ${max_version})
+    echo "${org}/${repo}:${version}"
+}
+
+
+#
+#  Returns the latest patched version for a given {major}.{minor} version
+#
+#  @param string $image_name - Name of image. Does not support passing container name
+#  @param int $max_version - Allows specifying a max version to return so testing can
+#                            continue work even if a newer version is released later.
+#
+#       get_latest_patch_version wplib/mysql:5.5 60 => 5.5.60
+#
+#  @TODO Add ability to also accept an image ID
+#
+function get_latest_patch_version() {
+    local image_name="$1"
+    local max_version="$2"
+    if [ "" == "${max_version}" ] ; then
+        max_version=999999
+    fi
+    local org="${image_name%%/*}"
+    local repo="${image_name##*/}"
+    repo="${repo%%:*}"
+    local version="${image_name##*:}"
+    local dots="${version//[^.]}"
+    if [ 0 -eq ${#dots} ] ; then
+        echo "The function get_full_version() was passed [$1] but needs at least [{major}.{minor}] version numbers."
+        exit
+    fi
+    if [ 2 -lt ${#dots} ] ; then
+        echo "The function get_full_version() was passed [$1] which contains more than [{major}.{minor}.{patch}] version numbers."
+        exit
+    fi
+    if [ 1 -eq ${#dots} ] ; then
+        local repo_url="https://registry.hub.docker.com/v1/repositories/${org}/{$repo}/tags"
+        local repo_json="$(curl --silent --fail --max-time 3 --stderr /dev/null "${repo_url}")"
+        local versions=$(echo "${repo_json}" | jq --raw-output ".[] | .name" | grep "${version}")
+        if [ "" == "${versions}" ] ; then
+            version=""
+        else
+            local max_patch=0
+            for test in $versions ; do
+                dots="${test//[^.]}"
+                if [ "2" == "${#dots}" ] ; then
+                    if [ "${test}" == "${version}" ] ; then
+                        break;
+                    fi
+                    local patch="${test##*.}"
+                    if [ $max_patch -ge $max_version ] ; then
+                        continue
+                    fi
+                    if [ $max_patch -lt $patch ] ; then
+                        max_patch=$patch
+                    fi
+                fi
+            done;
+            version="${version}.${max_patch}"
+        fi
+    fi
+    echo "${version}"
+}
+
 
