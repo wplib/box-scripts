@@ -43,9 +43,9 @@ function provision_fix()
 		# We have a new layout - offer backwards compat.
 		link_file /projects/wplib.box /vagrant
 		link_file /projects/wplib.box/www /var/www
-	else
-		# We have an old layout - offer forwards compat.
-		link_file /vagrant /projects/wplib.box
+	#else
+	#	# We have an old layout - offer forwards compat.
+	#	link_file /vagrant /projects/wplib.box
 	fi
 
 	# cron jobs
