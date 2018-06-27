@@ -423,6 +423,7 @@ function component_exec()
 {
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
+	shift
 
 	component_info $IMAGE
 	RETURN="$?"
