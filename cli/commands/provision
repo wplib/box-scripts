@@ -37,16 +37,16 @@ function provision_fix()
 	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-profile.sh /etc/profile.d/box-profile.sh
 	link_file ${WPLIB_BOX_BASE_DIR} /box
 
-	# Offer forwards / backwards compat.
-	if [ -L /vagrant ]
-	then
-		# We have a new layout - offer backwards compat.
-		link_file /projects/wplib.box /vagrant
-		link_file /projects/wplib.box/www /var/www
-	#else
-	#	# We have an old layout - offer forwards compat.
-	#	link_file /vagrant /projects/wplib.box
-	fi
+#	# Offer forwards / backwards compat.
+#	if [ -L /vagrant ]
+#	then
+#		# We have a new layout - offer backwards compat.
+#		link_file /projects/wplib.box /vagrant
+#		link_file /projects/wplib.box/www /var/www
+#	#else
+#	#	# We have an old layout - offer forwards compat.
+#	#	link_file /vagrant /projects/wplib.box
+#	fi
 
 	# cron jobs
 	ln -sf ${WPLIB_BOX_ETC}/cron/${WPLIB_BOX_USER} /var/spool/cron/crontabs/${WPLIB_BOX_USER}
