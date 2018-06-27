@@ -144,7 +144,7 @@ function readJSON()
 		JSON="${WPLIB_BOX_PROJECT_FILE}"
 	fi
 
-	if [ -f "${JSON}" ]
+	if [ ! -f "${JSON}" ]
 	then
 		cp ${WPLIB_BOX_RELEASE_JSON} ${JSON}
 	fi
