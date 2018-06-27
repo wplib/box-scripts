@@ -94,7 +94,7 @@ case $CMD in
 		IMAGE="$1"
 		shift
 		ARGS="$@"
-		component_exec "$@"
+		component_exec $IMAGE $ARGS
 		;;
 
 	''|'help')
