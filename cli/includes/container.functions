@@ -395,10 +395,10 @@ function component_shell()
 					docker run --name ${CONTAINER_NAME}-exec  --rm -i    ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
 				fi
 
-				if [ "$?" == "1" ]
-				then
-					error_ccbi
-				fi
+#				if [ "$?" == "1" ]
+#				then
+#					error_ccbi
+#				fi
 			fi
 			;;
 
