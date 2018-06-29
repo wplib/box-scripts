@@ -1028,9 +1028,11 @@ function get_latest_patch_version() {
         exit
     fi
     if [ 1 -eq ${#dots} ] ; then
-        local repo_url="https://registry.hub.docker.com/v1/repositories/${org}/{$repo}/tags"
-        local repo_json="$(curl --silent --fail --max-time 3 --stderr /dev/null "${repo_url}")"
-        local versions=$(echo "${repo_json}" | jq --raw-output ".[] | .name" | grep "${version}")
+        # local repo_url="https://registry.hub.docker.com/v1/repositories/${org}/{$repo}/tags"
+        # local repo_json="$(curl --silent --fail --max-time 3 --stderr /dev/null "${repo_url}")"
+        # local versions=$(echo "${repo_json}" | jq --raw-output ".[] | .name" | grep "${version}")
+        local versions=$(jq --raw-output ".results | .[] | .name" ${WPLIB_BOX_ETC}/images/${repo}.json)
+
         if [ "" == "${versions}" ] ; then
             version=""
         else
