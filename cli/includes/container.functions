@@ -156,12 +156,12 @@ function readJSON()
 		MERGED="${MERGED} $(get_image_name $IMAGE_NAME)"
 	done
 
-	# jq '.services | to_entries[] | "[\(.key)]=\"\(.value)\""' -r $WPLIB_BOX_RELEASE_JSON
+	# jq '.services | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock
 	declare -A STACK="($(jq '.services | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock))"
-	for i in ${!STACK[@]}
-	do
-		echo $i ${STACK[$i]}
-	done
+	#for i in ${!STACK[@]}
+	#do
+	#	echo $i ${STACK[$i]}
+	#done
 
 	# Remove duplicates.
 	MERGED="$(echo ${MERGED} | awk -v RS="[ \n]+" '!n[$0]++')"
