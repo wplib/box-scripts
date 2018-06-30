@@ -215,5 +215,5 @@ do
 	esac
 done
 
-exit $RETURN
+exit 0
 
