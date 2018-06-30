@@ -1,1 +1,1 @@
-Dpkg::Options::="--force-confold"
+Dpkg::Options {"--force-confold";};
