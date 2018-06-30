@@ -165,7 +165,8 @@ function readJSON()
 
 	# Remove duplicates.
 	MERGED="$(echo ${MERGED} | awk -v RS="[ \n]+" '!n[$0]++')"
-	echo "${MERGED}"
+	# echo "${MERGED}"
+	IMAGES="${MERGED}"
 	RETURN=$RETURN_OK
 	# RETURN=$RETURN_NO_JSON_FILE
 

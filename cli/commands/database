@@ -9,7 +9,6 @@ DEFAULT_PROJECT="wplib"
 
 DB_HOST_IP="172.42.0.1"
 # source "${WPLIB_BOX_INCLUDES_DIR}/read-json"
-IMAGES="$(readJSON)"
 
 
 trap ctrl_c INT
@@ -171,10 +170,10 @@ function database_import() {
         output "Dropping any prior tables"
 
         if [ ! $(has_arg --dryrun) ]; then
-            box container exec ${STACK[wordpress/dbserver]} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
+            box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
             cat /tmp/mysql-table-list.txt | while read table
         do
-		box container exec ${STACK[wordpress/dbserver]} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"
+		box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"
         done
             rm /tmp/mysql-table-list.txt
         fi
@@ -199,7 +198,7 @@ function database_import() {
     #
     output "Importing database from ${importfile}"
     if [ ! $(has_arg --dryrun) ]; then
-        box container exec ${STACK[wordpress/dbserver]} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress wordpress -e "source ${importfilepath}"  2>&1 | grep -v "Warning:"
+        box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress wordpress -e "source ${importfilepath}"  2>&1 | grep -v "Warning:"
     fi
 
     if [ "" != "${tempfile}" ]; then
@@ -449,7 +448,7 @@ function database_backup() {
 
         mkdir -p "${WPLIB_BOX_SQL_DIR}/"
 
-        box container exec ${STACK[wordpress/dbserver]} mysqldump -h "${DB_HOST_IP}" -u wordpress -pwordpress wordpress 2>&1 | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}
+        box container exec ${database} mysqldump -h "${DB_HOST_IP}" -u wordpress -pwordpress wordpress 2>&1 | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}
         result="$?"
 
         if [ "${result}" != "0" ]; then
@@ -483,8 +482,15 @@ EOF
 ################################################################################
 CMD="$1"
 shift
-IMAGES="$@"
+# Creates IMAGES and STACK env variables.
+readJSON
 
+if [ "${STACK[wordpress/dbserver]}" == "" ]
+then
+	echo "WARNING: Cannot find database component in JSON file."
+	exit
+fi
+database="${STACK[wordpress/dbserver]}"
 
 case $CMD in
     'help')

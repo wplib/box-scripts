@@ -117,7 +117,8 @@ esac
 # Magic keyword to specify all.
 if [ "$1" == "all" ]
 then
-	IMAGES="$(readJSON)"
+	# Creates IMAGES and STACK env variables.
+	readJSON
 fi
 
 

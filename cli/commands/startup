@@ -2,7 +2,8 @@
 
 source /opt/box/cli/includes/functions
 
-IMAGES="$(readJSON)"
+# Creates IMAGES and STACK env variables.
+readJSON
 
 box container start ${IMAGES}
 
