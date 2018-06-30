@@ -1,2 +1,2 @@
 0 * * * * /opt/box/bin/box database backup
-0 * * * * /opt/box/bin/box cargo update
+0 * * * * /opt/box/bin/box component update
