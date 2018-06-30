@@ -136,7 +136,7 @@ function error_cni()
 
 function readJSON()
 {
-	local JSON RETURN MERGED SERVICES IFS
+	local JSON RETURN MERGED SERVICES
 	JSON="$1"
 
 	if [ "${JSON}" == "" ]
@@ -157,14 +157,11 @@ function readJSON()
 	done
 
 	# jq '.services | to_entries[] | "[\(.key)]=\"\(.value)\""' -r $WPLIB_BOX_RELEASE_JSON
-	declare -A STACK="($(jq '.services | to_entries[] | "[\(.key)]=\"\(.value)\""' -r $WPLIB_BOX_RELEASE_JSON))"
+	declare -A STACK="($(jq '.services | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock))"
 	for i in ${!STACK[@]}
 	do
 		echo $i ${STACK[$i]}
 	done
-
-	#SERVICES="$(jq -r '.services | to_entries[] | "\(.key);\(.value)"' ${JSON}.lock)"
-	#IFS=';' read -r -a state_array <<< "$SERVICES"
 
 	# Remove duplicates.
 	MERGED="$(echo ${MERGED} | awk -v RS="[ \n]+" '!n[$0]++')"
