@@ -77,6 +77,7 @@ function provision_fix()
 
 	cp ${WPLIB_BOX_ETC}/environment /etc/environment
 	cp ${WPLIB_BOX_ETC}/inputrc /etc/inputrc
+	cp ${WPLIB_BOX_BASE_DIR}/etc/box-aptget /etc/apt/apt.conf.d/42wplib
 }
 
 
