@@ -127,15 +127,19 @@ do
 		'refresh'|'upgrade')
 			echo "$ECHO_PREFIX ${GREEN}Refreshing container: ${CYAN}${IMAGE}${RESET}"
 			component_stop $IMAGE
-			case $? in
+			RETURN="$?"
+			case $RETURN in
 				$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
 					component_remove $IMAGE
-					case $? in
+					RETURN="$?"
+					case $RETURN in
 						$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
 							image_remove $IMAGE
-							if [ "$?" == "$RETURN_OK" ]
+							RETURN="$?"
+							if [ "$RETURN == "$RETURN_OK" ]
 							then
 								component_provision $IMAGE
+								RETURN="$?"
 							fi
 					esac
 					;;
@@ -156,12 +160,16 @@ do
 		'uninstall')
 			# echo "$ECHO_PREFIX ${GREEN}Uninstalling: ${CYAN}${IMAGE}${RESET}"
 			component_stop $IMAGE
-			case $? in
+			RETURN="$?"
+			case $RETURN in
 				$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
 					component_remove $IMAGE
-					case $? in
+					RETURN="$?"
+					case $RETURN in
 						$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
 							image_remove $IMAGE
+							RETURN="$?"
+							;;
 					esac
 					;;
 			esac
@@ -181,28 +189,30 @@ do
 
 		'start')
 			component_start $IMAGE
-			#if [ "$?" == "$RETURN_NO_LOCAL_IMAGE" ]
-			#then
-			#	component_provision $IMAGE
-			#fi
+			RETURN="$?"
 			;;
 
 		'stop')
 			component_stop $IMAGE
+			RETURN="$?"
 			;;
 
 		'list'|'ls')
 			component_list $IMAGE
+			RETURN="$?"
 			;;
 
 		'inspect'|'info')
 			component_inspect $IMAGE
+			RETURN="$?"
 			;;
 
 		'log')
 			component_log $IMAGE
+			RETURN="$?"
 			;;
 	esac
 done
 
+exit $RETURN
 
