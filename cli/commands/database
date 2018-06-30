@@ -170,10 +170,10 @@ function database_import() {
         output "Dropping any prior tables"
 
         if [ ! $(has_arg --dryrun) ]; then
-            box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
+            box component exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -Nse "show tables;" wordpress 2>&1 | grep -v "Warning:" > /tmp/mysql-table-list.txt
             cat /tmp/mysql-table-list.txt | while read table
         do
-		box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"
+		box component exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress -e "drop table $table" wordpress 2>&1 | grep -v "Warning:"
         done
             rm /tmp/mysql-table-list.txt
         fi
@@ -198,7 +198,7 @@ function database_import() {
     #
     output "Importing database from ${importfile}"
     if [ ! $(has_arg --dryrun) ]; then
-        box container exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress wordpress -e "source ${importfilepath}"  2>&1 | grep -v "Warning:"
+        box component exec ${database} mysql -h ${DB_HOST_IP} -u wordpress -pwordpress wordpress -e "source ${importfilepath}"  2>&1 | grep -v "Warning:"
     fi
 
     if [ "" != "${tempfile}" ]; then
@@ -448,7 +448,7 @@ function database_backup() {
 
         mkdir -p "${WPLIB_BOX_SQL_DIR}/"
 
-        box container exec ${database} mysqldump -h "${DB_HOST_IP}" -u wordpress -pwordpress wordpress 2>&1 | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}
+        box component exec ${database} mysqldump -h "${DB_HOST_IP}" -u wordpress -pwordpress wordpress 2>&1 | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}
         result="$?"
 
         if [ "${result}" != "0" ]; then
