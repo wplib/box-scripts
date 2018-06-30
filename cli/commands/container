@@ -136,11 +136,12 @@ do
 						$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER|$RETURN_OK)
 							image_remove $IMAGE
 							RETURN="$?"
-							if [ "$RETURN == "$RETURN_OK" ]
+							if [ "$RETURN" == "$RETURN_OK" ]
 							then
 								component_provision $IMAGE
 								RETURN="$?"
 							fi
+							;;
 					esac
 					;;
 			esac
