@@ -403,10 +403,10 @@ function component_shell()
 					docker run --name ${CONTAINER_NAME}-exec  --rm -i    ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
 				fi
 
-#				if [ "$?" == "1" ]
-#				then
-#					error_ccbi
-#				fi
+				#if [ "$?" == "1" ]
+				#then
+				#	error_ccbi
+				#fi
 			fi
 			;;
 
@@ -443,10 +443,10 @@ function component_exec()
 			else
 				# echo "$ECHO_PREFIX ${GREEN}Shell to component: ${CYAN}${IMAGE}${RESET}" 1>&2
 				docker run --name ${CONTAINER_NAME}-exec --rm ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
-				if [ "$?" == "1" ]
-				then
-					error_ccbi
-				fi
+				#if [ "$?" == "1" ]
+				#then
+				#	error_ccbi
+				#fi
 			fi
 			;;
 
