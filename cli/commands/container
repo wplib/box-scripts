@@ -86,16 +86,14 @@ case $CMD in
 	'shell')
 		IMAGE="$1"
 		shift
-		ARGS="$@"
-		component_shell $IMAGE $ARGS
+		component_shell $IMAGE "$@"
 		exit $?
 		;;
 
 	'exec')
 		IMAGE="$1"
 		shift
-		ARGS="$@"
-		component_exec $IMAGE $ARGS
+		component_exec $IMAGE "$@"
 		exit $?
 		;;
 
