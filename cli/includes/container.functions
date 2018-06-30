@@ -157,7 +157,7 @@ function readJSON()
 	done
 
 	# jq '.services | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock
-	declare -A STACK="($(jq '.services | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock))"
+	declare -gA STACK="($(jq '.services | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock))"
 	#for i in ${!STACK[@]}
 	#do
 	#	echo $i ${STACK[$i]}
