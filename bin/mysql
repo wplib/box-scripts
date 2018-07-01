@@ -6,7 +6,7 @@ source /opt/box/cli/includes/functions
 # Creates IMAGES and STACK env variables.
 readJSON
 
-DBHOST="-h 172.42.0.1"
+DBHOST="172.42.0.1"
 
 DB="${STACK[wordpress/dbserver]}"
 
