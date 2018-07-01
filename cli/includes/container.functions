@@ -150,14 +150,14 @@ function readJSON()
 	fi
 
 	jq -s '.[0] * .[1]' ${WPLIB_BOX_RELEASE_JSON} ${JSON} > ${JSON}.lock
-	IMAGES="$(jq --raw-output ".services | .[]" ${JSON}.lock)"
+	IMAGES="$(jq --raw-output ".stack | .[]" ${JSON}.lock)"
 	for IMAGE_NAME in ${IMAGES}
 	do
 		MERGED="${MERGED} $(get_image_name $IMAGE_NAME)"
 	done
 
-	# jq '.services | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock
-	declare -g -A STACK="($(jq '.services | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock))"
+	# jq '.stack | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock
+	declare -g -A STACK="($(jq '.stack | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock))"
 	#for i in ${!STACK[@]}
 	#do
 	#	echo $i ${STACK[$i]}

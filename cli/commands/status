@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
 
-source "${WPLIB_BOX_INCLUDES_DIR}/read-json"
-box container ls $database $webserver $processvm $kvstore $cache $sqladmin $webadmin
+source /opt/box/cli/includes/functions
+
+# Creates IMAGES and STACK env variables.
+readJSON
+
+box container ls ${IMAGES}

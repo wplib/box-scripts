@@ -8,7 +8,6 @@
 DEFAULT_PROJECT="wplib"
 
 DB_HOST_IP="172.42.0.1"
-# source "${WPLIB_BOX_INCLUDES_DIR}/read-json"
 
 
 trap ctrl_c INT

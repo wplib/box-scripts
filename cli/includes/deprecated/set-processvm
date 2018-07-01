@@ -6,7 +6,7 @@ source "${WPLIB_BOX_INCLUDES_DIR}/set-web-processvm" $1
 ret_code2=$?
 
 if [ $ret_code1 -eq 0 ] && [ $ret_code2 -eq 0 ]; then
-    jq --arg processvm "$1" '.services.processvm = $processvm' ${PROJECT_BASE}/${CURRENT_PROJECT}/project.json > new.json && mv new.json ${PROJECT_BASE}/${CURRENT_PROJECT}/project.json
+    jq --arg processvm "$1" '.stack.processvm = $processvm' ${PROJECT_BASE}/${CURRENT_PROJECT}/project.json > new.json && mv new.json ${PROJECT_BASE}/${CURRENT_PROJECT}/project.json
     return 0
 else
     return 1
