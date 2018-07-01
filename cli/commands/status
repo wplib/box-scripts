@@ -3,6 +3,7 @@
 source /opt/box/cli/includes/functions
 
 # Creates IMAGES and STACK env variables.
-readJSON
+#readJSON
+#box container ls ${IMAGES}
 
-box container ls ${IMAGES}
+box container ls
