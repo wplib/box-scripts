@@ -40,13 +40,6 @@ tput sgr0
 echo ""
 echo ""
 
-echo "This WPLib Box is based on:"
-echo ""
-tput setaf 7
-printf "   - %s (%s %s %s)\n" "$DISTRIB_DESCRIPTION" "$(uname -o)" "$(uname -r)" "$(uname -m)"
-tput sgr0
-
-echo ""
 echo -n "Run "
 tput setaf 3
 echo -n "box help"
