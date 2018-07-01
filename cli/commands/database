@@ -80,7 +80,7 @@ function database_unchunk() {
         return 4
     fi
 
-    cat "${temp_dir}/${basefile}"-??."${ext}.chunk" > $chunked_file
+    cat "${temp_dir}/${basefile}"-???."${ext}.chunk" > $chunked_file
     if [ $? -ne 0 ]; then
         output "Could not generate unchunked file ${chunked_file}"
         return 5
@@ -147,7 +147,7 @@ function database_import() {
         fi
 
         output "Unchunking ${importfile}"
-        cat "${importfilepath}/${basefile}"-??."${ext}.chunk" > $tempfile
+        cat "${importfilepath}/${basefile}"-???."${ext}.chunk" > $tempfile
         if [ $? -ne 0 ]; then
             output "Could not generate unchunked file ${chunked_file}"
             return 3
@@ -382,7 +382,7 @@ original SQL file in Bash (e.g. Mac and Linux) using this command when run from 
 directory with contains the XXX subdirectory containing the chunks:
 
     mv "${sql_filename}/" "${sql_filename}.tmp/"
-    cat "${sql_filename}/${sql_basename}"-??."${ext}.chunk" > $sql_filename
+    cat "${sql_filename}/${sql_basename}"-???."${ext}.chunk" > $sql_filename
 
 On Windows this is what (WE THINK) you will need to do, though we have not tested it
 yet (contact us here https://github.com/wplib/box-scripts/issues if these commands
