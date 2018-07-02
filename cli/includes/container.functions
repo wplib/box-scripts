@@ -163,8 +163,6 @@ function readJSON()
 
 	# jq '.stack | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock
 	declare -g -A STACK="($(jq '.stack | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock))"
-	echo ">> ${JSON} -nt ${JSON}.lock"
-	ls -l --full-time /projects/wplib.box/project.json /projects/wplib.box/project.json.lock
 	echo "{" > ${JSON}.lock
 	echo "\"stack\" : {" >> ${JSON}.lock
 	for i in ${!STACK[@]}
