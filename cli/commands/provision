@@ -88,10 +88,6 @@ function provision_fix()
 	if [ ! -d "${WPLIB_BOX_PROJECT_DIR}/provision" ]
 	then
 		mkdir ${WPLIB_BOX_PROJECT_DIR}/provision
-	fi
-
-	if [ ! -f "${WPLIB_BOX_PROJECT_DIR}/provision" ]
-	then
 		cp ${WPLIB_BOX_RELEASE_DIR}/sql/* ${WPLIB_BOX_PROJECT_DIR}/provision
 	fi
 }
