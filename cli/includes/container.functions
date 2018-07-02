@@ -136,7 +136,7 @@ function error_cni()
 
 function readJSON()
 {
-	local JSON RETURN MERGED SERVICES
+	local JSON RETURN MERGED SERVICES TESTVERSION
 	JSON="$1"
 
 	if [ "${JSON}" == "" ]
@@ -154,23 +154,34 @@ function readJSON()
 		jq -s '.[0] * .[1]' ${WPLIB_BOX_RELEASE_JSON} ${JSON} > ${JSON}.lock
 	fi
 
-	IMAGES="$(jq --raw-output ".stack | .[]" ${JSON}.lock)"
-	for IMAGE_NAME in ${IMAGES}
-	do
-		MERGED="${MERGED} $(get_image_name $IMAGE_NAME)"
-	done
+	#IMAGES="$(jq --raw-output ".stack | .[]" ${JSON}.lock)"
+	#for IMAGE_NAME in ${IMAGES}
+	#do
+	#	MERGED="${MERGED} $(get_image_name $IMAGE_NAME)"
+	#done
 
 	# jq '.stack | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock
 	declare -g -A STACK="($(jq '.stack | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock))"
-	#for i in ${!STACK[@]}
-	#do
-	#	echo $i ${STACK[$i]}
-	#done
+	echo "{" > ${JSON}.lock
+	echo "\"stack\" : {" >> ${JSON}.lock
+	for i in ${!STACK[@]}
+	do
+		TESTVERSION="$(get_image_name ${STACK[$i]})"
+		MERGED="${MERGED} ${TESTVERSION}"
+		if [ "${TESTVERSION}" != "${STACK[$i]}" ]
+		then
+			STACK[$i]=${TESTVERSION}
+		fi
+		echo "\"$i\": \"${STACK[$i]}\"," >> ${JSON}.lock
+	done
+	echo "\"lock\": \"yes\"" >> ${JSON}.lock
+	echo "}" >> ${JSON}.lock
+	echo "}" >> ${JSON}.lock
 
 	# Remove duplicates.
 	MERGED="$(echo ${MERGED} | awk -v RS="[ \n]+" '!n[$0]++')"
-	# echo "${MERGED}"
 	IMAGES="${MERGED}"
+	# echo "${IMAGES}"
 	RETURN=$RETURN_OK
 	# RETURN=$RETURN_NO_JSON_FILE
 
