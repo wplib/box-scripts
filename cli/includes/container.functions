@@ -149,7 +149,11 @@ function readJSON()
 		cp ${WPLIB_BOX_RELEASE_JSON} ${JSON}
 	fi
 
-	jq -s '.[0] * .[1]' ${WPLIB_BOX_RELEASE_JSON} ${JSON} > ${JSON}.lock
+	if [[ ${JSON} -nt ${JSON}.lock ]]
+	then
+		jq -s '.[0] * .[1]' ${WPLIB_BOX_RELEASE_JSON} ${JSON} > ${JSON}.lock
+	fi
+
 	IMAGES="$(jq --raw-output ".stack | .[]" ${JSON}.lock)"
 	for IMAGE_NAME in ${IMAGES}
 	do
