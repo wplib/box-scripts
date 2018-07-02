@@ -1,7 +1,7 @@
 {
     "interface": "lxmp/mailsender",
     "description": "An SMTP email capture service such as MailHog or Mail Catcher",
-    "network": "pressboxx",
+    "network": "box",
     "restart": "always",
     "ports": [
 <<<<<<< HEAD:etc/interfaces/lxmp/mailsink.json

@@ -1,7 +1,7 @@
 {
-    "type": "pressboxx/script",
+    "type": "box/script",
     "language": "php",
     "description": "PHPUnit",
-    "network": "pressboxx",
+    "network": "box",
     "other": "to-be-determined"
 }

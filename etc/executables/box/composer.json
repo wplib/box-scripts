@@ -1,5 +1,5 @@
 {
-    "type": "pressboxx/script",
+    "type": "box/script",
     "language": "php",
     "uses": [
     ],

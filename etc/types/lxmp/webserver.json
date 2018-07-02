@@ -2,7 +2,7 @@
     "interface": "lxmp/webserver",
     "type": "container",
     "description": "A web server for a LXMP stack, e.g. Apache, Ngnix, etc.",
-    "network": "pressboxx",
+    "network": "box",
     "restart": "no",
     "ports": [
 <<<<<<< HEAD:etc/interfaces/lxmp/webserver.json

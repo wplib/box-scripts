@@ -2,7 +2,7 @@
     "interface": "lxmp/processvm",
     "type": "container",
     "description": "A ProcessVM for a LXMP stack, specifically PHP-FPM.",
-    "network": "pressboxx",
+    "network": "box",
     "restart": "no",
     "ports": [
         { "host": 9000, "container": 9000 }

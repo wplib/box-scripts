@@ -1,7 +1,7 @@
 {
     "interface": "wordpress/cacheserver",
     "description": "A key-value server such as Memcached or Redis designed to work with WordPress. Should include a plugin.",
-    "network": "pressboxx",
+    "network": "box",
     "restart": "no",
     "ports": [
         { "service": 11211 }
