@@ -9,11 +9,9 @@ for ( $i = 0; $i < 1024; $i++ ) {
 	if ( 0 !== $i % 1000 ) {
 		continue;
 	}
-	ob_end_flush();
 	printf(
 		"\nProcessing %d posts (memory used: %d mb)",
 		$i,
 		memory_get_peak_usage( true ) / ( 1024 * 1024 )
 	);
-	ob_start();
 }
