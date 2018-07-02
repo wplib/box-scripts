@@ -138,6 +138,7 @@ function readJSON()
 {
 	local JSON RETURN MERGED SERVICES TESTVERSION
 	JSON="$1"
+	MERGED=""
 
 	if [ "${JSON}" == "" ]
 	then
@@ -162,17 +163,22 @@ function readJSON()
 
 	# jq '.stack | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock
 	declare -g -A STACK="($(jq '.stack | to_entries[] | "[\(.key)]=\"\(.value)\""' -r ${JSON}.lock))"
+	echo ">> ${JSON} -nt ${JSON}.lock"
+	ls -l --full-time /projects/wplib.box/project.json /projects/wplib.box/project.json.lock
 	echo "{" > ${JSON}.lock
 	echo "\"stack\" : {" >> ${JSON}.lock
 	for i in ${!STACK[@]}
 	do
-		TESTVERSION="$(get_image_name ${STACK[$i]})"
-		MERGED="${MERGED} ${TESTVERSION}"
-		if [ "${TESTVERSION}" != "${STACK[$i]}" ]
+		if [ "$i" != "lock" ]
 		then
-			STACK[$i]=${TESTVERSION}
+			TESTVERSION="$(get_image_name ${STACK[$i]})"
+			MERGED="${MERGED} ${TESTVERSION}"
+			if [ "${TESTVERSION}" != "${STACK[$i]}" ]
+			then
+					STACK[$i]=${TESTVERSION}
+			fi
+			echo "\"$i\": \"${STACK[$i]}\"," >> ${JSON}.lock
 		fi
-		echo "\"$i\": \"${STACK[$i]}\"," >> ${JSON}.lock
 	done
 	echo "\"lock\": \"yes\"" >> ${JSON}.lock
 	echo "}" >> ${JSON}.lock
