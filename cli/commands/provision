@@ -33,7 +33,6 @@ function provision_fix()
 {
 	# Create symlinks
 	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-completion.bash /etc/bash_completion.d/box-completion.bash
-	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-motd.sh /etc/update-motd.d/00-box-motd
 	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-profile.sh /etc/profile.d/box-profile.sh
 	link_file ${WPLIB_BOX_BASE_DIR} /box
 
@@ -79,6 +78,8 @@ function provision_fix()
 	cp ${WPLIB_BOX_ETC}/inputrc /etc/inputrc
 	cp ${WPLIB_BOX_BASE_DIR}/etc/box-aptget /etc/apt/apt.conf.d/42wplib
 	rm -f /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade >& /dev/null
+	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-motd.sh /etc/update-motd.d/00-box-motd
+	${WPLIB_BOX_BASE_DIR}/etc/box-motd.sh > /etc/motd
 
 	if [ ! -f "${WPLIB_BOX_PROJECT_FILE}" ]
 	then
