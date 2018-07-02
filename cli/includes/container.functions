@@ -637,8 +637,8 @@ function component_start()
 			cp  /opt/box/etc/releases/current/sql/provision.sql /projects/wplib.box/sql/
 		fi
 
-		ln -s -f /projects/wplib.box/sql/provision.sql /opt/box/provision/provision.sql 
-		ln -s -f /opt/box/etc/releases/current/sql/provision.sh /opt/box/provision/provision.sh
+		cp /projects/wplib.box/sql/provision.sql /opt/box/provision/provision.sql 
+		cp /opt/box/etc/releases/current/sql/provision.sh /opt/box/provision/provision.sh
 	fi
 
 	case $RETURN in
