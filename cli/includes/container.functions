@@ -628,6 +628,7 @@ function component_start()
 	IMAGE=$1
 
 	component_info $IMAGE
+	RETURN="$?"
 
 	if [[ "${IMAGE_NAME}" =~ ^(mysql|mariadb)$ ]]
 	then
@@ -640,7 +641,6 @@ function component_start()
 		ln -s -f /opt/box/etc/releases/current/sql/provision.sh /opt/box/provision/provision.sh
 	fi
 
-	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
 			if [ "$CONTAINER_RUNNING" != "true" ]
