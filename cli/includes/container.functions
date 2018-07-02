@@ -632,13 +632,13 @@ function component_start()
 
 	if [[ "${IMAGE_NAME}" =~ ^(mysql|mariadb)$ ]]
 	then
-		if [ ! -f /project/wplib.box/sql/provision.sql ]
+		if [ ! -f ${WPLIB_BOX_PROJECT_DIR}/sql/provision.sql ]
 		then
-			cp  /opt/box/etc/releases/current/sql/provision.sql /projects/wplib.box/sql/
+			cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sql ${WPLIB_BOX_PROJECT_DIR}/sql/
 		fi
 
-		cp /projects/wplib.box/sql/provision.sql /opt/box/provision/provision.sql 
-		cp /opt/box/etc/releases/current/sql/provision.sh /opt/box/provision/provision.sh
+		cp ${WPLIB_BOX_PROJECT_DIR}/sql/provision.sql ${WPLIB_BOX_BASE_DIR}/provision/provision.sql 
+		cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sh ${WPLIB_BOX_BASE_DIR}/provision/provision.sh
 	fi
 
 	case $RETURN in
