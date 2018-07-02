@@ -78,6 +78,7 @@ function provision_fix()
 	cp ${WPLIB_BOX_ETC}/environment /etc/environment
 	cp ${WPLIB_BOX_ETC}/inputrc /etc/inputrc
 	cp ${WPLIB_BOX_BASE_DIR}/etc/box-aptget /etc/apt/apt.conf.d/42wplib
+	rm /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade
 
 	if [ ! -f "${WPLIB_BOX_PROJECT_FILE}" ]
 	then
