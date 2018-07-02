@@ -83,6 +83,16 @@ function provision_fix()
 	then
 		cp ${WPLIB_BOX_RELEASE_JSON} ${WPLIB_BOX_PROJECT_FILE}
 	fi
+
+	if [ ! -d "${WPLIB_BOX_PROJECT_DIR}/provision" ]
+	then
+		mkdir ${WPLIB_BOX_PROJECT_DIR}/provision
+	fi
+
+	if [ ! -f "${WPLIB_BOX_PROJECT_DIR}/provision" ]
+	then
+		cp ${WPLIB_BOX_RELEASE_DIR}/sql/* ${WPLIB_BOX_PROJECT_DIR}/provision
+	fi
 }
 
 
