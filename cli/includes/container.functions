@@ -629,7 +629,7 @@ function component_start()
 
 	component_info $IMAGE
 
-	if [ "${IMAGE_NAME}" == "mysql" ]
+	if [[ "${IMAGE_NAME}" =~ ^(mysql|mariadb)$ ]]
 	then
 		if [ ! -f /project/wplib.box/sql/provision.sql ]
 		then
