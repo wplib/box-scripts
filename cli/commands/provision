@@ -78,6 +78,11 @@ function provision_fix()
 	cp ${WPLIB_BOX_ETC}/environment /etc/environment
 	cp ${WPLIB_BOX_ETC}/inputrc /etc/inputrc
 	cp ${WPLIB_BOX_BASE_DIR}/etc/box-aptget /etc/apt/apt.conf.d/42wplib
+
+	if [ ! -f "${WPLIB_BOX_PROJECT_FILE}" ]
+	then
+		cp ${WPLIB_BOX_RELEASE_JSON} ${WPLIB_BOX_PROJECT_FILE}
+	fi
 }
 
 
