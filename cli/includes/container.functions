@@ -630,21 +630,21 @@ function component_start()
 	component_info $IMAGE
 	RETURN="$?"
 
-	if [[ "${IMAGE_NAME}" =~ ^(mysql|mariadb)$ ]]
-	then
-		if [ ! -f ${WPLIB_BOX_PROJECT_DIR}/sql/provision.sql ]
-		then
-			cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sql ${WPLIB_BOX_PROJECT_DIR}/sql/
-		fi
-
-		cp ${WPLIB_BOX_PROJECT_DIR}/sql/provision.sql ${WPLIB_BOX_BASE_DIR}/provision/provision.sql 
-		cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sh ${WPLIB_BOX_BASE_DIR}/provision/provision.sh
-	fi
-
 	case $RETURN in
 		$RETURN_OK)
 			if [ "$CONTAINER_RUNNING" != "true" ]
 			then
+				if [[ "${IMAGE_NAME}" =~ ^(mysql|mariadb)$ ]]
+				then
+					if [ ! -f ${WPLIB_BOX_PROJECT_DIR}/sql/provision.sql ]
+					then
+						cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sql ${WPLIB_BOX_PROJECT_DIR}/sql/
+					fi
+
+					cp ${WPLIB_BOX_PROJECT_DIR}/sql/provision.sql ${WPLIB_BOX_BASE_DIR}/provision/provision.sql 
+					cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sh ${WPLIB_BOX_BASE_DIR}/provision/provision.sh
+				fi
+
 				echo -n "$ECHO_PREFIX ${GREEN}Starting component: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 				docker start ${CONTAINER_NAME} >& $TEMPFILE
