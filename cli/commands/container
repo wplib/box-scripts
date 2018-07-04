@@ -178,7 +178,7 @@ do
 
 		'activate')
 			echo "$ECHO_PREFIX ${GREEN}Activating ${CYAN}${IMAGE}.${RESET}"
-			component_provision $IMAGE
+			component_install $IMAGE
 			RETURN="$?"
 			;;
 
