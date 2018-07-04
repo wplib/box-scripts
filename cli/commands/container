@@ -180,6 +180,12 @@ do
 			echo "$ECHO_PREFIX ${GREEN}Activating ${CYAN}${IMAGE}.${RESET}"
 			component_install $IMAGE
 			RETURN="$?"
+			case $RETURN in
+				$RETURN_OK)
+					component_create_container $IMAGE
+					;;
+			esac
+			RETURN="$?"
 			;;
 
 		'deactivate')
