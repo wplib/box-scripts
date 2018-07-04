@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+#
+#
+
+source /opt/box/cli/includes/functions
+
+if [ ! -d /projects/wplib.box/box ] ; then
+    mkdir /projects/wplib.box/box
+    rsync -aur /opt/box/* /projects/wplib.box/box
+fi
+trap "exit 0" SIGINT SIGTERM
+counter=0
+while true; do
+    counter=$(( counter+1 ))
+    printf "\rSyncing [${counter}]..."
+    rsync -rapt /projects/wplib.box/box/ /opt/box/
+    sleep 1
+done
+
+
+
+
