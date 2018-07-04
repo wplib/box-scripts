@@ -15,7 +15,7 @@ box ${GREEN}status${RESET}		- Output status of WPLib Box's standard containers.
 box ${GREEN}version${RESET}		- Display the current version of this WPLib Box VM.
 box ${GREEN}self-update${RESET}		- Update this CLI tool to the latest version for this Box version.
 
-box ${GREEN}sync${RESET} [<args>]	- Update box scripts in guest:/opt/box from host:/{project}/box
+box ${GREEN}sync${RESET}                - Update box scripts in guest:/opt/box from host:/{project}/wplib.box/box
 box ${GREEN}test${RESET} [<args>]	- Testing framework.
 
 box [${GREEN}help${RESET}]		- Display the above information.
