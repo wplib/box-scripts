@@ -641,8 +641,8 @@ function component_start()
 						cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sql ${WPLIB_BOX_PROJECT_DIR}/sql/
 					fi
 
-					cp ${WPLIB_BOX_PROJECT_DIR}/sql/provision.sql ${WPLIB_BOX_BASE_DIR}/provision/provision.sql 
-					cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sh ${WPLIB_BOX_BASE_DIR}/provision/provision.sh
+					sudo cp ${WPLIB_BOX_PROJECT_DIR}/sql/provision.sql ${WPLIB_BOX_BASE_DIR}/provision/provision.sql
+					sudo cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sh ${WPLIB_BOX_BASE_DIR}/provision/provision.sh
 				fi
 
 				echo -n "$ECHO_PREFIX ${GREEN}Starting component: ${CYAN}${IMAGE}${RESET} ... "
