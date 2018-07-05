@@ -31,6 +31,17 @@ EOF
 # This is here for now, should be put somewhere else later.
 function provision_fix()
 {
+
+	if [ ! -d "${WPLIB_BOX_PROJECT_DIR}/" ]
+	then
+		mkdir ${WPLIB_BOX_PROJECT_DIR}/provision
+	fi
+
+	if [ ! -d /var/www ]
+	then
+		mkdir -p /var/www
+	fi
+
 	# Create symlinks
 	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-completion.bash /etc/bash_completion.d/box-completion.bash
 	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-profile.sh /etc/profile.d/box-profile.sh
@@ -90,16 +101,6 @@ function provision_fix()
 	then
 		mkdir ${WPLIB_BOX_PROJECT_DIR}/provision
 		cp ${WPLIB_BOX_RELEASE_DIR}/sql/* ${WPLIB_BOX_PROJECT_DIR}/provision
-	fi
-
-	if [ ! -d "${WPLIB_BOX_PROJECT_DIR}/" ]
-	then
-		mkdir ${WPLIB_BOX_PROJECT_DIR}/provision
-	fi
-
-	if [ ! -d /var/www ]
-	then
-		mkdir -p /var/www
 	fi
 }
 
