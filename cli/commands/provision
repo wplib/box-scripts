@@ -91,6 +91,16 @@ function provision_fix()
 		mkdir ${WPLIB_BOX_PROJECT_DIR}/provision
 		cp ${WPLIB_BOX_RELEASE_DIR}/sql/* ${WPLIB_BOX_PROJECT_DIR}/provision
 	fi
+
+	if [ ! -d "${WPLIB_BOX_PROJECT_DIR}/" ]
+	then
+		mkdir ${WPLIB_BOX_PROJECT_DIR}/provision
+	fi
+
+	if [ ! -d /var/www ]
+	then
+		mkdir -p /var/www
+	fi
 }
 
 
