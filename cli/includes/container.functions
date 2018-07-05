@@ -648,7 +648,7 @@ function component_start()
 
 					if [[ "${IMAGE_NAME}" =~ ^(mysql|mariadb)$ ]]
 					then
-						if [ ! -f ${WPLIB_BOX_SQL_DIR}/provision.sql ]
+						if [ -f ${WPLIB_BOX_SQL_DIR}/provision.sql ]
 						then
 							box database import provision.sql
 						fi
