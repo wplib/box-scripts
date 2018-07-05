@@ -648,9 +648,13 @@ function component_start()
 
 					if [[ "${IMAGE_NAME}" =~ ^(mysql|mariadb)$ ]]
 					then
-						if [ -f ${WPLIB_BOX_SQL_DIR}/provision.sql ]
+						if [ -f ${WPLIB_BOX_SQL_DIR}/provision.sql && ! -e ${WPLIB_BOX_SQL_DIR}/provision.sql.lock ]
 						then
+							# We need to be able to query the DB and see when it's ready for connections.
+							# In the mean time sleep for 10.
+							sleep 10
 							box database import provision.sql
+							touch ${WPLIB_BOX_SQL_DIR}/provision.sql.lock
 						fi
 					fi
 				fi
