@@ -32,9 +32,10 @@ EOF
 function provision_fix()
 {
 
+	# First ensure home directory exists
 	if [ ! -d "${WPLIB_BOX_PROJECT_DIR}/" ]
 	then
-		mkdir -p ${WPLIB_BOX_PROJECT_DIR}/provision
+		mkdir -p ${WPLIB_BOX_PROJECT_DIR}
 	fi
 
 	if [ ! -d /var/www ]
@@ -80,9 +81,6 @@ function provision_fix()
 	fi
 	touch ${WPLIB_BOX_USER_HOME}/.Xauthority
 
-	# First ensure home directory exists
-    sudo mkdir -p "${WPLIB_BOX_PROJECT_BASE}"
-
 	# Change permissions.
 	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_USER_HOME}
 	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_BASE_DIR}
@@ -97,11 +95,6 @@ function provision_fix()
 	if [ ! -f "${WPLIB_BOX_PROJECT_FILE}" ]
 	then
 		cp ${WPLIB_BOX_RELEASE_JSON} ${WPLIB_BOX_PROJECT_FILE}
-	fi
-
-	if [ ! -d "${WPLIB_BOX_PROJECT_DIR}/provision" ]
-	then
-		mkdir -p ${WPLIB_BOX_PROJECT_DIR}/provision
 	fi
 }
 
