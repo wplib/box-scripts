@@ -634,18 +634,6 @@ function component_start()
 		$RETURN_OK)
 			if [ "$CONTAINER_RUNNING" != "true" ]
 			then
-				if [[ "${IMAGE_NAME}" =~ ^(mysql|mariadb)$ ]]
-				then
-					if [ ! -f ${WPLIB_BOX_PROJECT_DIR}/sql/provision.sql ]
-					then
-						cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sql ${WPLIB_BOX_PROJECT_DIR}/sql/
-					fi
-
-					sudo cp ${WPLIB_BOX_PROJECT_DIR}/sql/provision.sql ${WPLIB_BOX_BASE_DIR}/provision/provision.sql
-					sudo cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sh ${WPLIB_BOX_BASE_DIR}/provision/provision.sh
-					sudo chown ${WPLIB_BOX_USER}:${WPLIB_BOX_GROUP} ${WPLIB_BOX_BASE_DIR}/provision/*
-				fi
-
 				echo -n "$ECHO_PREFIX ${GREEN}Starting component: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 				docker start ${CONTAINER_NAME} >& $TEMPFILE
@@ -657,6 +645,14 @@ function component_start()
 					cat $TEMPFILE
 				else
 					echo "${GREEN}OK${RESET}"
+
+					if [[ "${IMAGE_NAME}" =~ ^(mysql|mariadb)$ ]]
+					then
+						if [ ! -f ${WPLIB_BOX_SQL_DIR}/provision.sql ]
+						then
+							box database import provision.sql
+						fi
+					fi
 				fi
 
 				rm -f $TEMPFILE
