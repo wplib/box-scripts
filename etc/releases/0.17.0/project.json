@@ -1,11 +1,12 @@
 {
 	"stack" : {
-		"wordpress/dbserver":      "wplib/mysql:5.5.60",
-		"wordpress/webserver":     "wplib/nginx:1.14.0",
-		"wordpress/processvm":     "wplib/php:7.1.18",
-		"wordpress/cacheserver":   "wplib/redis:4.0.9",
-		"box/mailsender":    "wplib/mailhog:1.0.0",
-		"box/webproxy":      "wplib/proxy:1.14.0",
-		"box/sqladmin":      "wplib/adminer:4.6.2"
+		"wordpress/dbserver":		"wplib/mysql:5.5.60",
+		"wordpress/webserver":		"wplib/nginx:1.14.0",
+		"wordpress/processvm":		"wplib/php:7.1.18",
+		"wordpress/cacheserver":	"wplib/redis:4.0.9",
+		"mkdocs/webserver":		"wplib/mkdocs:0.15.3",
+		"box/mailsender":		"wplib/mailhog:1.0.0",
+		"box/webproxy":			"wplib/proxy:1.14.0",
+		"box/sqladmin":			"wplib/adminer:4.6.2"
 	}
 }
