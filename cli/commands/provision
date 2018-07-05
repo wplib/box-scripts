@@ -80,6 +80,9 @@ function provision_fix()
 	fi
 	touch ${WPLIB_BOX_USER_HOME}/.Xauthority
 
+	# First ensure home directory exists
+    sudo mkdir -p "${WPLIB_BOX_PROJECT_BASE}"
+
 	# Change permissions.
 	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_USER_HOME}
 	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_BASE_DIR}
