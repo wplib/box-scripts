@@ -34,7 +34,7 @@ function provision_fix()
 
 	if [ ! -d "${WPLIB_BOX_PROJECT_DIR}/" ]
 	then
-		mkdir ${WPLIB_BOX_PROJECT_DIR}/provision
+		mkdir -p ${WPLIB_BOX_PROJECT_DIR}/provision
 	fi
 
 	if [ ! -d /var/www ]
@@ -98,7 +98,7 @@ function provision_fix()
 
 	if [ ! -d "${WPLIB_BOX_PROJECT_DIR}/provision" ]
 	then
-		mkdir ${WPLIB_BOX_PROJECT_DIR}/provision
+		mkdir -p ${WPLIB_BOX_PROJECT_DIR}/provision
 	fi
 }
 
