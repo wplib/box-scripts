@@ -99,7 +99,7 @@ function provision_fix()
 
 	if [ ! -f "${WPLIB_BOX_SQL_DIR}/provision.sql" ]
 	then
-		cp ${WPLIB_BOX_RELEASE_DIR}/provision.sql ${WPLIB_BOX_SQL_DIR}/provision.sql
+		cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sql ${WPLIB_BOX_SQL_DIR}/provision.sql
 	fi
 }
 
