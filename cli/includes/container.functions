@@ -750,6 +750,9 @@ function shutdown()
 
 	rm -f $TEMPFILE
 
+	# Remove lock file.
+	rm -f ${WPLIB_BOX_PROJECT_FILE}.lock
+
 	return $RETURN_OK
 }
 
