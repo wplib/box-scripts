@@ -9,7 +9,7 @@ echo "Not yet implemented"
 exit
 
 echo "Installing and updating dependencies..."
-cd WPLIB_BOX_DIR
+cd WPLIB_BOX_PROJECT_DIR
 sudo npm install && bower install
 
 echo "Compiling dependencies..."

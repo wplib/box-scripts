@@ -2,7 +2,7 @@
 
 
 DEFAULT_PROJECT="wplib"
-WPLIB_BOX_DIR=/vagrant
+WPLIB_BOX_PROJECT_DIR=${PROJECT_BASE}/${CURRENT_PROJECT}
 WPLIB_BOX_BASE_DIR=/opt/box
 
 # Colour codes.
@@ -37,23 +37,23 @@ then
 fi
 
 # Setup defaults.
-d_database="$(jq -r '.services.database' $DEFAULTS_FILE)"
-d_webserver="$(jq -r '.services.webserver' $DEFAULTS_FILE)"
-d_processvm="$(jq -r '.services.processvm' $DEFAULTS_FILE)"
-d_kvstore="$(jq -r '.services.kvstore' $DEFAULTS_FILE)"
-d_mail="$(jq -r '.services.mail' $DEFAULTS_FILE)"
-d_proxy="$(jq -r '.services.proxy' $DEFAULTS_FILE)"
-d_cache="$(jq -r '.services.cache' $DEFAULTS_FILE)"
-d_sqladmin="$(jq -r '.services.sqladmin' $DEFAULTS_FILE)"
-d_webadmin="$(jq -r '.services.webadmin' $DEFAULTS_FILE)"
+d_database="$(jq -r '.stack.database' $DEFAULTS_FILE)"
+d_webserver="$(jq -r '.stack.webserver' $DEFAULTS_FILE)"
+d_processvm="$(jq -r '.stack.processvm' $DEFAULTS_FILE)"
+d_kvstore="$(jq -r '.stack.kvstore' $DEFAULTS_FILE)"
+d_mail="$(jq -r '.stack.mail' $DEFAULTS_FILE)"
+d_proxy="$(jq -r '.stack.proxy' $DEFAULTS_FILE)"
+d_cache="$(jq -r '.stack.cache' $DEFAULTS_FILE)"
+d_sqladmin="$(jq -r '.stack.sqladmin' $DEFAULTS_FILE)"
+d_webadmin="$(jq -r '.stack.webadmin' $DEFAULTS_FILE)"
 
 # Pull in user defined JSON file.
-if [ -f "${WPLIB_BOX_DIR}/project.json" ]
+if [ -f "${WPLIB_BOX_PROJECT_DIR}/project.json" ]
 then
-    database="$(jq -r '.services.database' ${WPLIB_BOX_DIR}/project.json)"
-    webserver="$(jq -r '.services.webserver' ${WPLIB_BOX_DIR}/project.json)"
-    processvm="$(jq -r '.services.processvm' ${WPLIB_BOX_DIR}/project.json)"
-    kvstore="$(jq -r '.services.kvstore' ${WPLIB_BOX_DIR}/project.json)"
+    database="$(jq -r '.stack.database' ${WPLIB_BOX_PROJECT_DIR}/project.json)"
+    webserver="$(jq -r '.stack.webserver' ${WPLIB_BOX_PROJECT_DIR}/project.json)"
+    processvm="$(jq -r '.stack.processvm' ${WPLIB_BOX_PROJECT_DIR}/project.json)"
+    kvstore="$(jq -r '.stack.kvstore' ${WPLIB_BOX_PROJECT_DIR}/project.json)"
 fi
 
 

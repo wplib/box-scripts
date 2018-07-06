@@ -18,7 +18,7 @@ if [ -f "$1" ]; then
         if [ -n "${port}" ]; then
             port=""
         fi
-        volume="-v /var/www:${working}"
+        volume="-v ${PROJECT_BASE}/${CURRENT_PROJECT}/www:${working}"
         ports="-p 8080:${port}"
         ;;
     esac
@@ -41,12 +41,12 @@ if [ -f "$1" ]; then
     activate="${input:-$activate}"
 
     if [ "y" = ${activate} ] || [ "Y" = ${activate} ]; then
-        current=$(jq -r --arg subtype ${subtype} '.services[$subtype]' < /vagrant/project.json)
+        current=$(jq -r --arg subtype ${subtype} '.stack[$subtype]' < ${PROJECT_BASE}/${CURRENT_PROJECT}/project.json)
         echo "Stopping ${current}..." \
         && docker stop $current 2>&1 > /dev/null \
         && echo "Starting ${containername}..." \
         && docker start ${containername} 2>&1 > /dev/null \
         && echo "Updating box configuration" \
-        && jq --arg name ${containername} --arg subtype ${subtype} '.services[$subtype] = $name' /vagrant/project.json > /tmp/new.json && mv /tmp/new.json /vagrant/project.json
+        && jq --arg name ${containername} --arg subtype ${subtype} '.stack[$subtype] = $name' ${PROJECT_BASE}/${CURRENT_PROJECT}/project.json > /tmp/new.json && mv /tmp/new.json ${PROJECT_BASE}/${CURRENT_PROJECT}/project.json
     fi
 fi

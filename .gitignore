@@ -1,4 +1,4 @@
 .idea/
 .*.swp
 *.OLD
-etc/vagrant_box_build_time
+etc/vm_box_build_time

@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 
-source "${WPLIB_BOX_INCLUDES_DIR}/read-json"
-box container start $mail $proxy $database $webserver $processvm $kvstore $cache $sqladmin $webadmin
+source /opt/box/cli/includes/functions
 
-if [[ ! -e "${WPLIB_BOX_CLI_DIR}/PROVISION" && -e "${WPLIB_BOX_SQL_DIR}/provision.sql" ]] ; then
+# Creates IMAGES and STACK env variables.
+readJSON
 
-    sudo bash -c "date +'%Y%m%d %H%M%S' > \"${WPLIB_BOX_CLI_DIR}/PROVISION\""
-    box database import provision.sql
+box container start ${IMAGES}
 
-    #
-    # @todo check return value and if error delete ${WPLIB_BOX_CLI_DIR}/PROVISION
-    #
-
-fi
+#if [[ ! -e "${WPLIB_BOX_CLI_DIR}/PROVISION" && -e "${WPLIB_BOX_SQL_DIR}/provision.sql" ]] ; then
+#
+#    sudo bash -c "date +'%Y%m%d %H%M%S' > \"${WPLIB_BOX_CLI_DIR}/PROVISION\""
+#    box database import provision.sql
+#
+#    #
+#    # @todo check return value and if error delete ${WPLIB_BOX_CLI_DIR}/PROVISION
+#    #
+#
+#fi

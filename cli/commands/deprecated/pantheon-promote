@@ -2,7 +2,7 @@
 #
 # Usage
 #
-#       $1 String ID for host to promote TO, as definded in /vagrant/wplib.box.json.
+#       $1 String ID for host to promote TO, as definded in ${PROJECT_BASE}/${CURRENT_PROJECT}/wplib.box.json.
 #       $2 String A message for the tag
 #
 
@@ -47,14 +47,14 @@ echo_if_not_quiet "$*" "^Promoting ${promote_host} for ${project_name} at Panthe
 git_url=$(read_config "deployment.git_url" "require")
 if [ "" == "${git_url}" ]; then
     echo -e "\t"
-    echo -e "\tERROR: The host '${promote_host}' has not .git_url in /vagrant/wplib.box.json."
+    echo -e "\tERROR: The host '${promote_host}' has not .git_url in ${PROJECT_BASE}/${CURRENT_PROJECT}/wplib.box.json."
     return 3
 fi
 
 site_url=$(read_config "hosts.${promote_host}.site_url" "require")
 if [ "" == "${site_url}" ]; then
     echo -e "\t"
-    echo -e "\tERROR: The host '${promote_host}' has not .site_url in /vagrant/wplib.box.json."
+    echo -e "\tERROR: The host '${promote_host}' has not .site_url in ${PROJECT_BASE}/${CURRENT_PROJECT}/wplib.box.json."
     return 4
 fi
 

@@ -12,7 +12,7 @@ if [ 'mariadb' == $1 ]; then
     converse='mysql'
 fi
 
-sudo sed -i "s/${converse}/$1/" /vagrant/project.json
+sudo sed -i "s/${converse}/$1/" ${PROJECT_BASE}/${CURRENT_PROJECT}/project.json
 mkdir -p ~/sql
 mysqldump wordpress > ~/current.sql
 docker stop $converse 2>&1 > /dev/null

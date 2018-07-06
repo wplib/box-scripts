@@ -1,0 +1,134 @@
+#!/bin/bash
+#
+# Provisioning script that usually gets run after a `box self-update`
+#
+# This HAS to be run as root!
+
+
+source /opt/box/cli/includes/functions
+
+function ctrl_c()
+{
+        tput sgr0
+	echo ""
+	echo "$ECHO_PREFIX Aborting script."
+	exit
+}
+
+trap ctrl_c INT
+
+
+function HelpMe()
+{
+	cat <<EOF
+box provision ${GREEN}check${RESET}		- Check everything is OK.
+box provision ${GREEN}fix${RESET}		- Look for and fix issues.
+
+EOF
+}
+
+
+# This is here for now, should be put somewhere else later.
+function provision_fix()
+{
+
+	# First ensure home directory exists
+	if [ ! -d "${WPLIB_BOX_PROJECT_DIR}/" ]
+	then
+		mkdir -p ${WPLIB_BOX_PROJECT_DIR}
+	fi
+
+	if [ ! -d /var/www ]
+	then
+		mkdir -p /var/www
+	fi
+
+	# Create symlinks
+	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-completion.bash /etc/bash_completion.d/box-completion.bash
+	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-profile.sh /etc/profile.d/box-profile.sh
+	link_file ${WPLIB_BOX_BASE_DIR} /box
+
+#	# Offer forwards / backwards compat.
+#	if [ -L /vagrant ]
+#	then
+#		# We have a new layout - offer backwards compat.
+#		link_file /projects/wplib.box /vagrant
+#		link_file /projects/wplib.box/www /var/www
+#	#else
+#	#	# We have an old layout - offer forwards compat.
+#	#	link_file /vagrant /projects/wplib.box
+#	fi
+
+	# cron jobs
+	ln -sf ${WPLIB_BOX_ETC}/cron/${WPLIB_BOX_USER} /var/spool/cron/crontabs/${WPLIB_BOX_USER}
+
+	# Setup boxuser, if not there.
+	USERID="$(id -u ${WPLIB_BOX_USER})"
+	if [ "${USERID}" == "" ]
+	then
+		useradd -o -d ${WPLIB_BOX_USER_HOME} -c "WPLib Box user" -u ${WPLIB_BOX_USER_UID} -g ${WPLIB_BOX_USER_GID} -N -s /bin/bash ${WPLIB_BOX_USER}
+		usermod -aG docker ${WPLIB_BOX_USER}
+	fi
+	if [ ! -d ${WPLIB_BOX_USER_HOME}/.ssh ]
+	then
+		mkdir -pm 700 ${WPLIB_BOX_USER_HOME}/.ssh
+	fi
+
+	if [ ! -f ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys ]
+	then
+		wget -q --no-check-certificate 'https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub' -O ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys >&/dev/null
+		chmod 0600 ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys
+	fi
+	touch ${WPLIB_BOX_USER_HOME}/.Xauthority
+
+	# Change permissions.
+	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_USER_HOME}
+	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_BASE_DIR}
+	chown ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_PROJECT_BASE} ${WPLIB_BOX_PROJECT_BASE}/*
+
+	cp ${WPLIB_BOX_ETC}/environment /etc/environment
+	cp ${WPLIB_BOX_ETC}/inputrc /etc/inputrc
+	cp ${WPLIB_BOX_BASE_DIR}/etc/box-aptget /etc/apt/apt.conf.d/42wplib
+	rm -f /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade >& /dev/null
+	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-motd /etc/motd
+
+	if [ ! -f "${WPLIB_BOX_PROJECT_FILE}" ]
+	then
+		cp ${WPLIB_BOX_RELEASE_JSON} ${WPLIB_BOX_PROJECT_FILE}
+	fi
+
+	if [ ! -f "${WPLIB_BOX_SQL_DIR}/provision.sql" ]
+	then
+		cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sql ${WPLIB_BOX_SQL_DIR}/provision.sql
+	fi
+}
+
+
+################################################################################
+CMD="$1"
+shift
+
+case $CMD in
+	'check')
+		exit $?
+		;;
+
+	'fix')
+		provision_fix
+		exit $?
+		;;
+
+	''|'help')
+		HelpMe
+		;;
+
+	*)
+		if [ "$1" == "" ]
+		then
+			HelpMe
+			exit 1
+		fi
+		;;
+esac
+
+

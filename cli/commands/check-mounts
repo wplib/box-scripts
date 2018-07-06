@@ -4,10 +4,10 @@
 #
 #       box check-mounts
 #
-if [ -e /var/www/NOTMOUNTED ]
+if [ -e ${PROJECT_BASE}/${CURRENT_PROJECT}/www/NOTMOUNTED ]
 then
 	tput setaf 1
-	cat /var/www/index.txt
+	cat ${PROJECT_BASE}/${CURRENT_PROJECT}/www/index.txt
 	tput sgr0
 	exit 1
 fi

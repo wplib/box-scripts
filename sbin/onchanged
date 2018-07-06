@@ -1,10 +1,10 @@
 #!/bin/sh
 
-#this file will contain the bash script to execute any files present in the /vagrant/scripts/watchers directory
+#this file will contain the bash script to execute any files present in the ${PROJECT_BASE}/${CURRENT_PROJECT}/scripts/watchers directory
 
 inotifywait --quiet --recursive --monitor --format "%e %w%f" \
     --event modify --event move --event create --event delete \
-    /var/www | while read changed
+    ${PROJECT_BASE}/${CURRENT_PROJECT}/www | while read changed
 do
 
     echo "$changed"

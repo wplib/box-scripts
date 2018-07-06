@@ -1,6 +1,0 @@
-{
-    "type": "php-app",
-    "description": "PHPUnit",
-    "network": "pressboxx",
-    "other": "to-be-determined"
-}

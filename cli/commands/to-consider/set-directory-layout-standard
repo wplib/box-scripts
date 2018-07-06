@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-if [ "${WPLIB_BOX_CONTENT_DIR}" == "/var/www/wp-content" ]; then
+if [ "${WPLIB_BOX_CONTENT_DIR}" == "${PROJECT_BASE}/${CURRENT_PROJECT}/www/wp-content" ]; then
 
     echo_if_not_quiet "$*" "=WordPress directory structure is already in 'Standard' layout."
 
 else
 
-    cd /var/www
+    cd ${PROJECT_BASE}/${CURRENT_PROJECT}/www
     mv wp/*.* .
 
     mv wp/wp-admin/ .

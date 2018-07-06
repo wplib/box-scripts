@@ -12,7 +12,7 @@ esac
 
 . ${WPLIB_BOX_CLI_DIR}/commands/test
 
-echo_info "Check /var/www mountpoints."
+echo_info "Check ${PROJECT_BASE}/${CURRENT_PROJECT}/www mountpoints."
 exec_cmd ${WPLIB_BOX_CLI_DIR}/commands/check-mounts
 
 

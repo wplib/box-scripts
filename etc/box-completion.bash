@@ -1,5 +1,8 @@
 #/usr/bin/env bash
 
+LESS="-SinR"
+export LESS
+
 ################################################################################ 
 # Command completion for 'box'
 _box()
@@ -9,9 +12,15 @@ _box()
 
 
 	case "${COMP_WORDS[1]}" in
+		'component')
+			# /opt/box/bin/box component help
+			_box_component
+			return 0
+			;;
+
 		'container')
-			# /opt/box/bin/box container help
-			_box_container
+			# /opt/box/bin/box component help
+			_box_component
 			return 0
 			;;
 
@@ -68,46 +77,46 @@ _box()
 			;;
 	esac
 
-	COMPREPLY=($(compgen -W "database container startup restart shutdown status shell version self-update test help" -- $cur))
+	COMPREPLY=($(compgen -W "database component comp container startup restart shutdown status shell version self-update test help" -- $cur))
 }
 complete -F _box box
 
 
 
 ################################################################################
-# Command completion for 'box container'
-_box_container()
+# Command completion for 'box component'
+_box_component()
 {
 	local cur=${COMP_WORDS[COMP_CWORD]}
 	local prev=${COMP_WORDS[COMP_CWORD-1]}
 
 	case "$prev" in
 		'stop'|'restart')
-			_box_container_running
+			_box_component_running
 			return 0
 			;;
 
-		'start'|'restart'|'rm'|'clean'|'refresh')
-			_box_container_stopped
+		'start')
+			_box_component_stopped
 			return 0
 			;;
 
-		'ls'|'inspect'|'log')
-			_box_container_all
+		'list'|'ls'|'inspect'|'log'|'uninstall'|'activate'|'deactivate'|'refresh')
+			_box_component_all
 			return 0
 			;;
 
 		'pull'|'install')
-			_box_container_dockerhub
+			_box_component_dockerhub
 			return 0
 			;;
 	esac
 
-	COMPREPLY=($(compgen -W "install ls start stop rm clean refresh update show shutdown reallyclean inspect log pull" -- $cur))
+	COMPREPLY=($(compgen -W "install uninstall activate deactivate start stop list ls refresh update available shutdown reallyclean inspect log pull" -- $cur))
 	return 0
 }
 
-_box_container_running()
+_box_component_running()
 {
 	local cur=${COMP_WORDS[COMP_CWORD]}
 
@@ -116,7 +125,7 @@ _box_container_running()
 }
 
 
-_box_container_stopped()
+_box_component_stopped()
 {
 	local cur=${COMP_WORDS[COMP_CWORD]}
 
@@ -125,7 +134,7 @@ _box_container_stopped()
 }
 
 
-_box_container_all()
+_box_component_all()
 {
 	local cur=${COMP_WORDS[COMP_CWORD]}
 
@@ -134,7 +143,7 @@ _box_container_all()
 }
 
 
-_box_container_dockerhub()
+_box_component_dockerhub()
 {
 	local IMAGES
 	local IMAGE_NAME
@@ -143,16 +152,21 @@ _box_container_dockerhub()
 	local REPLY
 	local cur=${COMP_WORDS[COMP_CWORD]}
 
-        IMAGES="`jq -r '.results|.[]|.name' /opt/box/etc/respositories.json`"
-        for IMAGE_NAME in $IMAGES
-        do
-                VERSIONS="`jq -r '.results|.[]|.name' /opt/box/etc/images/${IMAGE_NAME}.json`"
-                for IMAGE_VERSION in $VERSIONS
-                do
-                        REPLY="$REPLY wplib/${IMAGE_NAME}:$IMAGE_VERSION"
-                done
-
-        done
+	IMAGES="$(jq -r '.results|.[]|.name' /opt/box/etc/repositories.json | sort -u)"
+	for IMAGE_NAME in $IMAGES
+	do
+		if [ -f /opt/box/etc/images/${IMAGE_NAME}.json ]
+		then
+			VERSIONS="$(jq -r '.results|.[]|.name' /opt/box/etc/images/${IMAGE_NAME}.json)"
+			for IMAGE_VERSION in $VERSIONS
+			do
+				if [ "${IMAGE_VERSION}" != "latest" ]
+				then
+					REPLY="$REPLY wplib/${IMAGE_NAME}:$IMAGE_VERSION"
+				fi
+			done
+		fi
+	done
 
 	COMPREPLY=($(compgen -W "$REPLY" -- $cur))
 	return 0
@@ -171,7 +185,7 @@ _box_test()
 
 	case "$prev" in
 		'list'|'ls')
-			_box_container_running
+			_box_component_running
 			return 0
 			;;
 

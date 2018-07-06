@@ -1,16 +1,16 @@
 {
-    "interface": "pressboxx/proxyserver",
+    "interface": "box/proxyserver",
     "required": true,
     "type": "container",
     "description": "A web server for a LXMP stack, e.g. Apache, Ngnix, etc.",
-    "network": "pressboxx",
+    "network": "box",
     "restart": "unless-stopped",
     "ports": [
-        { "host": 80, "container": 80 },
-        { "host": 443, "container": 443 }
+        { "http": 80 },
+        { "https": 443 }
     ],
     "volumes": [
-        { "host": "/srv/sites", "container": "/srv/sites" }
+        { "projects": "/srv/projects" }
     ],
     "hosts": [
         [ "pressbox/mailhog" ]

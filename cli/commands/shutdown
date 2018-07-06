@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
-source "${WPLIB_BOX_INCLUDES_DIR}/read-json"
-# box container stop $database $webserver $processvm $kvstore $cache $sqladmin $webadmin
-box container shutdown
+source /opt/box/cli/includes/functions
+
+# Creates IMAGES and STACK env variables.
+readJSON
+
+box container stop ${IMAGES}
+box container shutdown >& /dev/null

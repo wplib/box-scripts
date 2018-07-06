@@ -2,7 +2,7 @@
 #
 # Usage
 #
-#       $1 String ID for host to deploy to as definded in /vagrant/wplib.box.json.
+#       $1 String ID for host to deploy to as definded in ${PROJECT_BASE}/${CURRENT_PROJECT}/wplib.box.json.
 #       $2 Optional String Directory to clone into.  Default is "pantheon"
 #
 #

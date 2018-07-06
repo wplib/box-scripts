@@ -2,7 +2,7 @@
 #
 # Usage
 #
-#       $1 String ID for host to deploy to as defined in /vagrant/wplib.box.json.
+#       $1 String ID for host to deploy to as defined in ${PROJECT_BASE}/${CURRENT_PROJECT}/wplib.box.json.
 #       $2 Optional String Commit message for Pantheon.  Defaults to "Merging in changes for deployment"
 #
 #
@@ -87,7 +87,7 @@ echo_if_not_quiet "$*" "=Removing '.git' and 'wp-content' sub-directories from b
 rm -rf "${build_dir}/.git" || return ?*
 rm -rf "${build_dir}/wp-content" || return ?*
 
-echo_if_not_quiet "$*" "=Copying content directories from /var/www to build directory..."
+echo_if_not_quiet "$*" "=Copying content directories from ${PROJECT_BASE}/${CURRENT_PROJECT}/www to build directory..."
 #
 # Replace with our content directory
 #
@@ -97,16 +97,16 @@ cp -RP "${WPLIB_BOX_CONTENT_DIR}/" "${build_dir}/wp-content" || return ?*
 # If there is a /vendor directory, don't forget it
 #
 if [[ -d "${WPLIB_BOX_VENDOR_DIR}" ]]; then
-    echo_if_not_quiet "$*" "=Copying vendor directories from /var/www to build directory..."
+    echo_if_not_quiet "$*" "=Copying vendor directories from ${PROJECT_BASE}/${CURRENT_PROJECT}/www to build directory..."
     cp -RP "${WPLIB_BOX_VENDOR_DIR}/" "${build_dir}/vendor" || return ?*
 fi
 
 #
 # If there is a /pantheon.yaml, don't forget it
 #
-if [ -f "${WPLIB_BOX_DIR}/pantheon.yaml" ]; then
-    echo_if_not_quiet "$*" "=Copying pantheon.yaml from /vagrant..."
-    cp "${WPLIB_BOX_DIR}/pantheon.yaml" "${build_dir}/pantheon.yaml"
+if [ -f "${WPLIB_BOX_PROJECT_DIR}/pantheon.yaml" ]; then
+    echo_if_not_quiet "$*" "=Copying pantheon.yaml from ${PROJECT_BASE}/${CURRENT_PROJECT}..."
+    cp "${WPLIB_BOX_PROJECT_DIR}/pantheon.yaml" "${build_dir}/pantheon.yaml"
 fi
 
 #
@@ -132,7 +132,7 @@ $WPLIB_BOX_PHPCLI "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args remove-comp
 #
 # Now get the Pantheon repo's .git dir and make it our own
 #
-echo_if_not_quiet "$*" "=Copying over .git directory from /vagrant..."
+echo_if_not_quiet "$*" "=Copying over .git directory from ${PROJECT_BASE}/${CURRENT_PROJECT}..."
 cp -R "${clone_dir}/.git" "${build_dir}" || return ?*
 
 cd "${build_dir}" || return ?*

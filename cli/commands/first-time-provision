@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# Provisioning script that usually gets run after a `box self-update`
+#
+# This HAS to be run as root!
+#
+# Usually run from the Vagrantfile:
+# `trigger.run_remote = {inline: "box first-time-provision"}`
+
+
+source /opt/box/cli/includes/functions
+
+if [ ! -e /etc/box-scripts-updated ]
+then
+	touch /etc/box-scripts-updated
+	exec /opt/box/bin/box self-update
+fi
+
