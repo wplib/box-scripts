@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+# Provisioning script that usually gets run after a `box self-update`
+#
+# This HAS to be run as root!
+
+
+source /opt/box/cli/includes/functions
+
+exec /opt/box/bin/box self-update
