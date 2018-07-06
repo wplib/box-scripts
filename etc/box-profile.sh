@@ -29,6 +29,6 @@ export PROJECT_BASE
 DEFAULT_PROJECT="wplib.box"
 export DEFAULT_PROJECT
 
-# cd ${PROJECT_BASE}/${DEFAULT_PROJECT}/www
-cd /var/www
+# Change inital SSH directory to be /project/wplib.box
+cd ${PROJECT_BASE}/${DEFAULT_PROJECT}
 
