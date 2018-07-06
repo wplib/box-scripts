@@ -10,37 +10,39 @@
 # Box Scripts for the WPLib Box
 
 
-## Installation
-Box Scripts contain scripts designed for both running _**inside**_ WPLib Box as well as running alongside WPLib Box on the host computer. 
+## About
+Box Scripts contain scripts designed for both running _**inside**_ WPLib Box. In a future version it will also run on the host computer alongside WPLib Box. 
 
-If you are using the latest &mdash; [WPLib Box 0.10.9 or later](https://github.com/wplib/wplib-box) &mdash; it will automatically have been installed.
+## Installation
+If you are using [WPLib Box 0.10.9 or later](https://github.com/wplib/wplib-box) it will automatically have been installed.
+
 
 ## Getting Help
 After that type `box` to get a list of commands, or explicitly specify `help`:
 
     box help
 
-![box help](https://github.com/wplib/box-scripts/raw/0.16.1/docs/Help-box.png)
+![box help](https://github.com/wplib/box-scripts/raw/0.17.0/docs/Help-box.png)
 
-![box container](https://github.com/wplib/box-scripts/raw/0.16.1/docs/Help-container.png)
+![box container](https://github.com/wplib/box-scripts/raw/0.17.0/docs/Help-container.png)
 
-![box database](https://github.com/wplib/box-scripts/raw/0.16.1/docs/Help-database.png)
+![box database](https://github.com/wplib/box-scripts/raw/0.17.0/docs/Help-database.png)
 
-![box test](https://github.com/wplib/box-scripts/raw/0.16.1/docs/Help-test.png)
+![box test](https://github.com/wplib/box-scripts/raw/0.17.0/docs/Help-test.png)
 
 Do NOT forget to first enter the WPLib Box command line by first running this command from your *host* computer's command line:
 
     vagrant up
 
-![vagrant up](https://github.com/wplib/box-scripts/raw/0.16.1/docs/vagrant-up.png)
+![vagrant up](https://github.com/wplib/box-scripts/raw/0.17.0/docs/vagrant-up.png)
 
     vagrant ssh
 
-![vagrant ssh](https://github.com/wplib/box-scripts/raw/0.16.1/docs/vagrant-ssh.png)
+![vagrant ssh](https://github.com/wplib/box-scripts/raw/0.17.0/docs/vagrant-ssh.png)
 
     vagrant halt
 
-![vagrant halt](https://github.com/wplib/box-scripts/raw/0.16.1/docs/vagrant-halt.png)
+![vagrant halt](https://github.com/wplib/box-scripts/raw/0.17.0/docs/vagrant-halt.png)
 
 
 ## Status/Disclaimer
