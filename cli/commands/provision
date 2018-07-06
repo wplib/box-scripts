@@ -96,6 +96,11 @@ function provision_fix()
 	then
 		cp ${WPLIB_BOX_RELEASE_JSON} ${WPLIB_BOX_PROJECT_FILE}
 	fi
+
+	if [ ! -f "${WPLIB_BOX_SQL_DIR}/provision.sql" ]
+	then
+		cp ${WPLIB_BOX_RELEASE_DIR}/provision.sql ${WPLIB_BOX_SQL_DIR}/provision.sql
+	fi
 }
 
 
