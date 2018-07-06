@@ -5,7 +5,7 @@
 # This HAS to be run as root!
 #
 # Usually run from the Vagrantfile:
-# `trigger.run_remote = {inline: "box self-update"}`
+# `trigger.run_remote = {inline: "box first-time-provision"}`
 
 
 source /opt/box/cli/includes/functions
