@@ -4,5 +4,5 @@
 #
 #       box version
 #
-cat "${WPLIB_BOX_BASE_DIR}/version
+cat "${WPLIB_BOX_BASE_DIR}/version"
 
