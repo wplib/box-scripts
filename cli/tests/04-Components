@@ -25,7 +25,7 @@ function tests() {
     resultEquals "get_container_name mysql-5.5.60       60" "mysql-5.5.60"
     resultEquals "get_container_name mysql-5.5          60" "mysql-5.5.60"
 
-    resultEquals "get_container_name wplib/php-fpm:7.1.17 17" "php-fpm-7.1.17" 
+    resultEquals "get_container_name wplib/php-fpm:7.1.17 17" "php-fpm-7.1.17"
     resultEquals "get_container_name php-fpm:7.1.17       17" "php-fpm-7.1.17"
     resultEquals "get_container_name php-fpm:7.1.16       17" "php-fpm-7.1.16"
     resultEquals "get_container_name php-fpm-7.1.17       17" "php-fpm-7.1.17"
@@ -34,19 +34,38 @@ function tests() {
     resultNotEmpty 'docker container ls -aq -f "status=running" "$1"' 'Container $1 not running'
 }
 
+
+function containerJsonProvider() {
+    project service list --format="{{.ContainerName}}"
+}
+
+
+function containerLineProvider() {
+    project service list --format="{{.ContainerName}}"
+}
+
+function containerProvider() {
+    project service list --format="{{.ContainerName}}"
+}
+
+function containerStartsTestUses() {
+    echo 'newline containerProvider \t'
+    echo 'json containerProvider'
+}
+
 function containerStartsTest() {
+
     box container start $1
 
     valueNotEmpty "$1" "You did not pass a valid parameter."
 
     assertEquals "$1" "foobar"
     assertContains "$1" ":" "Container $1 is not in correct format"
-    
+
     box container stop
 }
 
 function teardown() {
 
 }
-
 
