@@ -1,57 +1,52 @@
 #!/bin/bash
 
-source /opt/box/cli/includes/functions
-source /opt/box/cli/includes/constants
+function setup() {
 
-
-TESTS_TOTAL=0
-TESTS_PASSED=0
-TESTS_FAILED=0
-run_test() {
-    (( TESTS_TOTAL++ ))
-    local expr="$1"
-    local value="$2"
-    if [ "$(eval "${expr}")" == "${value}" ] ; then
-        (( TESTS_PASSED++ ))
-    else
-        echo "Fail: ${expr} <> ${value}"
-        (( TESTS_FAILED++ ))
-    fi
 }
-run_test "get_image_name wplib/mysql:5.5.60 60" "wplib/mysql:5.5.60"
-run_test "get_image_name mysql:5.5.60       60" "wplib/mysql:5.5.60"
-run_test "get_image_name mysql:5.5.59       60" "wplib/mysql:5.5.59"
-run_test "get_image_name mysql-5.5.60       60" "wplib/mysql:5.5.60"
-run_test "get_image_name mysql:5.5          60" "wplib/mysql:5.5.60"
-run_test "get_image_name mysql-5.5          60" "wplib/mysql:5.5.60"
 
-run_test "get_image_name wplib/php-fpm:7.1.17 17" "wplib/php-fpm:7.1.17"
-run_test "get_image_name php-fpm:7.1.17       17" "wplib/php-fpm:7.1.17"
-run_test "get_image_name php-fpm:7.1.16       17" "wplib/php-fpm:7.1.16"
-run_test "get_image_name php-fpm-7.1.17       17" "wplib/php-fpm:7.1.17"
-run_test "get_image_name php-fpm:7.1          17" "wplib/php-fpm:7.1.17"
-run_test "get_image_name php-fpm-7.1          17" "wplib/php-fpm:7.1.17"
+function tests() {
+    resultEquals "get_image_name wplib/mysql:5.5.60 60" "wplib/mysql:5.5.60"
+    resultEquals "get_image_name mysql:5.5.60       60" "wplib/mysql:5.5.60"
+    resultEquals "get_image_name mysql:5.5.59       60" "wplib/mysql:5.5.59"
+    resultEquals "get_image_name mysql-5.5.60       60" "wplib/mysql:5.5.60"
+    resultEquals "get_image_name mysql:5.5          60" "wplib/mysql:5.5.60"
+    resultEquals "get_image_name mysql-5.5          60" "wplib/mysql:5.5.60"
 
-run_test "get_container_name wplib/mysql:5.5.60 60" "mysql-5.5.60"
-run_test "get_container_name mysql:5.5.60       60" "mysql-5.5.60"
-run_test "get_container_name mysql:5.5.59       60" "mysql-5.5.59"
-run_test "get_container_name mysql-5.5.60       60" "mysql-5.5.60"
-run_test "get_container_name mysql-5.5          60" "mysql-5.5.60"
+    resultEquals "get_image_name wplib/php-fpm:7.1.17 17" "wplib/php-fpm:7.1.17"
+    resultEquals "get_image_name php-fpm:7.1.17       17" "wplib/php-fpm:7.1.17"
+    resultEquals "get_image_name php-fpm:7.1.16       17" "wplib/php-fpm:7.1.16"
+    resultEquals "get_image_name php-fpm-7.1.17       17" "wplib/php-fpm:7.1.17"
+    resultEquals "get_image_name php-fpm:7.1          17" "wplib/php-fpm:7.1.17"
+    resultEquals "get_image_name php-fpm-7.1          17" "wplib/php-fpm:7.1.17"
 
-run_test "get_container_name wplib/php-fpm:7.1.17 17" "php-fpm-7.1.17"
-run_test "get_container_name php-fpm:7.1.17       17" "php-fpm-7.1.17"
-run_test "get_container_name php-fpm:7.1.16       17" "php-fpm-7.1.16"
-run_test "get_container_name php-fpm-7.1.17       17" "php-fpm-7.1.17"
-run_test "get_container_name php-fpm-7.1          17" "php-fpm-7.1.17"
+    resultEquals "get_container_name wplib/mysql:5.5.60 60" "mysql-5.5.60"
+    resultEquals "get_container_name mysql:5.5.60       60" "mysql-5.5.60"
+    resultEquals "get_container_name mysql:5.5.59       60" "mysql-5.5.59"
+    resultEquals "get_container_name mysql-5.5.60       60" "mysql-5.5.60"
+    resultEquals "get_container_name mysql-5.5          60" "mysql-5.5.60"
 
-if [ 0 -ne $TESTS_FAILED ] ; then
-    echo "${TESTS_FAILED} of ${TESTS_TOTAL} tests FAILED."
-    exit 1
-fi
-if [ 0 -ne $TESTS_PASSED ] ; then
-    echo "${TESTS_PASSED} of ${TESTS_TOTAL} tests passed."
-    exit 0
-fi
+    resultEquals "get_container_name wplib/php-fpm:7.1.17 17" "php-fpm-7.1.17" 
+    resultEquals "get_container_name php-fpm:7.1.17       17" "php-fpm-7.1.17"
+    resultEquals "get_container_name php-fpm:7.1.16       17" "php-fpm-7.1.16"
+    resultEquals "get_container_name php-fpm-7.1.17       17" "php-fpm-7.1.17"
+    resultEquals "get_container_name php-fpm-7.1          17" "php-fpm-7.1.17"
 
+    resultNotEmpty 'docker container ls -aq -f "status=running" "$1"' 'Container $1 not running'
+}
+
+function containerStartsTest() {
+    box container start $1
+
+    valueNotEmpty "$1" "You did not pass a valid parameter."
+
+    assertEquals "$1" "foobar"
+    assertContains "$1" ":" "Container $1 is not in correct format"
+    
+    box container stop
+}
+
+function teardown() {
+
+}
 
 

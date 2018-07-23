@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# Master test script.
+#
+
+source /opt/box/cli/includes/test-functions
+
+test_setup
+
+for f in /opt/box/cli/tests/*; do
+
+
+
+done
+
+test_teardown

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+#
+# Tests assertions based on result of command or function
+#
+resultEquals() {
+    incr_total_tests
+    local expr="$1"
+    local value="$2"
+    local message="$3"
+    if [ "$(eval "${expr}")" == "${value}" ] ; then
+       incr_tests_passed
+    else
+       if [ "" == "${message}" ] ; then
+         echo "Fail: ${expr} <> ${value}"
+       else
+         echo "Fail: ${message}"
+       fi
+       incr_tests_failed
+    fi
+}
+
+
