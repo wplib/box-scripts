@@ -653,7 +653,7 @@ function component_start()
 							# We need to be able to query the DB and see when it's ready for connections.
 							# In the mean time sleep for 10.
 							sleep 10
-							box database import provision.sql
+							box database import provision.sql --no-backup
 							touch ${WPLIB_BOX_SQL_DIR}/provision.sql.lock
 						fi
 					fi
