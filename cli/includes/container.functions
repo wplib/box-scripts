@@ -429,10 +429,10 @@ function component_shell()
 			fi
 			;;
 
-#		$RETURN_NO_LOCAL_IMAGE)
-#			error_nfl
-#			;;
-#
+		$RETURN_NO_LOCAL_IMAGE|$RETURN_NO_CONTAINER)
+			component_provision $IMAGE 
+			;;
+
 		$RETURN_NO_IMAGE_JSON)
 			error_dnc
 			;;
@@ -469,8 +469,8 @@ function component_exec()
 			fi
 			;;
 
-		$RETURN_NO_LOCAL_IMAGE)
-			error_nfl
+		$RETURN_NO_LOCAL_IMAGE|$RETURN_NO_CONTAINER)
+			component_provision $IMAGE 
 			;;
 
 		$RETURN_NO_IMAGE_JSON)
