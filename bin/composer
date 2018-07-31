@@ -5,7 +5,8 @@ source /opt/box/cli/includes/functions
 # Creates IMAGES and STACK env variables.
 readJSON
 
-COMPOSER="wplib/composer:latest"
+# Until I find a better way.
+COMPOSER="wplib/composer:1.6.4"
 
 # echo "box container shell ${COMPOSER} $@"
 box container shell ${COMPOSER} "$@"
