@@ -8,5 +8,5 @@ readJSON
 
 MKDOCS="${STACK[mkdocs/webserver]}"
 
-box component shell ${MKDOCS} "$@"
+box component shell ${MKDOCS} interactive "$@"
 
