@@ -43,12 +43,9 @@ function provision_fix()
 		mkdir -p /var/www
 	fi
 
-	# Create symlinks
-	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-completion.bash /etc/bash_completion.d/box-completion.bash
-	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-profile.sh /etc/profile.d/box-profile.sh
-	link_file ${WPLIB_BOX_BASE_DIR} /box
 
-#	# Offer forwards / backwards compat.
+	# Offer forwards / backwards compat.
+	link_file ${WPLIB_BOX_BASE_DIR} /box
 #	if [ -L /vagrant ]
 #	then
 #		# We have a new layout - offer backwards compat.
@@ -59,8 +56,15 @@ function provision_fix()
 #	#	link_file /vagrant /projects/wplib.box
 #	fi
 
+
 	# cron jobs
 	ln -sf ${WPLIB_BOX_ETC}/cron/${WPLIB_BOX_USER} /var/spool/cron/crontabs/${WPLIB_BOX_USER}
+
+
+	# init
+	link_file /opt/box/etc/upstart/wplib-box-start.conf /etc/init/wplib-box-start.conf
+	link_file /opt/box/etc/upstop/wplib-box-stop.conf /etc/init/wplib-box-stop.conf
+
 
 	# Setup boxuser, if not there.
 	USERID="$(id -u ${WPLIB_BOX_USER})"
@@ -73,7 +77,6 @@ function provision_fix()
 	then
 		mkdir -pm 700 ${WPLIB_BOX_USER_HOME}/.ssh
 	fi
-
 	if [ ! -f ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys ]
 	then
 		wget -q --no-check-certificate 'https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub' -O ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys >&/dev/null
@@ -81,22 +84,31 @@ function provision_fix()
 	fi
 	touch ${WPLIB_BOX_USER_HOME}/.Xauthority
 
+
 	# Change permissions.
 	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_USER_HOME}
 	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_BASE_DIR}
 	chown ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_PROJECT_BASE} ${WPLIB_BOX_PROJECT_BASE}/*
 
+
+	# Fix user shell.
+	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-completion.bash /etc/bash_completion.d/box-completion.bash
+	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-profile.sh /etc/profile.d/box-profile.sh
 	cp ${WPLIB_BOX_ETC}/environment /etc/environment
 	cp ${WPLIB_BOX_ETC}/inputrc /etc/inputrc
 	cp ${WPLIB_BOX_BASE_DIR}/etc/box-aptget /etc/apt/apt.conf.d/42wplib
 	rm -f /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade >& /dev/null
 	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-motd /etc/motd
 
+
+	# Make sure default project.json exists.
 	if [ ! -f "${WPLIB_BOX_PROJECT_FILE}" ]
 	then
 		cp ${WPLIB_BOX_RELEASE_JSON} ${WPLIB_BOX_PROJECT_FILE}
 	fi
 
+
+	# Make sure default provision.sql file exists.
 	if [ ! -f "${WPLIB_BOX_SQL_DIR}/provision.sql" ]
 	then
 		cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sql ${WPLIB_BOX_SQL_DIR}/provision.sql
