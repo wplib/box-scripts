@@ -239,7 +239,8 @@ function component_info()
 	CONTAINER_ID=$(docker container ls -qaf name="${CONTAINER_NAME}")
 	if [ "$CONTAINER_ID" != "" ]
 	then
-		DOCKER="$(docker inspect -f '{{.State.Running}};{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}};{{range .NetworkSettings.Networks}}{{(index .Aliases 0)}}{{end}}' $CONTAINER_NAME 2>/dev/null)"
+		# DOCKER="$(docker inspect -f '{{.State.Running}};{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}};{{range .NetworkSettings.Networks}}{{(index .Aliases 0)}}{{end}}' $CONTAINER_NAME 2>/dev/null)"
+		DOCKER="$(docker inspect -f '{{.State.Running}};{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}};{{.Config.Hostname}}' $CONTAINER_NAME 2>/dev/null)"
 		IFS=';' read -r -a state_array <<< "$DOCKER"
 
 		CONTAINER_RUNNING="${state_array[0]}"
@@ -430,7 +431,7 @@ function component_shell()
 			;;
 
 		$RETURN_NO_LOCAL_IMAGE|$RETURN_NO_CONTAINER)
-			component_provision $IMAGE
+			component_install $IMAGE
 			RETURN="$?"
 			if [ "$RETURN" == "$RETURN_OK" ]
 			then
