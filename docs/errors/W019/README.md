@@ -7,7 +7,7 @@
      \/  \/   |_|    |______|_|_.__/  |____/ \___/_/\_\
 ```
 
-![WPLib-Box](https://github.com/wplib/wplib-box/blob/master/WPLib-Box-100x.png)
+![WPLib-Box](https://github.com/wplib/box-scripts/blob/master/WPLib-Box-100x.png)
 
 # W019 - Error not all containers could be stopped.
 
@@ -23,5 +23,5 @@ Issue a `box ls` to see what containers could not be stopped.
 
 
 ## See Also
-[Complete Error code repository for WPLib Box](https://github.com/wplib/wplib-box/tree/master/docs/errors)
+[Complete Error code repository for WPLib Box](https://github.com/wplib/box-scripts/tree/master/docs/errors)
 

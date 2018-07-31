@@ -7,7 +7,7 @@
      \/  \/   |_|    |______|_|_.__/  |____/ \___/_/\_\
 ```
 
-![WPLib-Box](https://github.com/wplib/wplib-box/blob/master/docs/assets/images/WPLib-Box-100x.png)
+![WPLib-Box](https://github.com/wplib/box-scripts/blob/master/docs/assets/images/WPLib-Box-100x.png)
 
 # W002 - [nginx proxy Docker container](https://github.com/wplib/proxy-docker/) not running.
 
@@ -20,5 +20,5 @@ The nginx proxy Docker container may have been shutdown for some reason or is no
 
 
 ## See Also
-[Complete Error code repository for WPLib Box](https://github.com/wplib/wplib-box/tree/master/docs/errors)
+[Complete Error code repository for WPLib Box](https://github.com/wplib/box-scripts/tree/master/docs/errors)
 

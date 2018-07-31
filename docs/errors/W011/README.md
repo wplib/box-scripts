@@ -7,7 +7,7 @@
      \/  \/   |_|    |______|_|_.__/  |____/ \___/_/\_\
 ```
 
-![WPLib-Box](https://github.com/wplib/wplib-box/blob/master/WPLib-Box-100x.png)
+![WPLib-Box](https://github.com/wplib/box-scripts/blob/master/WPLib-Box-100x.png)
 
 # W011 - Error image does not exist in repository.
 
@@ -22,5 +22,5 @@ Check the name and version number exists on [GitHub](https://github.com/wplib) o
 
 
 ## See Also
-[Complete Error code repository for WPLib Box](https://github.com/wplib/wplib-box/tree/master/docs/errors)
+[Complete Error code repository for WPLib Box](https://github.com/wplib/box-scripts/tree/master/docs/errors)
 

@@ -7,7 +7,7 @@
      \/  \/   |_|    |______|_|_.__/  |____/ \___/_/\_\
 ```
 
-![WPLib-Box](https://github.com/wplib/wplib-box/blob/master/docs/assets/images/WPLib-Box-100x.png)
+![WPLib-Box](https://github.com/wplib/box-scripts/blob/master/docs/assets/images/WPLib-Box-100x.png)
 
 # W001 - /var/www directory not mounted
 
@@ -20,4 +20,4 @@ If you are seeing this, then the /var/www directory has not been mounted via Vir
 
 
 ## See Also
-[Complete Error code repository for WPLib Box](https://github.com/wplib/wplib-box/tree/master/docs/errors)
+[Complete Error code repository for WPLib Box](https://github.com/wplib/box-scripts/tree/master/docs/errors)

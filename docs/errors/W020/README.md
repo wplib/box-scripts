@@ -7,7 +7,7 @@
      \/  \/   |_|    |______|_|_.__/  |____/ \___/_/\_\
 ```
 
-![WPLib-Box](https://github.com/wplib/wplib-box/blob/master/WPLib-Box-100x.png)
+![WPLib-Box](https://github.com/wplib/box-scripts/blob/master/WPLib-Box-100x.png)
 
 # W020 - 500 Internal Server Error.
 
@@ -21,5 +21,5 @@ Check for files and plugins that may have been added or modified since it was wo
 
 
 ## See Also
-[Complete Error code repository for WPLib Box](https://github.com/wplib/wplib-box/tree/master/docs/errors)
+[Complete Error code repository for WPLib Box](https://github.com/wplib/box-scripts/tree/master/docs/errors)
 
