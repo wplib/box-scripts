@@ -652,6 +652,7 @@ function component_start()
 				else
 					echo "${GREEN}OK${RESET}"
 
+					# A bit of a hack - this really shouldn't be here.
 					if [[ "${IMAGE_NAME}" =~ ^(mysql|mariadb)$ ]]
 					then
 						if [[ -f ${WPLIB_BOX_SQL_DIR}/provision.sql && ! -e ${WPLIB_BOX_SQL_PROVISION_LOCK} ]]
