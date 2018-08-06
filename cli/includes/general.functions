@@ -2,6 +2,17 @@
 
 
 #
+# Checks if the Virtualbox wplib.box mount point is there.
+# Return: [ /projects/wplib.box | /var/www | "" ]
+#
+function check_mount()
+{
+	MOUNT_DIR="$(mount -v | awk '$3~/^(\/projects\/wplib.box|\/var\/www)$/{print$3}')"
+	echo ${MOUNT_DIR}
+}
+
+
+#
 # Creates a symlink to a file, with checks for directory. Will also update a symlink if it's different.
 #
 function link_file()
