@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
 
+#
+# These 4 vars are a really bad code smell
+#
+declare="${mail:=}"
+declare="${proxy:=}"
+declare="${sqladmin:=}"
+declare="${webadmin:=}"
+
+declare="${BOX_PROJECTS_ROOT:=}"
+declare="${BOX_PROJECT_PATH:=}"
 
 DEFAULT_PROJECT="wplib"
-WPLIB_BOX_PROJECT_DIR=${PROJECT_BASE}/${CURRENT_PROJECT}
-WPLIB_BOX_BASE_DIR=/opt/box
+BOX_PROJECT_DIR=${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}
+BOX_BASE_DIR=/opt/box
 
 # Colour codes.
 GRAY="[30m"
@@ -28,8 +38,8 @@ RETURN_NO_IMAGE_JSON="3"
 RETURN_INVALID_PROJECT="4"
 
 
-VERSION="`cat ${WPLIB_BOX_BASE_DIR}/version`"
-DEFAULTS_FILE="${WPLIB_BOX_BASE_DIR}/etc/releases/$VERSION/project.json"
+VERSION="`cat ${BOX_BASE_DIR}/version`"
+DEFAULTS_FILE="${BOX_BASE_DIR}/etc/releases/$VERSION/project.json"
 if [ ! -f $DEFAULTS_FILE ]
 then
 	echo "$ECHO_PREFIX ${RED}Error: Unknown release ${CYAN}${VERSION}${RESET}."
@@ -48,12 +58,12 @@ d_sqladmin="$(jq -r '.stack.sqladmin' $DEFAULTS_FILE)"
 d_webadmin="$(jq -r '.stack.webadmin' $DEFAULTS_FILE)"
 
 # Pull in user defined JSON file.
-if [ -f "${WPLIB_BOX_PROJECT_DIR}/project.json" ]
+if [ -f "${BOX_PROJECT_DIR}/project.json" ]
 then
-    database="$(jq -r '.stack.database' ${WPLIB_BOX_PROJECT_DIR}/project.json)"
-    webserver="$(jq -r '.stack.webserver' ${WPLIB_BOX_PROJECT_DIR}/project.json)"
-    processvm="$(jq -r '.stack.processvm' ${WPLIB_BOX_PROJECT_DIR}/project.json)"
-    kvstore="$(jq -r '.stack.kvstore' ${WPLIB_BOX_PROJECT_DIR}/project.json)"
+    database="$(jq -r '.stack.database' ${BOX_PROJECT_DIR}/project.json)"
+    webserver="$(jq -r '.stack.webserver' ${BOX_PROJECT_DIR}/project.json)"
+    processvm="$(jq -r '.stack.processvm' ${BOX_PROJECT_DIR}/project.json)"
+    kvstore="$(jq -r '.stack.kvstore' ${BOX_PROJECT_DIR}/project.json)"
 fi
 
 

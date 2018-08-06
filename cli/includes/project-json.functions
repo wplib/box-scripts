@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+
+declare="${BOX_PROJECT_FILE:=}"
+
+function get_deployment() {
+    local host_id="$1"
+    local deployment="$(cat "${BOX_PROJECT_FILE}" | jq -r ".deployment")"
+    local defaults="$(get_deployment_provider_object)"
+    if [ "" != "${defaults}" ] ; then
+        local provider="$(get_deployment_provider)"
+        local args="$(get_provider_args "${provider}")"
+        defaults="${defaults//\{\$host_id\}/${host_id}}"
+        defaults="$(substitute_args "${deployment}" "${defaults}" "${args}")"
+        deployment="$(echo -e "${defaults}${deployment}" | jq -s '.[0] * .[1]')"
+    fi
+    local selectors="$(extract_selectors "${deployment}")"
+    deployment="$(apply_selectors "${deployment}" "${selectors}")"
+    deployment="$(apply_selectors "${deployment}" "${selectors}")"
+    echo "${deployment}"
+}
+
+function substitute_args() {
+    local source="$1"
+    local destination="$2"
+    local args="$3"
+    for arg in $args ; do
+        value="$(echo -e "${source}"| jq -r ".${arg}")"
+        if [ "" == "${value}" ] ; then
+            continue
+        fi
+        destination="${destination//\{\$${arg}\}/$value}"
+    done
+    echo "${destination}" | jq .
+}
+
+function get_provider_args() {
+    local provider="$1"
+    local filepath="$(get_provider_filepath "${provider}")"
+    local args="$(cat "${filepath}" | jq -r '.["$"][]?')"
+    echo -e "${args}"
+}
+
+function get_deployment_provider_filepath() {
+    local provider="$(get_deployment_provider)"
+    local filepath="$(get_provider_filepath "${provider}")"
+    echo "${filepath}"
+}
+
+function get_provider_filepath() {
+    local provider="$1"
+    filepath="/opt/box/etc/providers/${provider}/${provider}.json"
+    echo "${filepath}"
+}
+
+#
+# Returns 'pantheon' or 'wpengine', etc.
+#
+function get_deployment_provider() {
+    local deployment="$(cat "${BOX_PROJECT_FILE}" | jq -r ".deployment")"
+    local provider="$(echo "${deployment}" | jq -r ".provider")"
+    echo "${provider}"
+}
+
+function get_deployment_provider_object() {
+    local filepath="$(get_deployment_provider_filepath)"
+    if [ -f "${filepath}" ] ; then
+        echo "$(cat "${filepath}")"
+    fi
+}
+
+function get_source_repo_url() {
+    repo_url="$(cat "${BOX_PROJECT_FILE}" | jq -r ".source.repository.url")"
+    if [[ "${repo_url}" =~ ^ssh:// ]]; then
+        repo_url="${repo_url#*//}"
+    fi
+    echo "${repo_url}"
+}
+
+function branch_has_deploy_host() {
+    local host_id="$1"
+    local branch="$2"
+    local json=".deployment.hosts[]"
+    local hosts="$(get_deployment "${host_id}" | jq -r "${json}")"
+    local select="select(.branch|match(\"${branch}\")?)"
+    local type="$(echo "${hosts}" | jq -r "${select}|type")"
+    [[ "${type}" == "object" ]] && echo "yes" || echo "no"
+}
+
+function get_deploy_host_branch() {
+    local host_id="$1"
+    host="$(get_deploy_host "${host_id}")"
+    branch="$(echo "${host}" | jq -r ".branch")"
+    if [ "" == "${branch}" ] ; then
+        branch="${host_id}"
+    fi
+    echo "${branch}"
+}
+
+function get_deploy_host() {
+    local host_id="$1"
+    local merge="$2"
+
+    local json=".deployment.hosts.${host_id}"
+    local host="$(get_deployment "${host_id}" | jq -r "${json}")"
+    if [ "no" == "${merge}" ] ; then
+        echo "${host}"
+    else
+        defaults="$(get_deploy_hosts_defaults)"
+        echo "${defaults}${host}" | jq -s '.[0] * .[1]'
+    fi
+}
+
+function get_deploy_hosts_defaults() {
+    get_deploy_host "defaults" "no"
+}

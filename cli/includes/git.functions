@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+function clone_git_repo() {
+    repo_url="$1"
+}
+
+#
+# Returns the URL for the 'origin' remote.
+#
+function get_git_origin_remote_repo_url() {
+    local result="$(git remote -v |grep origin|grep "(push)")"
+    local url="$(git remote -v |grep "(push)"|awk '{print $2}')"
+    echo "${url}"
+}
+
+function get_git_repo_available_branches() {
+    echo
+}
+
+function get_git_uncommitted_files() {
+    local files="$(git status --short)"
+    echo "${files}"
+}
+

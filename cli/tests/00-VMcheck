@@ -1,8 +1,10 @@
 #!/bin/bash
 
-source /opt/box/cli/includes/functions
-source /opt/box/cli/includes/constants
+declare="${BOX_CLI_DIR:=}"
+declare="${BOX_PROJECTS_ROOT:=}"
+declare="${BOX_PROJECT_PATH:=}"
 
+source /opt/box/cli/includes/functions
 case $1 in
 	'info')
 		echo "`basename $0`	- Test: Startup all containers."
@@ -10,10 +12,10 @@ case $1 in
 		;;
 esac
 
-. ${WPLIB_BOX_CLI_DIR}/commands/test
+. ${BOX_CLI_DIR}/commands/test
 
-echo_info "Check ${PROJECT_BASE}/${CURRENT_PROJECT}/www mountpoints."
-exec_cmd ${WPLIB_BOX_CLI_DIR}/commands/check-mounts
+echo_info "Check ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/www mountpoints."
+exec_cmd ${BOX_CLI_DIR}/commands/check-mounts
 
 
 echo_info "Check Docker can stop and start."

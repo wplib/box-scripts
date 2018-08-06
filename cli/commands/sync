@@ -5,9 +5,10 @@
 
 source /opt/box/cli/includes/functions
 
-if [ ! -d /projects/wplib.box/box ] ; then
+if [ ! -f /projects/wplib.box/box/SYNCED ] ; then
     mkdir /projects/wplib.box/box
     rsync --archive --hard-links --perms --one-file-system /opt/box/ /projects/wplib.box/box
+    sudo touch /projects/wplib.box/box/SYNCED
 fi
 trap "exit 0" SIGINT SIGTERM
 counter=0

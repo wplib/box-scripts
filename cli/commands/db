@@ -2,4 +2,6 @@
 #
 # `box db` is an alias for `box database` command
 #
-source "${WPLIB_BOX_COMMANDS_DIR}/database"
+declare="${BOX_COMMANDS_DIR:=}"
+
+source "${BOX_COMMANDS_DIR}/database"

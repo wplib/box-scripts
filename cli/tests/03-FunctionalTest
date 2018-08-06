@@ -1,8 +1,10 @@
 #!/bin/bash
 
-source /opt/box/cli/includes/functions
-source /opt/box/cli/includes/constants
+declare="${BOX_CLI_DIR:=}"
+declare="${BOX_PROJECTS_ROOT:=}"
+declare="${BOX_PROJECT_PATH:=}"
 
+source /opt/box/cli/includes/functions
 case $1 in
 	'info')
 		echo "`basename $0`	- Test: Startup all containers."
@@ -10,11 +12,11 @@ case $1 in
 		;;
 esac
 
-. ${WPLIB_BOX_CLI_DIR}/commands/test
+. ${BOX_CLI_DIR}/commands/test
 
 
 echo_info "PHP Version:"
-cat > ${PROJECT_BASE}/${CURRENT_PROJECT}/www/test.php <<EOF
+cat > ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/www/test.php <<EOF
 <?php
 echo phpversion();
 echo "\n";
@@ -25,7 +27,7 @@ exec_cmd curl -sS http://127.0.0.1/test.php
 
 
 echo_info "PHP Extensions:"
-cat > ${PROJECT_BASE}/${CURRENT_PROJECT}/www/test.php <<EOF
+cat > ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/www/test.php <<EOF
 <?php
 print_r(get_loaded_extensions());
 echo "\n";
@@ -35,7 +37,7 @@ exec_cmd curl -sS http://127.0.0.1/test.php
 
 
 echo_info "PHP include path:"
-cat > ${PROJECT_BASE}/${CURRENT_PROJECT}/www/test.php <<EOF
+cat > ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/www/test.php <<EOF
 <?php
 echo get_include_path();
 echo "\n";
@@ -47,7 +49,7 @@ exec_cmd curl -sS http://127.0.0.1/test.php
 
 
 echo_info "PHP user:"
-cat > ${PROJECT_BASE}/${CURRENT_PROJECT}/www/test.php <<EOF
+cat > ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/www/test.php <<EOF
 <?php
 echo get_current_user();
 echo "\n";
@@ -57,7 +59,7 @@ exec_cmd curl -sS http://127.0.0.1/test.php
 
 
 echo_info "PHP constants:"
-cat > ${PROJECT_BASE}/${CURRENT_PROJECT}/www/test.php <<EOF
+cat > ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/www/test.php <<EOF
 <?php
 # print_r(get_defined_constants(true));
 print_r(getenv());
@@ -68,6 +70,6 @@ exec_cmd curl -sS http://127.0.0.1/test.php
 
 
 
-rm -f ${PROJECT_BASE}/${CURRENT_PROJECT}/www/test.php
+rm -f ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/www/test.php
 
 exit 0

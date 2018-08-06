@@ -4,5 +4,7 @@
 #
 #       box version
 #
-echo "WPLib: You are running version $(cat "${WPLIB_BOX_BASE_DIR}/version")"
+declare="${BOX_BASE_DIR:=}"
+
+cat "${BOX_BASE_DIR}/version"
 

@@ -4,10 +4,13 @@
 #
 #       box check-mounts
 #
-if [ -e ${PROJECT_BASE}/${CURRENT_PROJECT}/www/NOTMOUNTED ]
+declare="${BOX_PROJECTS_ROOT:=}"
+declare="${BOX_PROJECT_PATH:=}"
+
+if [ -e ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/www/NOTMOUNTED ]
 then
 	tput setaf 1
-	cat ${PROJECT_BASE}/${CURRENT_PROJECT}/www/index.txt
+	cat ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/www/index.txt
 	tput sgr0
 	exit 1
 fi

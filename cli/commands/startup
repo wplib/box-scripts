@@ -2,18 +2,20 @@
 
 source /opt/box/cli/includes/functions
 
+declare="${IMAGES:=}"
+
 # Creates IMAGES and STACK env variables.
 readJSON
 
 box container start ${IMAGES}
 
-#if [[ ! -e "${WPLIB_BOX_CLI_DIR}/PROVISION" && -e "${WPLIB_BOX_SQL_DIR}/provision.sql" ]] ; then
+#if [[ ! -e "${BOX_CLI_DIR}/PROVISION" && -e "${BOX_SQL_DIR}/provision.sql" ]] ; then
 #
-#    sudo bash -c "date +'%Y%m%d %H%M%S' > \"${WPLIB_BOX_CLI_DIR}/PROVISION\""
+#    sudo bash -c "date +'%Y%m%d %H%M%S' > \"${BOX_CLI_DIR}/PROVISION\""
 #    box database import provision.sql
 #
 #    #
-#    # @todo check return value and if error delete ${WPLIB_BOX_CLI_DIR}/PROVISION
+#    # @todo check return value and if error delete ${BOX_CLI_DIR}/PROVISION
 #    #
 #
 #fi

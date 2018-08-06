@@ -4,12 +4,29 @@
 #
 # This HAS to be run as root!
 
+declare="${ECHO_PREFIX:=}"
+declare="${GREEN:=}"
+declare="${YELLOW:=}"
+declare="${RESET:=}"
+declare="${BOX_PROJECT_DIR:=}"
+declare="${BOX_BASE_DIR:=}"
+declare="${BOX_ETC:=}"
+declare="${BOX_USER:=}"
+declare="${BOX_USER_HOME:=}"
+declare="${BOX_USER_UID:=}"
+declare="${BOX_USER_GID:=}"
+declare="${BOX_PROJECTS_ROOT:=}"
+declare="${BOX_PROJECTS_ROOT:=}"
+declare="${BOX_PROJECT_FILE:=}"
+declare="${BOX_RELEASE_JSON:=}"
+declare="${BOX_SQL_DIR:=}"
+declare="${BOX_RELEASE_DIR:=}"
 
 source /opt/box/cli/includes/functions
 
 function ctrl_c()
 {
-        tput sgr0
+    tput sgr0
 	echo ""
 	echo "$ECHO_PREFIX Aborting script."
 	exit
@@ -33,9 +50,9 @@ function provision_fix()
 {
 
 	# First ensure home directory exists
-	if [ ! -d "${WPLIB_BOX_PROJECT_DIR}/" ]
+	if [ ! -d "${BOX_PROJECT_DIR}/" ]
 	then
-		mkdir -p ${WPLIB_BOX_PROJECT_DIR}
+		mkdir -p ${BOX_PROJECT_DIR}
 	fi
 
 	if [ ! -d /var/www ]
@@ -44,9 +61,9 @@ function provision_fix()
 	fi
 
 	# Create symlinks
-	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-completion.bash /etc/bash_completion.d/box-completion.bash
-	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-profile.sh /etc/profile.d/box-profile.sh
-	link_file ${WPLIB_BOX_BASE_DIR} /box
+	link_file ${BOX_BASE_DIR}/etc/box-completion.bash /etc/bash_completion.d/box-completion.bash
+	link_file ${BOX_BASE_DIR}/etc/box-profile.sh /etc/profile.d/box-profile.sh
+	link_file ${BOX_BASE_DIR} /box
 
 #	# Offer forwards / backwards compat.
 #	if [ -L /vagrant ]
@@ -60,46 +77,46 @@ function provision_fix()
 #	fi
 
 	# cron jobs
-	ln -sf ${WPLIB_BOX_ETC}/cron/${WPLIB_BOX_USER} /var/spool/cron/crontabs/${WPLIB_BOX_USER}
+	ln -sf ${BOX_ETC}/cron/${BOX_USER} /var/spool/cron/crontabs/${BOX_USER}
 
 	# Setup boxuser, if not there.
-	USERID="$(id -u ${WPLIB_BOX_USER})"
+	USERID="$(id -u ${BOX_USER})"
 	if [ "${USERID}" == "" ]
 	then
-		useradd -o -d ${WPLIB_BOX_USER_HOME} -c "WPLib Box user" -u ${WPLIB_BOX_USER_UID} -g ${WPLIB_BOX_USER_GID} -N -s /bin/bash ${WPLIB_BOX_USER}
-		usermod -aG docker ${WPLIB_BOX_USER}
+		useradd -o -d ${BOX_USER_HOME} -c "WPLib Box user" -u ${BOX_USER_UID} -g ${BOX_USER_GID} -N -s /bin/bash ${BOX_USER}
+		usermod -aG docker ${BOX_USER}
 	fi
-	if [ ! -d ${WPLIB_BOX_USER_HOME}/.ssh ]
+	if [ ! -d ${BOX_USER_HOME}/.ssh ]
 	then
-		mkdir -pm 700 ${WPLIB_BOX_USER_HOME}/.ssh
+		mkdir -pm 700 ${BOX_USER_HOME}/.ssh
 	fi
 
-	if [ ! -f ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys ]
+	if [ ! -f ${BOX_USER_HOME}/.ssh/authorized_keys ]
 	then
-		wget -q --no-check-certificate 'https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub' -O ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys >&/dev/null
-		chmod 0600 ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys
+		wget -q --no-check-certificate 'https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub' -O ${BOX_USER_HOME}/.ssh/authorized_keys &>/dev/null
+		chmod 0600 ${BOX_USER_HOME}/.ssh/authorized_keys
 	fi
-	touch ${WPLIB_BOX_USER_HOME}/.Xauthority
+	touch ${BOX_USER_HOME}/.Xauthority
 
 	# Change permissions.
-	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_USER_HOME}
-	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_BASE_DIR}
-	chown ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_PROJECT_BASE} ${WPLIB_BOX_PROJECT_BASE}/*
+	chown -R ${BOX_USER_UID}:${BOX_USER_GID} ${BOX_USER_HOME}
+	chown -R ${BOX_USER_UID}:${BOX_USER_GID} ${BOX_BASE_DIR}
+	chown ${BOX_USER_UID}:${BOX_USER_GID} ${BOX_PROJECTS_ROOT} ${BOX_PROJECTS_ROOT}/*
 
-	cp ${WPLIB_BOX_ETC}/environment /etc/environment
-	cp ${WPLIB_BOX_ETC}/inputrc /etc/inputrc
-	cp ${WPLIB_BOX_BASE_DIR}/etc/box-aptget /etc/apt/apt.conf.d/42wplib
+	cp ${BOX_ETC}/environment /etc/environment
+	cp ${BOX_ETC}/inputrc /etc/inputrc
+	cp ${BOX_BASE_DIR}/etc/box-aptget /etc/apt/apt.conf.d/42wplib
 	rm -f /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade >& /dev/null
-	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-motd /etc/motd
+	link_file ${BOX_BASE_DIR}/etc/box-motd /etc/motd
 
-	if [ ! -f "${WPLIB_BOX_PROJECT_FILE}" ]
+	if [ ! -f "${BOX_PROJECT_FILE}" ]
 	then
-		cp ${WPLIB_BOX_RELEASE_JSON} ${WPLIB_BOX_PROJECT_FILE}
+		cp ${BOX_RELEASE_JSON} ${BOX_PROJECT_FILE}
 	fi
 
-	if [ ! -f "${WPLIB_BOX_SQL_DIR}/provision.sql" ]
+	if [ ! -f "${BOX_SQL_DIR}/provision.sql" ]
 	then
-		cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sql ${WPLIB_BOX_SQL_DIR}/provision.sql
+		cp ${BOX_RELEASE_DIR}/sql/provision.sql ${BOX_SQL_DIR}/provision.sql
 	fi
 }
 

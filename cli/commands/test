@@ -3,10 +3,16 @@
 # Master test script.
 #
 
+declare="${ECHO_PREFIX:=}"
+declare="${GREEN:=}"
+declare="${YELLOW:=}"
+declare="${RESET:=}"
+declare="${CYAN:=}"
+declare="${RED:=}"
+declare="${AVOID_LOOP:=}"
+declare="${BOX_CLI_DIR:=}"
+
 source /opt/box/cli/includes/functions
-source /opt/box/cli/includes/constants
-
-
 DEFAULT_PROJECT="wplib"
 
 # Return codes from functions.
@@ -63,12 +69,12 @@ echo_error()
 
 ################################################################################
 # OK. This is where things get funky, so I need to explain the flow
-# 1. THIS script will call scripts within ${WPLIB_BOX_CLI_DIR}/tests.
+# 1. THIS script will call scripts within ${BOX_CLI_DIR}/tests.
 # 2. Each of those scripts will SOURCE THIS script to pick up some common functions.
 #
 # So place everything above here that should be included in called scripts.
 # This means the following will avoid an endless loop.
-if [ "$AVOID_LOOP" == "OK" ]
+if [ "${AVOID_LOOP}" == "OK" ]
 then
 	return
 fi
@@ -99,9 +105,9 @@ d_ls()
 {
 	for SCRIPT in $ALLSCRIPTS
 	do
-		if [[ -x "${WPLIB_BOX_CLI_DIR}/tests/$SCRIPT" &&  -f "${WPLIB_BOX_CLI_DIR}/tests/$SCRIPT" ]]
+		if [[ -x "${BOX_CLI_DIR}/tests/$SCRIPT" &&  -f "${BOX_CLI_DIR}/tests/$SCRIPT" ]]
 		then
-			STDOUT="`${WPLIB_BOX_CLI_DIR}/tests/$SCRIPT info`"
+			STDOUT="`${BOX_CLI_DIR}/tests/$SCRIPT info`"
 			if [ "$?" == "$VALID_RETURN" ]
 			then
 				echo "$STDOUT"
@@ -118,13 +124,13 @@ d_exec()
 	SCRIPT="$1"
 	shift
 
-	if [ ! -r "${WPLIB_BOX_CLI_DIR}/tests/$SCRIPT" ]
+	if [ ! -r "${BOX_CLI_DIR}/tests/$SCRIPT" ]
 	then
 		echo "$ECHO_PREFIX ${YELLOW}NO SCRIPT	- ${CYAN}${SCRIPT}${RESET}"
 		return $RETURN_NOSCRIPT
 	fi
 
-	if [ ! -x "${WPLIB_BOX_CLI_DIR}/tests/$SCRIPT" ]
+	if [ ! -x "${BOX_CLI_DIR}/tests/$SCRIPT" ]
 	then
 		echo "$ECHO_PREFIX ${YELLOW}NO EXEC	- ${CYAN}${SCRIPT}${RESET}"
 		return $RETURN_NOEXEC
@@ -132,7 +138,7 @@ d_exec()
 
 	echo "################################################################################"
 	echo "$ECHO_PREFIX ${YELLOW}Run${RESET}	- ${CYAN}${SCRIPT}${RESET}"
-	${WPLIB_BOX_CLI_DIR}/tests/$SCRIPT "$@"
+	${BOX_CLI_DIR}/tests/$SCRIPT "$@"
 	RETURN="$?"
 	if [ "$RETURN" == "$RETURN_OK" ]
 	then
@@ -150,15 +156,15 @@ d_help()
 {
 	cat <<EOF
 box test 		- Show this help.
-box test ${GREEN}list${RESET}		- List all scripts in ${WPLIB_BOX_CLI_DIR}/tests.
-box test ${GREEN}run${RESET}		- Run all tests in ${WPLIB_BOX_CLI_DIR}/tests.
+box test ${GREEN}list${RESET}		- List all scripts in ${BOX_CLI_DIR}/tests.
+box test ${GREEN}run${RESET}		- Run all tests in ${BOX_CLI_DIR}/tests.
 box test ${GREEN}run [script]${RESET}	- Run a specific test.
 EOF
 }
 
 
 ################################################################################
-ALLSCRIPTS="`ls -1 ${WPLIB_BOX_CLI_DIR}/tests`"
+ALLSCRIPTS="`ls -1 ${BOX_CLI_DIR}/tests`"
 
 CMD="$1"
 shift

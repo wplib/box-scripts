@@ -8,6 +8,19 @@
 
 source /opt/box/cli/includes/functions
 
+declare="${ECHO_PREFIX:=}"
+declare="${YELLOW:=}"
+declare="${GREEN:=}"
+declare="${CYAN:=}"
+declare="${RESET:=}"
+declare="${BOX_CLI_DIR:=}"
+declare="${BOX_WEB_ROOT_DIR:=}"
+declare="${BOX_CONTENT_DIR:=}"
+declare="${BOX_PROJECT_FILE:=}"
+declare="${BOX_LOGS_DIR:=}"
+declare="${RETURN_ALREADY_STOPPED:=}"
+declare="${RETURN_NO_CONTAINER:=}"
+declare="${RETURN_OK:=}"
 
 ctrl_c()
 {
@@ -43,7 +56,7 @@ box component ${GREEN}log${RESET} <component>		- Show log files from components.
 box component ${GREEN}pull${RESET} <component>		- Just pull a component image. No install.
 
 If <component> is set to ${GREEN}all${RESET}, then all components will be used in the file:
-${WPLIB_BOX_PROJECT_FILE}
+${BOX_PROJECT_FILE}
 EOF
 }
 

@@ -2,30 +2,27 @@
 #
 # @todo: http://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
 #
+declare="${error:=}"
+declare="${BOX_COLORS_FILE:=}"
+declare="${BOX_COMMANDS_DIR:=}"
+declare="${BOX_INCLUDES_DIR:=}"
+
 
 source /opt/box/cli/includes/functions
-source /opt/box/cli/includes/constants
-source "${WPLIB_BOX_COLORS_FILE}"
+source "${BOX_COLORS_FILE}"
 
-#
-#
-#if [[ "$1" != "set-user-name" && "$1" != "set-user-email" ]];then
-#
-#    verify_user_config || error=1
-#
-#fi
 
 if [ "" == "${error}" ];then
 
     if [ "$1" == "" ]; then
-        export WPLIB_BOX_COMMAND="help"
+        export BOX_COMMAND="help"
     else
-        export WPLIB_BOX_COMMAND="$1"
+        export BOX_COMMAND="$1"
     fi
 
-    command_file="${WPLIB_BOX_COMMANDS_DIR}/${WPLIB_BOX_COMMAND}"
+    command_file="${BOX_COMMANDS_DIR}/${BOX_COMMAND}"
 
-    if [ "${WPLIB_BOX_COMMAND}" == "help" ]; then
+    if [ "${BOX_COMMAND}" == "help" ]; then
         source "${command_file}"
         #check_updates_available "$*"
         echo 1>&2
@@ -56,7 +53,7 @@ if [ "" == "${error}" ];then
        "php")
 		shift
 
-            /usr/bin/php7.0 "${WPLIB_BOX_INCLUDES_DIR}/run-command.php" --args "${WPLIB_BOX_COMMAND}" "$@"
+            /usr/bin/php7.0 "${BOX_INCLUDES_DIR}/run-command.php" --args "${BOX_COMMAND}" "$@"
             error=$?
             ;;
     esac

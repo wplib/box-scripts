@@ -1,0 +1,180 @@
+#!/usr/bin/env bash
+
+declare="${ECHO_PREFIX:=}"
+declare="${GREEN:=}"
+declare="${YELLOW:=}"
+declare="${RED:=}"
+declare="${CYAN:=}"
+declare="${WHITE:=}"
+declare="${RESET:=}"
+declare="${LESS:=}"
+declare="${BOX_PROJECT_DIR:=}"
+declare="${BOX_PROJECT_FILE:=}"
+
+function deploy_help() {
+    echo
+	cat <<EOF
+box ${GREEN}deploy${RESET} <host> - Deploys the host as defined in ${GREEN}project.json${RESET}.
+EOF
+    echo
+}
+
+function get_current_git_branch() {
+    pushDir
+    local saveLESS="${LESS}"
+    LESS=eFRX
+    cd "${BOX_PROJECT_DIR}"
+    branch="$(git rev-parse --abbrev-ref HEAD)"
+    echo $branch
+    LESS="${saveLESS}"
+    popDir
+}
+
+function make_cache_dir() {
+    cache_dir="$1"
+    mkdir --parents "${cache_dir}"
+}
+
+function get_repo_cache_dir() {
+    declare=${BOX_CACHE_DIR:=}
+    local repo_url="$1"
+    local path="tmp"
+    if [[ "${repo_url}" =~ ^https?:// ]]; then
+        path="${repo_url#*//}"
+    fi
+    if [[ "${repo_url}" =~ ^ssh:// ]]; then
+        path="${repo_url#*@}"   // Strip leading username, e.g. `git@`
+        path="${path%.*}"       // Strip trailing .git extension
+        path="${path/:/\/}"     // Replace ':' with '/'
+    fi
+    cache_dir="${BOX_CACHE_DIR}/${path}"
+    echo "${cache_dir}"
+}
+
+function ensure_cache_dir() {
+    declare=${BOX_USER:=}
+    sudo mkdir -p "${BOX_CACHE_DIR}"
+    sudo chmod 755 "${BOX_CACHE_DIR}"
+    sudo chown "${BOX_USER}:${BOX_USER}" "${BOX_CACHE_DIR}"
+}
+
+function get_project_dir() {
+    echo "${BOX_PROJECT_DIR}"
+}
+
+function get_deploy_source_repo_url() {
+    local source_repo_url="$(get_source_repo_url)"
+    local remote_repo_url="$(get_git_origin_remote_repo_url)"
+    if [ "${source_repo_url}" != "${remote_repo_url}" ]; then
+        output ""
+        output "${RED}Your source repo and your git remote repo do not match. Cannot deploy.${RESET}"
+        output ""
+        output "\tSource: ${source_repo_url}"
+        output "\tRemote: ${remote_repo_url}"
+        output ""
+        output "Your source repo is found in ${BOX_PROJECT_FILE} as '.source.repository.url.'"
+        output "Your remote is found by running 'git remote -v'. You can set your remote to match your source with:"
+        output ""
+        output "\tgit remote set-url --push origin ${source_repo_url}"
+        output ""
+        exit
+    fi
+    echo "${source_repo_url}"
+}
+
+function get_deploy_repo_branch() {
+    local host_id="$1"
+    local project_branch="$(get_deploy_host_branch "${host_id}")"
+    echo "${project_branch}"
+    local current_branch="$(get_current_git_branch)"
+    echo "${current_branch}"
+    if [ "${current_branch}" != "${project_branch}" ]; then
+        alert ""
+        alert "${RED}Your current branch does not match the deploy branch for the ${GREEN}${host_id}${RED} host. Cannot deploy.${RESET}"
+        alert ""
+        alert "\t${CYAN}Deploy Host:    ${GREEN}${host_id}${RESET}"
+        alert "\t${CYAN}Project Branch: ${GREEN}${project_branch}${RESET}"
+        alert "\t${CYAN}Current Branch: ${GREEN}${current_branch}${RESET}"
+        alert ""
+        alert "${YELLOW}You can set switch your current branch to the project branch for host ${GREEN}${host_id}${YELLOW}:${RESET}"
+        alert ""
+        alert "\t${GREEN}git checkout ${project_branch}${RESET}"
+        alert ""
+        exit
+    fi
+}
+
+function ensure_no_uncommitted_files() {
+    local uncommitted_files="$(get_git_uncommitted_files)"
+    local file
+    if [ "" != "${uncommitted_files}" ]; then
+        alert ""
+        alert "${RED}Your current branch has uncommitted files. Cannot deploy.${RESET}"
+        alert ""
+        saveIFS="${IFS}"
+        IFS=$'\n'
+        for file in $uncommitted_files ; do
+            alert "\t${GREEN}${file}${RESET}"
+        done
+        IFS="${saveIFS}"
+        alert ""
+        exit
+    fi
+}
+
+function do_deploy() {
+    local host_id="$1"
+
+    json="$(get_deployment "${host_id}")"
+    echo $json | jq .
+    exit
+
+    if [ "" == "${host_id}" ]; then
+        output "Hostname required when calling 'deploy'"
+        exit
+    fi
+    repo_url="$(get_deploy_source_repo_url)"
+    repo_branch="$(get_deploy_repo_branch "${host_id}")"
+    ensure_no_uncommitted_files
+
+exit
+    ensure_cache_dir
+    local repo_dir="$(get_repo_cache_dir "${repo_url}")"
+    local has_host="$(branch_has_deploy_host "${host_id}" "${repo_branch}")"
+
+exit
+
+    output
+    output "${YELLOW}Preparing to deploy:${RESET}"
+    output
+    output "\t${CYAN}Deploy repo: ${GREEN}${repo_url}${RESET}"
+    output "\t${CYAN}Repo branch: ${GREEN}${repo_branch}${RESET}"
+    output
+
+    if [ ! -d "${repo_dir}" ] ; then
+        make_cache_dir "$(dirname "${repo_dir}")"
+        clone_git_repo "${repo_dir}"
+    else
+        cd "${repo_dir}"
+        clone_git_repo "${repo_dir}"
+    fi
+}
+
+
+################################################################################
+SUBCMD="$1"
+shift
+case $SUBCMD in
+    'help')
+        deploy_help
+        ;;
+
+    'foo'|'bar'|'baz')
+        echo "Yo!"
+		;;
+
+	*)
+        do_deploy "${SUBCMD}"
+		;;
+esac
+
