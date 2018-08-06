@@ -8,6 +8,13 @@
 # `trigger.run_remote = {inline: "box first-time-provision"}`
 
 
+case $1 in
+	'-s'|'--short')
+		exec > /dev/null 2>&1
+		;;
+esac
+
+
 if [ -x /opt/box/bin/box ]
 then
 	if [ ! -f /etc/box-scripts-updated ]
@@ -23,4 +30,5 @@ else
 	echo "Run an update:"
 	echo "	/opt/box/bin/box self-update"
 fi
+
 
