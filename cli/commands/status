@@ -3,11 +3,11 @@
 source /opt/box/cli/includes/functions
 
 case $1 in
-	'-l')
+	*)
 		box container ls
 		;;
 
-	*)
+	'-s'|'--short')
 		# Creates IMAGES and STACK env variables.
 		readJSON
 

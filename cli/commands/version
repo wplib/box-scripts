@@ -8,11 +8,11 @@
 source /opt/box/cli/includes/functions
 
 case $1 in
-	'-l')
+	*)
 		echo "WPLib: You are running version $(cat "${WPLIB_BOX_BASE_DIR}/version")"
 		;;
 
-	*)
+	'-s'|'--short')
 		cat "${WPLIB_BOX_BASE_DIR}/version"
 		;;
 esac
