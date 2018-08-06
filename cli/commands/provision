@@ -99,7 +99,27 @@ function provision_fix()
 	cp ${WPLIB_BOX_ETC}/box-aptget /etc/apt/apt.conf.d/42wplib
 	rm -f /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade >& /dev/null
 	link_file ${WPLIB_BOX_ETC}/box-motd /etc/motd
+
+	# Software
 	link_file ${WPLIB_BOX_ETC}/apt/sources.list.d/docker.list /etc/apt/sources.list.d/docker.list
+
+	JQBIN="$(which jq)"
+	if [ "${JQBIN}" == "" ]
+	then
+		JQINSTALL="Y"
+	else
+		JQVERS="$(jq --version)"
+		if [ "${JQVERS}" != "jq-1.5" ]
+		then
+			rm ${JQBIN}
+			JQINSTALL="Y"
+		fi
+	fi
+	if [ "${JQINSTALL}" == "Y" ]
+	then
+		echo "Installing JQ-1.5"
+		wget -qO /usr/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && chmod +x /usr/bin/jq
+	else
 
 
 	# Make sure default project.json exists.
