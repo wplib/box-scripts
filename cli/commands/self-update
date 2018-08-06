@@ -65,3 +65,4 @@ EOF
 
 chmod a+x /tmp/self-update.$$
 exec sudo /tmp/self-update.$$
+

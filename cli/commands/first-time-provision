@@ -8,11 +8,19 @@
 # `trigger.run_remote = {inline: "box first-time-provision"}`
 
 
-source /opt/box/cli/includes/functions
-
-if [ ! -e /etc/box-scripts-updated ]
+if [ -x /opt/box/bin/box ]
 then
-	touch /etc/box-scripts-updated
-	exec /opt/box/bin/box self-update
+	if [ ! -f /etc/box-scripts-updated ]
+	then
+		echo "WPLib Box: Running first time provisioning."
+		touch /etc/box-scripts-updated
+		exec /opt/box/bin/box self-update
+	fi
+else
+	echo "WPLib Box: ERROR: W021 - box-scripts not present."
+	echo "Pull down the latest box-scripts by doing the following:"
+	echo "	sudo git clone -q https://github.com/wplib/box-scripts/ /opt/box"
+	echo "Run an update:"
+	echo "	/opt/box/bin/box self-update"
 fi
 
