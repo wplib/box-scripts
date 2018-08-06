@@ -66,48 +66,14 @@ function provision_fix()
 	link_file ${WPLIB_BOX_ETC}/upstop/wplib-box-stop.conf /etc/init/wplib-box-stop.conf
 
 
-	# Setup boxuser, if not there.
-	USERID="$(id -u ${WPLIB_BOX_USER})"
-	if [ "${USERID}" == "" ]
-	then
-		useradd -o -d ${WPLIB_BOX_USER_HOME} -c "WPLib Box user" -u ${WPLIB_BOX_USER_UID} -g ${WPLIB_BOX_USER_GID} -N -s /bin/bash ${WPLIB_BOX_USER}
-		usermod -aG docker ${WPLIB_BOX_USER}
-	fi
-	if [ "${USERID}" != "${WPLIB_BOX_USER_UID}" ]
-	then
-		usermod -o -d ${WPLIB_BOX_USER_HOME} -c "WPLib Box user" -u ${WPLIB_BOX_USER_UID} -g ${WPLIB_BOX_USER_GID} -N -s /bin/bash ${WPLIB_BOX_USER}
-		usermod -aG docker ${WPLIB_BOX_USER}
-	fi
-
-	if [ ! -d ${WPLIB_BOX_USER_HOME}/.ssh ]
-	then
-		mkdir -pm 700 ${WPLIB_BOX_USER_HOME}/.ssh
-	fi
-	if [ ! -f ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys ]
-	then
-		wget -q --no-check-certificate 'https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub' -O ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys >&/dev/null
-		chmod 0600 ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys
-	fi
-	touch ${WPLIB_BOX_USER_HOME}/.Xauthority
-
-
-	# Change permissions.
-	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_USER_HOME}
-	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_BASE_DIR}
-	chown ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_PROJECT_BASE} ${WPLIB_BOX_PROJECT_BASE}/*
-
-
-	# Fix user shell.
-	link_file ${WPLIB_BOX_ETC}/box-completion.bash /etc/bash_completion.d/box-completion.bash
-	link_file ${WPLIB_BOX_ETC}/box-profile.sh /etc/profile.d/box-profile.sh
-	cp ${WPLIB_BOX_ETC}/environment /etc/environment
-	cp ${WPLIB_BOX_ETC}/inputrc /etc/inputrc
-	cp ${WPLIB_BOX_ETC}/box-aptget /etc/apt/apt.conf.d/42wplib
-	rm -f /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade >& /dev/null
-	link_file ${WPLIB_BOX_ETC}/box-motd /etc/motd
-
 	# Software
 	link_file ${WPLIB_BOX_ETC}/apt/sources.list.d/docker.list /etc/apt/sources.list.d/docker.list
+	grep -q ^docker: /etc/group
+	if [ "$?" == "1" ]
+	then
+		echo "Adding docker group"
+		groupadd docker
+	fi
 
 	JQBIN="$(which jq)"
 	if [ "${JQBIN}" == "" ]
@@ -126,6 +92,52 @@ function provision_fix()
 		echo "Installing JQ-1.5"
 		wget -qO /usr/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && chmod +x /usr/bin/jq
 	fi
+
+
+	# Setup boxuser, if not there.
+	USERID="$(id -u ${WPLIB_BOX_USER})"
+	if [ "${USERID}" == "" ]
+	then
+		echo "Adding boxuser"
+		useradd -o -d ${WPLIB_BOX_USER_HOME} -c "WPLib Box user" -u ${WPLIB_BOX_USER_UID} -g ${WPLIB_BOX_USER_GID} -N -s /bin/bash ${WPLIB_BOX_USER}
+		usermod -aG adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare,docker ${WPLIB_BOX_USER}
+		chmod 775 /home/box
+	fi
+	if [ "${USERID}" != "${WPLIB_BOX_USER_UID}" ]
+	then
+		echo "Updating boxuser"
+		usermod -o -d ${WPLIB_BOX_USER_HOME} -c "WPLib Box user" -u ${WPLIB_BOX_USER_UID} -g ${WPLIB_BOX_USER_GID} -N -s /bin/bash ${WPLIB_BOX_USER}
+		usermod -aG adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare,docker ${WPLIB_BOX_USER}
+		chmod 775 /home/box
+	fi
+
+	if [ ! -d ${WPLIB_BOX_USER_HOME}/.ssh ]
+	then
+		mkdir -pm 700 ${WPLIB_BOX_USER_HOME}/.ssh
+	fi
+	if [ ! -f ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys ]
+	then
+		wget -q --no-check-certificate 'https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub' -O ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys >&/dev/null
+		chmod 0600 ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys
+	fi
+	touch ${WPLIB_BOX_USER_HOME}/.Xauthority
+	link_file /opt/box/sbin/shutdown /home/box/shutdown.sh
+
+
+	# Change permissions.
+	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_USER_HOME}
+	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_BASE_DIR}
+	chown ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_PROJECT_BASE} ${WPLIB_BOX_PROJECT_BASE}/*
+
+
+	# Fix user shell.
+	link_file ${WPLIB_BOX_ETC}/box-completion.bash /etc/bash_completion.d/box-completion.bash
+	link_file ${WPLIB_BOX_ETC}/box-profile.sh /etc/profile.d/box-profile.sh
+	cp ${WPLIB_BOX_ETC}/environment /etc/environment
+	cp ${WPLIB_BOX_ETC}/inputrc /etc/inputrc
+	cp ${WPLIB_BOX_ETC}/box-aptget /etc/apt/apt.conf.d/42wplib
+	rm -f /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade >& /dev/null
+	link_file ${WPLIB_BOX_ETC}/box-motd /etc/motd
 
 
 	# Make sure default project.json exists.
