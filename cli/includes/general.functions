@@ -30,6 +30,7 @@ function link_file()
 		if [ "${TEMP}" == "" ]
 		then
 			echo "$ECHO_PREFIX ${YELLOW}Adding symlink: ${GREEN}${SRC} -> ${DST}${RESET}"
+			rm ${DST}
 			ln -s ${SRC} ${DST}
 		else
 			echo "$ECHO_PREFIX ${YELLOW}Updating symlink: ${GREEN}${SRC} -> ${DST}${RESET}"
