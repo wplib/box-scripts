@@ -148,6 +148,10 @@ function provision_fix()
 
 
 	# Make sure default provision.sql file exists.
+	if [ ! -d "${WPLIB_BOX_SQL_DIR}" ]
+	then
+		mkdir -p ${WPLIB_BOX_SQL_DIR}
+	fi
 	if [ ! -f "${WPLIB_BOX_SQL_DIR}/provision.sql" ]
 	then
 		cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sql ${WPLIB_BOX_SQL_DIR}/provision.sql
