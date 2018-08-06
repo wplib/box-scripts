@@ -62,8 +62,9 @@ function provision_fix()
 
 
 	# init
-	link_file ${WPLIB_BOX_ETC}/upstart/wplib-box-start.conf /etc/init/wplib-box-start.conf
-	link_file ${WPLIB_BOX_ETC}/upstop/wplib-box-stop.conf /etc/init/wplib-box-stop.conf
+	# Disabled until we move off Vagrant.
+	# link_file ${WPLIB_BOX_ETC}/upstart/wplib-box-start.conf /etc/init/wplib-box-start.conf
+	# link_file ${WPLIB_BOX_ETC}/upstop/wplib-box-stop.conf /etc/init/wplib-box-stop.conf
 
 
 	# Software
