@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+declare="${IMAGES:=}"
 source /opt/box/cli/includes/functions
 
 case $1 in
