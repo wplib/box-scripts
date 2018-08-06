@@ -2,8 +2,6 @@
 
 source /opt/box/cli/includes/functions
 
-echo "$@"
-
 case $1 in
 	'-l')
 		box container ls
