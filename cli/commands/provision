@@ -119,7 +119,7 @@ function provision_fix()
 	then
 		echo "Installing JQ-1.5"
 		wget -qO /usr/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && chmod +x /usr/bin/jq
-	else
+	fi
 
 
 	# Make sure default project.json exists.
