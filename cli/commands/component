@@ -6,6 +6,16 @@
 #	Pull the complete list of WPLib container components from Docker Hub into local JSON files.
 #	Manage containers - stop/start and most importantly creating containers using the embedded JSON string in the image.
 
+declare="${ECHO_PREFIX:=}"
+declare="${GREEN:=}"
+declare="${CYAN:=}"
+declare="${RESET:=}"
+declare="${BOX_PROJECT_FILE:=}"
+declare="${RETURN_ALREADY_STOPPED:=}"
+declare="${RETURN_NO_CONTAINER:=}"
+declare="${RETURN_OK:=}"
+
+
 source /opt/box/cli/includes/functions
 
 
@@ -43,7 +53,7 @@ box component ${GREEN}log${RESET} <component>		- Show log files from components.
 box component ${GREEN}pull${RESET} <component>		- Just pull a component image. No install.
 
 If <component> is set to ${GREEN}all${RESET}, then all components will be used in the file:
-${WPLIB_BOX_PROJECT_FILE}
+${BOX_PROJECT_FILE}
 EOF
 }
 

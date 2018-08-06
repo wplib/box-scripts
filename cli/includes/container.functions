@@ -20,7 +20,7 @@ declare="${BOX_ETC:=}"
 declare="${RETURN_CANT_REMOVE_IMAGE:=}"
 declare="${BOX_SQL_DIR:=}"
 declare="${BOX_NAME:=}"
-declare="${BOX_SQL_PROVISION_LOCK}"
+declare="${BOX_SQL_PROVISION_LOCK:=}"
 
 
 # Return codes from functions.
