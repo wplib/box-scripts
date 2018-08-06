@@ -106,7 +106,7 @@ function provision_fix()
 	if [ "${USERID}" != "${WPLIB_BOX_USER_UID}" ]
 	then
 		echo "Updating boxuser"
-		usermod -o -d ${WPLIB_BOX_USER_HOME} -c "WPLib Box user" -u ${WPLIB_BOX_USER_UID} -g ${WPLIB_BOX_USER_GID} -N -s /bin/bash ${WPLIB_BOX_USER}
+		usermod -o -d ${WPLIB_BOX_USER_HOME} -c "WPLib Box user" -u ${WPLIB_BOX_USER_UID} -g ${WPLIB_BOX_USER_GID} -s /bin/bash ${WPLIB_BOX_USER}
 		usermod -aG adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare,docker ${WPLIB_BOX_USER}
 		chmod 775 /home/box
 	fi
