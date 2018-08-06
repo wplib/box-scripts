@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-source "${WPLIB_BOX_INCLUDES_DIR}/set-processvm" php7.0
-
