@@ -1,21 +1,20 @@
 #!/usr/bin/env bash
 
-source /opt/box/cli/includes/functions
-
 declare="${IMAGES:=}"
+
+source /opt/box/cli/includes/functions
 
 # Creates IMAGES and STACK env variables.
 readJSON
 
-box container start ${IMAGES}
+case $1 in
+	'-s'|'--short')
+		box container start ${IMAGES} &>/dev/null
+		box status --short
+		;;
 
-#if [[ ! -e "${BOX_CLI_DIR}/PROVISION" && -e "${BOX_SQL_DIR}/provision.sql" ]] ; then
-#
-#    sudo bash -c "date +'%Y%m%d %H%M%S' > \"${BOX_CLI_DIR}/PROVISION\""
-#    box database import provision.sql
-#
-#    #
-#    # @todo check return value and if error delete ${BOX_CLI_DIR}/PROVISION
-#    #
-#
-#fi
+	*)
+		box container start ${IMAGES}
+		;;
+esac
+

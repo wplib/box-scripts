@@ -6,5 +6,15 @@
 #
 declare="${BOX_BASE_DIR:=}"
 
-cat "${BOX_BASE_DIR}/version"
+source /opt/box/cli/includes/functions
+
+case $1 in
+	'-s'|'--short')
+		cat "${BOX_BASE_DIR}/version"
+		;;
+
+	*)
+		echo "WPLib: You are running version $(cat "${BOX_BASE_DIR}/version")"
+		;;
+esac
 

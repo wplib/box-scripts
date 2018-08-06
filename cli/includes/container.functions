@@ -19,6 +19,9 @@ declare="${ORG_NAME:=}"
 declare="${BOX_ETC:=}"
 declare="${RETURN_CANT_REMOVE_IMAGE:=}"
 declare="${BOX_SQL_DIR:=}"
+declare="${BOX_NAME:=}"
+declare="${BOX_SQL_PROVISION_LOCK}"
+
 
 # Return codes from functions.
 RETURN_OK="0"
@@ -242,7 +245,7 @@ function component_info()
 		return $RETURN_NO_IMAGE_JSON
 	fi
 
-	if [ "$PROJECT" != "${ORG_NAME}" ]
+	if [ "$PROJECT" != "${BOX_NAME}" ]
 	then
 		return $RETURN_INVALID_PROJECT
 	fi
@@ -252,7 +255,8 @@ function component_info()
 	CONTAINER_ID=$(docker container ls -qaf name="${CONTAINER_NAME}")
 	if [ "$CONTAINER_ID" != "" ]
 	then
-		DOCKER="$(docker inspect -f '{{.State.Running}};{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}};{{range .NetworkSettings.Networks}}{{(index .Aliases 0)}}{{end}}' $CONTAINER_NAME 2>/dev/null)"
+		# DOCKER="$(docker inspect -f '{{.State.Running}};{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}};{{range .NetworkSettings.Networks}}{{(index .Aliases 0)}}{{end}}' $CONTAINER_NAME 2>/dev/null)"
+		DOCKER="$(docker inspect -f '{{.State.Running}};{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}};{{.Config.Hostname}}' $CONTAINER_NAME 2>/dev/null)"
 		IFS=';' read -r -a state_array <<< "$DOCKER"
 
 		CONTAINER_RUNNING="${state_array[0]}"
@@ -280,10 +284,10 @@ function is_component_in_repo()
 	IMAGE_NAME="${state_array[1]}"
 	IMAGE_VERSION="${state_array[2]}"
 
-	# wget -qO /dev/null https://hub.docker.com/v2/repositories/${ORG_NAME}/${IMAGE_NAME}/tags/
-	if [ -f ${BOX_ETC}/images/${IMAGE_NAME}.json ]
+	# wget -qO /dev/null https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/
+	if [ -f "${BOX_ETC}/images/${IMAGE_NAME}.json" ]
 	then
-		jq --raw-output ".results | .[] | .name" ${BOX_ETC}/images/${IMAGE_NAME}.json | grep -q "^${IMAGE_VERSION}\$"
+		jq --raw-output ".results | .[] | .name" "${BOX_ETC}/images/${IMAGE_NAME}.json" | grep -q "^${IMAGE_VERSION}\$"
 		if [ "$?" == "0" ]
 		then
 			RETURN=$RETURN_OK
@@ -329,7 +333,7 @@ function available_components()
 	IMAGES="$(jq -r '.results|.[]|.name' ${BOX_ETC}/repositories.json | sort -u)"
 	for IMAGE_NAME in ${IMAGES}
 	do
-		if [ -f ${BOX_ETC}/images/${IMAGE_NAME}.json ]
+		if [ -f "${BOX_ETC}/images/${IMAGE_NAME}.json" ]
 		then
 			VERSIONS="$(jq -r '.results|.[]|.name' ${BOX_ETC}/images/${IMAGE_NAME}.json | sort -u)"
 			for IMAGE_VERSION in ${VERSIONS}
@@ -442,10 +446,15 @@ function component_shell()
 			fi
 			;;
 
-#		$RETURN_NO_LOCAL_IMAGE)
-#			error_nfl
-#			;;
-#
+		$RETURN_NO_LOCAL_IMAGE|$RETURN_NO_CONTAINER)
+			component_install $IMAGE
+			RETURN="$?"
+			if [ "$RETURN" == "$RETURN_OK" ]
+			then
+				component_shell $IMAGE "$@"
+			fi
+			;;
+
 		$RETURN_NO_IMAGE_JSON)
 			error_dnc
 			;;
@@ -482,8 +491,8 @@ function component_exec()
 			fi
 			;;
 
-		$RETURN_NO_LOCAL_IMAGE)
-			error_nfl
+		$RETURN_NO_LOCAL_IMAGE|$RETURN_NO_CONTAINER)
+			component_provision $IMAGE
 			;;
 
 		$RETURN_NO_IMAGE_JSON)
@@ -659,15 +668,16 @@ function component_start()
 				else
 					echo "${GREEN}OK${RESET}"
 
+					# A bit of a hack - this really shouldn't be here.
 					if [[ "${IMAGE_NAME}" =~ ^(mysql|mariadb)$ ]]
 					then
-						if [[ -f ${BOX_SQL_DIR}/provision.sql && ! -e ${BOX_SQL_DIR}/provision.sql.lock ]]
+						if [[ -f ${BOX_SQL_DIR}/provision.sql && ! -e ${BOX_SQL_PROVISION_LOCK} ]]
 						then
 							# We need to be able to query the DB and see when it's ready for connections.
 							# In the mean time sleep for 10.
 							sleep 10
-							box database import provision.sql
-							touch ${BOX_SQL_DIR}/provision.sql.lock
+							box database import provision.sql --no-backup
+							touch ${BOX_SQL_PROVISION_LOCK}
 						fi
 					fi
 				fi
@@ -752,7 +762,7 @@ function shutdown()
 
 	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLLib components. ${RESET} ... "
 	TEMPFILE="$(mktemp /tmp/box-container.XXX)"
-	docker container ls -qaf "label=container.project=${ORG_NAME}" | xargs docker stop >& $TEMPFILE
+	docker container ls -qaf "label=container.project=${BOX_NAME}" | xargs docker stop &> $TEMPFILE
 	if [ "$?" == "1" ]
 	then
 		echo "${RED}NOT OK${RESET}"
@@ -791,15 +801,15 @@ function component_list()
 		$RETURN_NO_IMAGE_NAME)
 			echo "$ECHO_PREFIX ${GREEN}Downloaded components: ${CYAN}${IMAGE}${RESET}"
 			echo "Image			Size"
-			docker image ls -af "label=container.project=${ORG_NAME}" --format "{{.Repository}}:{{.Tag}}  \t{{.Size}}"
+			docker image ls -af "label=container.project=${BOX_NAME}" --format "{{.Repository}}:{{.Tag}}  \t{{.Size}}"
 			echo ""
 			echo "$ECHO_PREFIX ${GREEN}Stopped components: ${CYAN}${IMAGE}${RESET}"
 			echo "Container		Size			Status"
-			docker container ls -af "label=container.project=${ORG_NAME}" -f "status=created" -f "status=exited" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
+			docker container ls -af "label=container.project=${BOX_NAME}" -f "status=created" -f "status=exited" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
 			echo ""
 			echo "$ECHO_PREFIX ${GREEN}Running components: ${CYAN}${IMAGE}${RESET}"
 			echo "Container		Size			Status"
-			docker container ls -af "label=container.project=${ORG_NAME}" -f "status=running" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
+			docker container ls -af "label=container.project=${BOX_NAME}" -f "status=running" --format "{{.Image}}  \t{{.Size}}\t{{.Status}}"
 			;;
 
 		$RETURN_NO_LOCAL_IMAGE)

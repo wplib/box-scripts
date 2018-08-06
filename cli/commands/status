@@ -2,8 +2,17 @@
 
 source /opt/box/cli/includes/functions
 
-# Creates IMAGES and STACK env variables.
-#readJSON
-#box container ls ${IMAGES}
+case $1 in
+	'-s'|'--short')
+		# Creates IMAGES and STACK env variables.
+		readJSON
 
-box container ls
+		echo "Components installed:"
+		echo $IMAGES | sed 's/wplib\//\n/g; s/:/\t/g'
+		;;
+
+	*)
+		box container ls
+		;;
+esac
+
