@@ -59,6 +59,15 @@ EOF
 
 
 ################################################################################
+DOCKERBIN="$(which docker)"
+if [ "${DOCKERBIN}" == "" ]
+then
+	echo "$ECHO_PREFIX ${RED}ERROR: docker command does not exist.${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W022/${RESET}"
+	exit 1
+fi
+
+
 CMD="$1"
 shift
 IMAGES="$@"
