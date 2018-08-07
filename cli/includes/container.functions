@@ -421,7 +421,7 @@ function component_shell()
 	IMAGE=$1
 	shift
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -433,10 +433,10 @@ function component_shell()
 				if [ -t 0 ]
 				then
 					# TTY allocated.
-					docker run --name ${CONTAINER_NAME}-shell --rm -i -t ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
+					docker run --name ${CONTAINER_NAME}-shell --rm -i -t ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC}/container.env ${IMAGE} "$@"
 				else
 					# TTY not allocated.
-					docker run --name ${CONTAINER_NAME}-exec  --rm -i    ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
+					docker run --name ${CONTAINER_NAME}-exec  --rm -i    ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC}/container.env ${IMAGE} "$@"
 				fi
 
 				#if [ "$?" == "1" ]
@@ -474,7 +474,7 @@ function component_exec()
 	IMAGE=$1
 	shift
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -483,7 +483,7 @@ function component_exec()
 				error_cni
 			else
 				# echo "$ECHO_PREFIX ${GREEN}Shell to component: ${CYAN}${IMAGE}${RESET}" 1>&2
-				docker run --name ${CONTAINER_NAME}-exec --rm ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
+				docker run --name ${CONTAINER_NAME}-exec --rm ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC}/container.env ${IMAGE} "$@"
 				#if [ "$?" == "1" ]
 				#then
 				#	error_ccbi
@@ -513,7 +513,7 @@ function component_create_container()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		#$RETURN_OK)
@@ -522,7 +522,7 @@ function component_create_container()
 			then
 				echo -n "$ECHO_PREFIX ${GREEN}Creating component: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
-				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} >& $TEMPFILE
+				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC}/container.env ${IMAGE} >& $TEMPFILE
 
 				if [ "$?" == "1" ]
 				then
@@ -561,7 +561,7 @@ function component_remove()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -605,7 +605,7 @@ function image_remove()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK|$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER)
@@ -649,7 +649,7 @@ function component_start()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 
 	case $RETURN in
@@ -710,7 +710,7 @@ function component_stop()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -785,7 +785,7 @@ function component_list()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -834,7 +834,7 @@ function component_inspect()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -867,7 +867,7 @@ function component_log()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -898,7 +898,7 @@ function component_install()
 	IMAGE=$1
 
 	echo -n "$ECHO_PREFIX ${GREEN}Installing component: ${CYAN}${IMAGE}${RESET} ... "
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
