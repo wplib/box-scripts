@@ -421,7 +421,7 @@ function component_shell()
 	IMAGE=$1
 	shift
 
-	component_info $IMAGE
+	component_info
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -474,7 +474,7 @@ function component_exec()
 	IMAGE=$1
 	shift
 
-	component_info $IMAGE
+	component_info
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -513,7 +513,7 @@ function component_create_container()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info $IMAGE
+	component_info
 	RETURN="$?"
 	case $RETURN in
 		#$RETURN_OK)
@@ -522,7 +522,9 @@ function component_create_container()
 			then
 				echo -n "$ECHO_PREFIX ${GREEN}Creating component: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
-				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC}/container.env ${IMAGE} >& $TEMPFILE
+
+				# To be fixed in 0.17.2
+				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC}/container.env ${IMAGE} &> $TEMPFILE
 
 				if [ "$?" == "1" ]
 				then
@@ -561,7 +563,7 @@ function component_remove()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info $IMAGE
+	component_info
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -605,7 +607,7 @@ function image_remove()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info $IMAGE
+	component_info
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK|$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER)
@@ -649,7 +651,7 @@ function component_start()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info $IMAGE
+	component_info
 	RETURN="$?"
 
 	case $RETURN in
@@ -710,7 +712,7 @@ function component_stop()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info $IMAGE
+	component_info
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -785,7 +787,7 @@ function component_list()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info $IMAGE
+	component_info
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -834,7 +836,7 @@ function component_inspect()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info $IMAGE
+	component_info
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -867,7 +869,7 @@ function component_log()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info $IMAGE
+	component_info
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -898,7 +900,7 @@ function component_install()
 	IMAGE=$1
 
 	echo -n "$ECHO_PREFIX ${GREEN}Installing component: ${CYAN}${IMAGE}${RESET} ... "
-	component_info $IMAGE
+	component_info
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)

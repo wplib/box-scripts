@@ -86,7 +86,7 @@ function provision_fix()
 
 
 	# Software
-	link_file ${BOX_ETC}/apt/sources.list.d/docker.list /etc/apt/sources.list.d/docker.list
+	link_file "${BOX_ETC}/apt/sources.list.d/docker.list" /etc/apt/sources.list.d/docker.list
 	grep -q ^docker: /etc/group
 	if [ "$?" == "1" ]
 	then
@@ -119,16 +119,14 @@ function provision_fix()
 	then
 		echo "Adding boxuser"
 		useradd -o -d ${BOX_USER_HOME} -c "WPLib Box user" -u ${BOX_USER_UID} -g ${BOX_USER_GID} -N -s /bin/bash ${BOX_USER}
-		usermod -aG adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare,docker ${BOX_USER}
-		chmod 775 /home/box
 	fi
 	if [ "${USERID}" != "${BOX_USER_UID}" ]
 	then
 		echo "Updating boxuser"
 		usermod -o -d ${BOX_USER_HOME} -c "WPLib Box user" -u ${BOX_USER_UID} -g ${BOX_USER_GID} -s /bin/bash ${BOX_USER}
-		usermod -aG adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare,docker ${BOX_USER}
-		chmod 775 /home/box
 	fi
+	usermod -aG adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare,docker ${BOX_USER}
+	chmod 775 /home/box
 
 	if [ ! -d ${BOX_USER_HOME}/.ssh ]
 	then
