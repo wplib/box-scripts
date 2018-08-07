@@ -163,12 +163,12 @@ function readJSON()
 
 	if [ ! -f "${JSON}" ]
 	then
-		cp ${BOX_RELEASE_JSON} ${JSON}
+		cp "${BOX_RELEASE_JSON}" "${JSON}"
 	fi
 
 	if [[ ${JSON} -nt ${JSON}.lock ]]
 	then
-		jq -s '.[0] * .[1]' ${BOX_RELEASE_JSON} ${JSON} > ${JSON}.lock
+		jq -s '.[0] * .[1]' "${BOX_RELEASE_JSON}" "${JSON}" > ${JSON}.lock
 	fi
 
 	#IMAGES="$(jq --raw-output ".stack | .[]" ${JSON}.lock)"
@@ -305,21 +305,21 @@ function is_component_in_repo()
 function update_components()
 {
 	echo -n "$ECHO_PREFIX ${GREEN}Updating repository list${RESET}."
-	if [ ! -d ${BOX_ETC} ]
+	if [ ! -d "${BOX_ETC}" ]
 	then
-		sudo mkdir -p ${BOX_ETC}
+		sudo mkdir -p "${BOX_ETC}"
 	fi
-	if [ ! -d ${BOX_ETC}/images ]
+	if [ ! -d "${BOX_ETC}/images" ]
 	then
-		sudo mkdir -p ${BOX_ETC}/images
+		sudo mkdir -p "${BOX_ETC}/images"
 	fi
 
-	sudo wget -qNO ${BOX_ETC}/repositories.json https://hub.docker.com/v2/repositories/${ORG_NAME}/?page_size=256
-	IMAGES="$(jq -r '.results|.[]|.name' ${BOX_ETC}/repositories.json)"
+	sudo wget -qNO "${BOX_ETC}/repositories.json" "https://hub.docker.com/v2/repositories/${BOX_NAME}/?page_size=256"
+	IMAGES="$(jq -r '.results|.[]|.name' "${BOX_ETC}/repositories.json")"
 	for IMAGE_NAME in $IMAGES
 	do
 		echo -n "."
-		sudo wget -qNO ${BOX_ETC}/images/${IMAGE_NAME}.json https://hub.docker.com/v2/repositories/${ORG_NAME}/${IMAGE_NAME}/tags/?page_size=256
+		sudo wget -qNO "${BOX_ETC}/images/${IMAGE_NAME}.json" "https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/?page_size=256"
 	done
 	echo " ${GREEN}OK${RESET}"
 }
@@ -330,17 +330,17 @@ function available_components()
 	local RETURN IMAGES IMAGE_NAME VERSIONS IMAGE_VERSION
 
 	echo "$ECHO_PREFIX ${GREEN}Available component downloads.${RESET}"
-	IMAGES="$(jq -r '.results|.[]|.name' ${BOX_ETC}/repositories.json | sort -u)"
+	IMAGES="$(jq -r '.results|.[]|.name' "${BOX_ETC}/repositories.json" | sort -u)"
 	for IMAGE_NAME in ${IMAGES}
 	do
 		if [ -f "${BOX_ETC}/images/${IMAGE_NAME}.json" ]
 		then
-			VERSIONS="$(jq -r '.results|.[]|.name' ${BOX_ETC}/images/${IMAGE_NAME}.json | sort -u)"
+			VERSIONS="$(jq -r '.results|.[]|.name' "${BOX_ETC}/images/${IMAGE_NAME}.json" | sort -u)"
 			for IMAGE_VERSION in ${VERSIONS}
 			do
 				if [ "${IMAGE_VERSION}" != "latest" ]
 				then
-					echo "${ORG_NAME}/${IMAGE_NAME}:${IMAGE_VERSION}"
+					echo "${BOX_NAME}/${IMAGE_NAME}:${IMAGE_VERSION}"
 				fi
 			done
 		fi
@@ -365,9 +365,9 @@ function reallyclean()
 			echo "$ECHO_PREFIX ${GREEN}Shutting down all WPLib components.${RESET}"
 			$0 container shutdown
 			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib components.${RESET}"
-			docker container ls -qaf "label=container.project=${ORG_NAME}" | xargs -r docker container rm
+			docker container ls -qaf "label=container.project=${BOX_NAME}" | xargs -r docker container rm
 			echo "$ECHO_PREFIX ${GREEN}Removing all WPLib component downloads.${RESET}"
-			docker image ls -qaf "label=container.project=${ORG_NAME}" | xargs -r docker image rm
+			docker image ls -qaf "label=container.project=${BOX_NAME}" | xargs -r docker image rm
 		fi
 	else
 		echo "$ECHO_PREFIX ${GREEN}Doing nothing.${RESET}"
@@ -421,7 +421,7 @@ function component_shell()
 	IMAGE=$1
 	shift
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -474,7 +474,7 @@ function component_exec()
 	IMAGE=$1
 	shift
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -492,7 +492,7 @@ function component_exec()
 			;;
 
 		$RETURN_NO_LOCAL_IMAGE|$RETURN_NO_CONTAINER)
-			component_provision $IMAGE
+			component_provision $IMAGE 
 			;;
 
 		$RETURN_NO_IMAGE_JSON)
@@ -513,7 +513,7 @@ function component_create_container()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		#$RETURN_OK)
@@ -563,7 +563,7 @@ function component_remove()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -607,7 +607,7 @@ function image_remove()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK|$RETURN_ALREADY_STOPPED|$RETURN_NO_CONTAINER)
@@ -651,7 +651,7 @@ function component_start()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 
 	case $RETURN in
@@ -673,13 +673,13 @@ function component_start()
 					# A bit of a hack - this really shouldn't be here.
 					if [[ "${IMAGE_NAME}" =~ ^(mysql|mariadb)$ ]]
 					then
-						if [[ -f ${BOX_SQL_DIR}/provision.sql && ! -e ${BOX_SQL_PROVISION_LOCK} ]]
+						if [[ -f "${BOX_SQL_DIR}/provision.sql" && ! -e "${BOX_SQL_PROVISION_LOCK}" ]]
 						then
 							# We need to be able to query the DB and see when it's ready for connections.
 							# In the mean time sleep for 10.
 							sleep 10
 							box database import provision.sql --no-backup
-							touch ${BOX_SQL_PROVISION_LOCK}
+							touch "${BOX_SQL_PROVISION_LOCK}"
 						fi
 					fi
 				fi
@@ -712,7 +712,7 @@ function component_stop()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -776,7 +776,7 @@ function shutdown()
 	rm -f $TEMPFILE
 
 	# Remove lock file.
-	rm -f ${BOX_PROJECT_FILE}.lock
+	rm -f "${BOX_PROJECT_FILE}.lock"
 
 	return $RETURN_OK
 }
@@ -787,7 +787,7 @@ function component_list()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -836,7 +836,7 @@ function component_inspect()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -869,7 +869,7 @@ function component_log()
 	local RETURN TEMPFILE IMAGE
 	IMAGE=$1
 
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -900,7 +900,7 @@ function component_install()
 	IMAGE=$1
 
 	echo -n "$ECHO_PREFIX ${GREEN}Installing component: ${CYAN}${IMAGE}${RESET} ... "
-	component_info
+	component_info $IMAGE
 	RETURN="$?"
 	case $RETURN in
 		$RETURN_OK)
@@ -1099,7 +1099,7 @@ function get_latest_patch_version() {
         # local repo_url="https://registry.hub.docker.com/v1/repositories/${org}/{$repo}/tags"
         # local repo_json="$(curl --silent --fail --max-time 3 --stderr /dev/null "${repo_url}")"
         # local versions=$(echo "${repo_json}" | jq --raw-output ".[] | .name" | grep "${version}")
-        local versions=$(jq --raw-output ".results | .[] | .name" ${BOX_ETC}/images/${repo}.json | grep "^${version}")
+        local versions=$(jq --raw-output ".results | .[] | .name" "${BOX_ETC}/images/${repo}.json" | grep "^${version}")
 
         if [ "" == "${versions}" ] ; then
             version=""

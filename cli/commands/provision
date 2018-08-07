@@ -114,47 +114,47 @@ function provision_fix()
 
 
 	# Setup boxuser, if not there.
-	USERID="$(id -u ${BOX_USER})"
+	USERID="$(id -u "${BOX_USER}")"
 	if [ "${USERID}" == "" ]
 	then
 		echo "Adding boxuser"
-		useradd -o -d ${BOX_USER_HOME} -c "WPLib Box user" -u ${BOX_USER_UID} -g ${BOX_USER_GID} -N -s /bin/bash ${BOX_USER}
+		useradd -o -d "${BOX_USER_HOME}" -c "WPLib Box user" -u "${BOX_USER_UID}" -g "${BOX_USER_GID}" -N -s /bin/bash "${BOX_USER}"
 	fi
 	if [ "${USERID}" != "${BOX_USER_UID}" ]
 	then
 		echo "Updating boxuser"
-		usermod -o -d ${BOX_USER_HOME} -c "WPLib Box user" -u ${BOX_USER_UID} -g ${BOX_USER_GID} -s /bin/bash ${BOX_USER}
+		usermod -o -d "${BOX_USER_HOME}" -c "WPLib Box user" -u "${BOX_USER_UID}" -g "${BOX_USER_GID}" -s /bin/bash "${BOX_USER}"
 	fi
-	usermod -aG adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare,docker ${BOX_USER}
+	usermod -aG adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare,docker "${BOX_USER}"
 	chmod 775 /home/box
 
-	if [ ! -d ${BOX_USER_HOME}/.ssh ]
+	if [ ! -d "${BOX_USER_HOME}/.ssh" ]
 	then
-		mkdir -pm 700 ${BOX_USER_HOME}/.ssh
+		mkdir -pm 700 "${BOX_USER_HOME}/.ssh"
 	fi
-	if [ ! -f ${BOX_USER_HOME}/.ssh/authorized_keys ]
+	if [ ! -f "${BOX_USER_HOME}/.ssh/authorized_keys" ]
 	then
-		wget -q --no-check-certificate 'https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub' -O ${BOX_USER_HOME}/.ssh/authorized_keys &>/dev/null
-		chmod 0600 ${BOX_USER_HOME}/.ssh/authorized_keys
+		wget -q --no-check-certificate "https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub" -O "${BOX_USER_HOME}/.ssh/authorized_keys" &>/dev/null
+		chmod 0600 "${BOX_USER_HOME}/.ssh/authorized_keys"
 	fi
-	touch ${BOX_USER_HOME}/.Xauthority
+	touch "${BOX_USER_HOME}/.Xauthority"
 	link_file /opt/box/sbin/shutdown /home/box/shutdown.sh
 
 
 	# Change permissions.
-	chown -R ${BOX_USER_UID}:${BOX_USER_GID} ${BOX_USER_HOME}
-	chown -R ${BOX_USER_UID}:${BOX_USER_GID} ${BOX_BASE_DIR}
-	chown ${BOX_USER_UID}:${BOX_USER_GID} ${BOX_PROJECT_BASE} ${BOX_PROJECT_BASE}/*
+	chown -R "${BOX_USER_UID}:${BOX_USER_GID}" "${BOX_USER_HOME}"
+	chown -R "${BOX_USER_UID}:${BOX_USER_GID}" "${BOX_BASE_DIR}"
+	chown "${BOX_USER_UID}:${BOX_USER_GID}" "${BOX_PROJECT_BASE}" "${BOX_PROJECT_BASE}"/*
 
 
 	# Fix user shell.
-	link_file ${BOX_ETC}/box-completion.bash /etc/bash_completion.d/box-completion.bash
-	link_file ${BOX_ETC}/box-profile.sh /etc/profile.d/box-profile.sh
-	cp ${BOX_ETC}/environment /etc/environment
-	cp ${BOX_ETC}/inputrc /etc/inputrc
-	cp ${BOX_ETC}/box-aptget /etc/apt/apt.conf.d/42wplib
+	link_file "${BOX_ETC}/box-completion.bash" /etc/bash_completion.d/box-completion.bash
+	link_file "${BOX_ETC}/box-profile.sh" /etc/profile.d/box-profile.sh
+	cp "${BOX_ETC}/environment" /etc/environment
+	cp "${BOX_ETC}/inputrc" /etc/inputrc
+	cp "${BOX_ETC}/box-aptget" /etc/apt/apt.conf.d/42wplib
 	rm -f /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade >& /dev/null
-	link_file ${BOX_ETC}/box-motd /etc/motd
+	link_file "${BOX_ETC}/box-motd" /etc/motd
 
 
 	# Make sure default project.json exists.
@@ -167,11 +167,11 @@ function provision_fix()
 	# Make sure default provision.sql file exists.
 	if [ ! -d "${BOX_SQL_DIR}" ]
 	then
-		mkdir -p ${BOX_SQL_DIR}
+		mkdir -p "${BOX_SQL_DIR}"
 	fi
 	if [ ! -f "${BOX_SQL_DIR}/provision.sql" ]
 	then
-		cp ${BOX_RELEASE_DIR}/sql/provision.sql ${BOX_SQL_DIR}/provision.sql
+		cp "${BOX_RELEASE_DIR}/sql/provision.sql" "${BOX_SQL_DIR}/provision.sql"
 	fi
 }
 
