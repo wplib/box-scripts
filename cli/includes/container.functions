@@ -506,7 +506,9 @@ function component_create_container()
 			then
 				echo -n "$ECHO_PREFIX ${GREEN}Creating component: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
-				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} >& $TEMPFILE
+
+				# To be fixed in 0.17.2
+				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${WPLIB_BOX_ETC}/container.env ${IMAGE} >& $TEMPFILE
 
 				if [ "$?" == "1" ]
 				then
