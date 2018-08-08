@@ -42,8 +42,11 @@ export BOX_COMMANDS_DIR="${BOX_CLI_DIR}/commands"
 export BOX_INCLUDES_DIR="${BOX_CLI_DIR}/includes"
 
 export BOX_COLORS_FILE="${BOX_INCLUDES_DIR}/colors"
+export BOX_FUNCTIONS_FILE="${BOX_INCLUDES_DIR}/functions"
 
 export BOX_FILES_DIR="${BOX_CLI_DIR}/files"
+
+export BOX_TESTS_DIR="${BOX_CLI_DIR}/tests"
 
 export BOX_SCRIPTS_REPO="https://github.com/wplib/box-scripts/"
 

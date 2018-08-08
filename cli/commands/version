@@ -5,8 +5,9 @@
 #       box version
 #
 declare="${BOX_BASE_DIR:=}"
+declare="${BOX_FUNCTIONS_FILE:=}"
 
-source /opt/box/cli/includes/functions
+source "${BOX_FUNCTIONS_FILE}"
 
 case $1 in
 	'-s'|'--short')

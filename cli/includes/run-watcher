@@ -2,6 +2,8 @@
 
 declare="${BOX_LOGS_DIR:=}"
 
-source /opt/box/cli/includes/functions
+declare="${BOX_FUNCTIONS_FILE:=}"
+source "${BOX_FUNCTIONS_FILE}"
+
 echo "[${BOX_LOGS_DIR}]"
 source "$@"

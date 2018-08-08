@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-source /opt/box/cli/includes/functions
+declare="${BOX_FUNCTIONS_FILE:=}"
+source "${BOX_FUNCTIONS_FILE}"
+source "${IMAGES:=}"
 
 # Creates IMAGES and STACK env variables.
 readJSON

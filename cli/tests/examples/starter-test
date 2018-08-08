@@ -2,19 +2,19 @@
 
 
 function setup() {
-    # Run first for this file
+    # Do test group-specific setup (test-group=one Bash file.)
     echo
 }
 
 function tests() {
     # A group of simple tests run here using functions found in
-    # the 'box/cli/tests/includes/assertions' script tile 
+    # the 'box/cli/tests/includes/assertions' script tile
 
     # This should succeed
-    testEquals "abc" "abc"  
+    testEquals "abc" "abc"
 
     # This should fail
-    testEquals "abc" "xyz"  
+    testEquals "abc" "xyz"
 
     evalEquals "get_image_name wplib/mysql:5.5.60 60" "wplib/mysql:5.5.60"
     evalEquals "get_image_name mysql:5.5.60       60" "wplib/mysql:5.5.60"
@@ -46,43 +46,27 @@ function tests() {
 
 }
 
-function containerRunning_Uses() {
-    # This defines one (1) provider for 'containerStartTest()'.
-    # What follows is the appropriate syntax
-
-    echo 'containerLineProvider'
-    # OR
-    #echo 'containerTsvProvider"
-    # OR
-    #echo 'containerJsonProvider'
-}
-
+#
+# Uses containerRunning_Data to provide lines of data
+#
 function containerRunning_Test() {
     # This is an example test for testing that a container starts
     docker container ls -aq -f "status=running" "$1"
 }
 
-function containerLineProvider() {
-    echo "wplib/mysql:5.5.60"
-    echo "wplib/php-fpm:7.1.17"
-    echo "wplib/mysql:5.5.60"
-    echo "wplib/php-fpm:7.1.17"
-}
-
-function containerJsonProvider() {
-    # This should output contain info in JSON format.
-    # TODO write a real example
-    echo '{"foo":1,"bar":2}'
-}
-
-function containerTsvProvider() {
-    # This should output container info with tab-separated values by "\n"
-    # TODO write a real example
-    echo "Yada\tYada"
+function containerRunning_Data() {
+    # This defines a multi-line provider for 'containerRunning_Test()'.
+    # LineData can also provide multiple JSON strings, one per line
+    cat <<EOF
+wplib/mysql:5.5.60
+wplib/php-fpm:7.1.17
+wplib/mysql:5.5.60
+wplib/php-fpm:7.1.1
+EOF
 }
 
 function teardown() {
-    # Do test group-specific teardown (test group=one Bash file.)
+    # Do test group-specific teardown (test-group=one Bash file.)
     echo
 }
 

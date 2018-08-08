@@ -9,6 +9,7 @@
 declare="${ECHO_PREFIX:=}"
 declare="${GREEN:=}"
 declare="${CYAN:=}"
+declare="${RED:=}"
 declare="${RESET:=}"
 declare="${BOX_PROJECT_FILE:=}"
 declare="${RETURN_ALREADY_STOPPED:=}"
@@ -16,7 +17,8 @@ declare="${RETURN_NO_CONTAINER:=}"
 declare="${RETURN_OK:=}"
 
 
-source /opt/box/cli/includes/functions
+declare="${BOX_FUNCTIONS_FILE:=}"
+source "${BOX_FUNCTIONS_FILE}"
 
 
 ctrl_c()

@@ -1,23 +1,72 @@
 #!/usr/bin/env bash
+#
+# Tests if an express outputs a value that is equal.
+#
+# @TODO We need to write a lot more of these
+#
 
 #
-# Tests assertions based on result of command or function
+# Call in a test to reports that a failure occurred
 #
-resultEquals() {
-    incr_total_tests
-    local expr="$1"
-    local value="$2"
-    local message="$3"
-    if [ "$(eval "${expr}")" == "${value}" ] ; then
-       incr_tests_passed
+function reportFailure() {
+    message="$1"
+    altMessage="$2"
+    tests_IncrFailed
+    if [ "" != "${message}" ] ; then
+        echo -e "FAIL: ${message}"
     else
-       if [ "" == "${message}" ] ; then
-         echo "Fail: ${expr} <> ${value}"
-       else
-         echo "Fail: ${message}"
-       fi
-       incr_tests_failed
+        echo -e "FAIL: ${altMessage}"
     fi
 }
 
+#
+# Tests if the output of an expression is equal to the supplied value
+#
+function evalEquals() {
+    local expr="$1"
+    local value="$2"
+    local message="$3"
+    if [ "" == "${message}" ] ; then
+        testEquals "$(eval "${expr}")" "${value}" "${message}"
+    else
+        testEquals "$(eval "${expr}")" "${value}" "${expr} <> ${value}"
+    fi
+}
+
+#
+# Tests if two values are equal.
+#
+function testEquals() {
+    local value1="$1"
+    local value2="$2"
+    local message="$3"
+    if [ "${value1}" == "${value2}" ] ; then
+        tests_IncrPassed
+    else
+       test_Fail "${message}" "${value1} <> ${value2}"
+    fi
+}
+
+#
+# Tests if value is not empty
+#
+function evalNotEmpty() {
+    local expr="$1"
+    local message="$2"
+    testNotEmpty "$(eval "${expr}")" "${message}" "The output of [${expr}] is empty."
+}
+
+#
+# Tests if value is not empty
+#
+function testNotEmpty() {
+    local value="$1"
+    local message="$2"
+    local altMessage="$3"
+    if [ "" != "$(TrimSpace "${value}")" ] ; then
+        tests_IncrPassed
+    else
+       test_Fail "${message}" "${altMessage}"
+    fi
+}
 

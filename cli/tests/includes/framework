@@ -1,0 +1,162 @@
+#@IgnoreInspection BashAddShebang
+#
+# Test framework script.
+#
+
+declare="${BOX_TESTS_DIR=}"
+
+source "${BOX_TESTS_DIR}/includes/functions"
+source "${BOX_TESTS_DIR}/includes/assertions"
+
+function test_RunAll() {
+
+    tests_GlobalSetup
+
+    for testFile in ${BOX_TESTS_DIR}/tests/*; do
+        test_FileSetup
+        test_File "${testFile}"
+        test_FileTeardown
+    done
+
+    tests_GlobalTeardown
+
+    tests_ShowResults
+
+}
+
+function test_RunOne() {
+    testFile="$1"
+
+    tests_GlobalSetup
+
+    test_FileSetup
+    test_File "${testFile}"
+    test_FileTeardown
+
+    tests_GlobalTeardown
+
+    tests_ShowResults
+
+}
+
+declare="${BOX_TESTS_DIR=}"
+declare -A TEST_STATS
+
+TEST_STATS["TOTAL"]=0
+TEST_STATS["PASSED"]=0
+TEST_STATS["FAILED"]=0
+TEST_STATS["FUNCS"]=""
+
+function tests_IncrPassed() {
+    (( TEST_STATS["TOTAL"]++ ))
+    (( TEST_STATS["PASSED"]++ ))
+}
+function tests_IncrFailed() {
+    (( TEST_STATS["TOTAL"]++ ))
+    (( TEST_STATS["FAILED"]++ ))
+}
+
+#
+# `box test` calls this before running ALL test files
+#
+function tests_GlobalSetup() {
+    if [ -f "${BOX_TESTS_DIR}/all-tests/setup" ] ; then
+        source "${BOX_TESTS_DIR}/all-tests/setup"
+    fi
+}
+
+#
+# `box test` calls this before running each test file
+#
+function test_FileSetup() {
+    unset -f setup
+    unset -f teardown
+}
+
+#
+# `box test` calls this before running each test file
+#
+function test_File() {
+    testFile="$1"
+    existingFuncs="$(getTestFuncs)"
+    source "${testFile}"
+    testFuncs="$(RemoveFrom "${existingFuncs}" "$(getTest_Funcs)")"
+    if $(HasFunc setup) ; then
+        setup
+    fi
+    # Run all tests that have their own *_Test function
+    for func in ${testFuncs} ; do
+        test_Run "${func}"
+    done
+    if $(HasFunc tests) ; then
+        # Run all the tests grouped into a simple tests() function
+        tests
+    fi
+    if $(HasFunc teardown) ; then
+        teardown
+    fi
+}
+
+function test_Run() {
+    testFunc="$1"
+    dataFunc="${testFunc/_Test/_Data}"
+    if ! $(HasFunc $dataFunc) ; then
+        output="$($testFunc)"
+        test_PassFail $? "${output}"
+    else
+        for line in $dataFunc; do
+            output="$($testFunc "${line}")"
+            test_PassFail $? "${output}"
+        done
+    fi
+}
+
+function test_PassFail() {
+    error="$1"
+    output="$2"
+    if ! $error ; then
+        tests_IncrPassed
+    else
+        reportFailure "${output}" "Unknown error"
+    fi
+}
+
+#
+# `box test` calls this before running each test file
+#
+function test_FileTeardown() {
+    unset -f setup
+    unset -f teardown
+    # delete all functions ending in "Test"
+}
+
+#
+# `box test` calls this before running ALL test files
+#
+function tests_GlobalTeardown() {
+    if [ -f "${BOX_TESTS_DIR}/all-tests/teardown" ] ; then
+        source "${BOX_TESTS_DIR}/all-tests/teardown"
+    fi
+}
+
+#
+# Output all functions that end with _Test on a newline
+#
+function getTest_Funcs() {
+    declare -F | awk '/_Test$/{print $3}'
+}
+
+#
+# `box test` calls this after running a test file or multiple test files
+#
+function tests_ShowResults() {
+    if [ 0 -ne "${TEST_STATS["FAILED"]}" ] ; then
+        echo "${TEST_STATS["FAILED"]} of ${TEST_STATS["TOTAL"]} tests FAILED."
+        exit 1
+    fi
+    if [ 0 -ne "${TEST_STATS["PASSED"]}" ] ; then
+        echo "${TEST_STATS["PASSED"]} of ${TEST_STATS["TOTAL"]} tests passed."
+        exit 0
+    fi
+}
+

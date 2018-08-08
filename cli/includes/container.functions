@@ -212,6 +212,7 @@ function readJSON()
 function component_info()
 {
 	local DOCKER IFS RETURN
+    IMAGE="$1"
 
 	if [ "${IMAGE}" == "" ]
 	then

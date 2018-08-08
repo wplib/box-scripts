@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 declare="${IMAGES:=}"
-source /opt/box/cli/includes/functions
+declare="${BOX_FUNCTIONS_FILE:=}"
+
+source "${BOX_FUNCTIONS_FILE}"
 
 case $1 in
 	'-s'|'--short')

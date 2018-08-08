@@ -20,10 +20,10 @@ declare="${BOX_PROJECT_BASE:=}"
 declare="${BOX_PROJECT_FILE:=}"
 declare="${BOX_RELEASE_JSON:=}"
 declare="${BOX_SQL_DIR:=}"
-declare="${BOX_RELEASE_DIR:=}"
+declare="${BOX_RELEASE_DIR:=}"cd
+declare="${BOX_FUNCTIONS_FILE:=}"
 
-
-source /opt/box/cli/includes/functions
+source "${BOX_FUNCTIONS_FILE}"
 
 function ctrl_c()
 {

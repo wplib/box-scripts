@@ -3,7 +3,8 @@
 # @see https://www.computerhope.com/unix/rsync.htm
 #
 
-source /opt/box/cli/includes/functions
+declare="${BOX_FUNCTIONS_FILE:=}"
+source "${BOX_FUNCTIONS_FILE}"
 
 if [ ! -f /projects/wplib.box/box/SYNCED ] ; then
     mkdir /projects/wplib.box/box
