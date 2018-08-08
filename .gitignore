@@ -1,4 +1,6 @@
+.DS_Store
 .idea/
 .*.swp
 *.OLD
 etc/vm_box_build_time
+SYNCED
