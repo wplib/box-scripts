@@ -1,8 +1,7 @@
 #!/bin/bash
 
-source /opt/box/cli/includes/functions
-source /opt/box/cli/includes/constants
-
+declare="${BOX_FUNCTIONS_FILE:=}"
+source "${BOX_FUNCTIONS_FILE}"
 
 TESTS_TOTAL=0
 TESTS_PASSED=0

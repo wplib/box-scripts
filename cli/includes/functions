@@ -72,3 +72,8 @@ export WPLIB_BOX_VENDOR_DIR=$(find_composer_vendor_dir)
 #
 export WPLIB_BOX_CONFIG="${WPLIB_BOX_PROJECT_DIR}/wplib.box.json"
 export WPLIB_BOX_USER_CONFIG="${HOME}/wplib.box.json"
+
+
+# In 0.17.1 branch these are here for self-test. They are already in 0.17.2 branch.
+export BOX_FUNCTIONS_FILE="${WPLIB_BOX_INCLUDES_DIR}/functions"
+export BOX_TESTS_DIR="${WPLIB_BOX_CLI_DIR}/tests"

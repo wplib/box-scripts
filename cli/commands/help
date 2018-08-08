@@ -4,8 +4,8 @@ cat <<EOF
 
 ${YELLOW}WPLib Box ${GREEN}CLI${RESET} usage:
 
-box ${GREEN}database${RESET} [<args>]	- Manage databases.
-box ${GREEN}component${RESET} [<args>]	- Manage Docker containers.
+box ${GREEN}database${RESET} [${CYAN}<args>${RESET}]	- Manage databases.
+box ${GREEN}component${RESET} [${CYAN}<args>${RESET}]	- Manage Docker containers.
 
 box ${GREEN}startup${RESET}		- Start Docker containers found in project.json's stack object.
 box ${GREEN}restart${RESET}		- Restart Docker containers found in project.json's stack object.
@@ -15,8 +15,8 @@ box ${GREEN}status${RESET}		- Output status of WPLib Box's standard containers.
 box ${GREEN}version${RESET}		- Display the current version of this WPLib Box VM.
 box ${GREEN}self-update${RESET}		- Update this CLI tool to the latest version for this Box version.
 
+box ${GREEN}self-test${RESET} [${CYAN}<args>${RESET}]	- Run tests for WPLib Box itself
 box ${GREEN}sync${RESET}                - Update box scripts in guest:/opt/box from host:/{project}/wplib.box/box
-box ${GREEN}test${RESET} [<args>]	- Testing framework.
 
 box [${GREEN}help${RESET}]		- Display the above information.
 EOF
