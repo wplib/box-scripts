@@ -4,6 +4,9 @@
 #
 
 declare="${BOX_TESTS_DIR=}"
+declare="${RED=}"
+declare="${GREEN=}"
+declare="${RESET=}"
 
 source "${BOX_TESTS_DIR}/includes/functions"
 source "${BOX_TESTS_DIR}/includes/assertions"
@@ -12,7 +15,7 @@ function test_RunAll() {
 
     tests_GlobalSetup
 
-    for testFile in ${BOX_TESTS_DIR}/tests/*; do
+    for testFile in $(getTest_Files); do
         test_FileSetup
         test_File "${testFile}"
         test_FileTeardown
@@ -78,7 +81,7 @@ function test_FileSetup() {
 #
 function test_File() {
     testFile="$1"
-    existingFuncs="$(getTestFuncs)"
+    existingFuncs="$(getTest_Funcs)"
     source "${testFile}"
     testFuncs="$(RemoveFrom "${existingFuncs}" "$(getTest_Funcs)")"
     if $(HasFunc setup) ; then
@@ -104,7 +107,8 @@ function test_Run() {
         output="$($testFunc)"
         test_PassFail $? "${output}"
     else
-        for line in $dataFunc; do
+        IFS=$'\n' lines=($($dataFunc))
+        for line in "${lines[@]}"; do
             output="$($testFunc "${line}")"
             test_PassFail $? "${output}"
         done
@@ -114,7 +118,7 @@ function test_Run() {
 function test_PassFail() {
     error="$1"
     output="$2"
-    if ! $error ; then
+    if [ "0" == "${error}" ] ; then
         tests_IncrPassed
     else
         reportFailure "${output}" "Unknown error"
@@ -147,16 +151,26 @@ function getTest_Funcs() {
 }
 
 #
+# Output all files in test directory
+#
+function getTest_Files() {
+    find "${BOX_TESTS_DIR}" -maxdepth 1 -type f
+}
+
+#
 # `box test` calls this after running a test file or multiple test files
 #
 function tests_ShowResults() {
     if [ 0 -ne "${TEST_STATS["FAILED"]}" ] ; then
-        echo "${TEST_STATS["FAILED"]} of ${TEST_STATS["TOTAL"]} tests FAILED."
+        echo "${TEST_STATS["FAILED"]} of ${TEST_STATS["TOTAL"]} tests ${RED}FAILED${RESET}."
+        echo
         exit 1
     fi
     if [ 0 -ne "${TEST_STATS["PASSED"]}" ] ; then
-        echo "${TEST_STATS["PASSED"]} of ${TEST_STATS["TOTAL"]} tests passed."
+        echo "${TEST_STATS["PASSED"]} of ${TEST_STATS["TOTAL"]} tests ${GREEN}passed.${RESET}"
+        echo
         exit 0
     fi
+
 }
 

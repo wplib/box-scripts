@@ -21,7 +21,11 @@ function tests() {
 #
 function containerRunning_Test() {
     # This is an example test for testing that a container starts
-    docker container ls -aq -f "status=running" "$1"
+    if [ -z "$(docker ps --format='{{.Image}}' | grep "$1")" ]; then
+        echo "Docker container $1 not running."
+        return 1
+    fi
+    return 0
 }
 
 function containerRunning_Data() {

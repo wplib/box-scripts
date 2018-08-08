@@ -10,7 +10,7 @@ declare="${YELLOW:=}"
 declare="${RESET:=}"
 declare="${BOX_PROJECT_DIR:=}"
 declare="${BOX_BASE_DIR:=}"
-declare="${BOX_ETC:=}"
+declare="${BOX_ETC_DIR:=}"
 declare="${BOX_USER:=}"
 declare="${BOX_USER_HOME:=}"
 declare="${BOX_USER_UID:=}"
@@ -76,17 +76,17 @@ function provision_fix()
 
 
 	# cron jobs
-	ln -sf ${BOX_ETC}/cron/${BOX_USER} /var/spool/cron/crontabs/${BOX_USER}
+	ln -sf ${BOX_ETC_DIR}/cron/${BOX_USER} /var/spool/cron/crontabs/${BOX_USER}
 
 
 	# init
 	# Disabled until we move off Vagrant.
-	# link_file ${BOX_ETC}/upstart/wplib-box-start.conf /etc/init/wplib-box-start.conf
-	# link_file ${BOX_ETC}/upstop/wplib-box-stop.conf /etc/init/wplib-box-stop.conf
+	# link_file ${BOX_ETC_DIR}/upstart/wplib-box-start.conf /etc/init/wplib-box-start.conf
+	# link_file ${BOX_ETC_DIR}/upstop/wplib-box-stop.conf /etc/init/wplib-box-stop.conf
 
 
 	# Software
-	link_file "${BOX_ETC}/apt/sources.list.d/docker.list" /etc/apt/sources.list.d/docker.list
+	link_file "${BOX_ETC_DIR}/apt/sources.list.d/docker.list" /etc/apt/sources.list.d/docker.list
 	grep -q ^docker: /etc/group
 	if [ "$?" == "1" ]
 	then
@@ -148,13 +148,13 @@ function provision_fix()
 
 
 	# Fix user shell.
-	link_file "${BOX_ETC}/box-completion.bash" /etc/bash_completion.d/box-completion.bash
-	link_file "${BOX_ETC}/box-profile.sh" /etc/profile.d/box-profile.sh
-	cp "${BOX_ETC}/environment" /etc/environment
-	cp "${BOX_ETC}/inputrc" /etc/inputrc
-	cp "${BOX_ETC}/box-aptget" /etc/apt/apt.conf.d/42wplib
+	link_file "${BOX_ETC_DIR}/box-completion.bash" /etc/bash_completion.d/box-completion.bash
+	link_file "${BOX_ETC_DIR}/box-profile.sh" /etc/profile.d/box-profile.sh
+	cp "${BOX_ETC_DIR}/environment" /etc/environment
+	cp "${BOX_ETC_DIR}/inputrc" /etc/inputrc
+	cp "${BOX_ETC_DIR}/box-aptget" /etc/apt/apt.conf.d/42wplib
 	rm -f /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade >& /dev/null
-	link_file "${BOX_ETC}/box-motd" /etc/motd
+	link_file "${BOX_ETC_DIR}/box-motd" /etc/motd
 
 
 	# Make sure default project.json exists.

@@ -5,25 +5,34 @@
 
 declare="${BOX_FUNCTIONS_FILE=}"
 declare="${BOX_TESTS_DIR=}"
+declare="${YELLOW:=}"
 declare="${GREEN:=}"
 declare="${CYAN:=}"
 declare="${RESET:=}"
 
-source "${BOX_FUNCTIONS_FILE}/includes/framework"
+source "${BOX_FUNCTIONS_FILE}"
 source "${BOX_TESTS_DIR}/includes/framework"
 
 self_test_help() {
 	cat <<EOF
-box self-test 		- Show this help.
 
-box self-test ${GREEN}list${RESET}		- List all self-tests in ${BOX_TESTS_DIR}.
-box self-test ${GREEN}run${RESET}		- Run all self-tests in ${BOX_TESTS_DIR}.
-box self-test ${GREEN}run ${CYAN}[script]${RESET}	- Run a specific self-test.
+${YELLOW}WPLib Box ${GREEN}CLI${RESET} ${GREEN}self-test${RESET} usage:
+
+box ${YELLOW}self-test${RESET}			- Show this help.
+
+box ${YELLOW}self-test ${GREEN}list${RESET}		- List all self-tests in ${BOX_TESTS_DIR}.
+box ${YELLOW}self-test ${GREEN}run${RESET}		- Run all self-tests in ${BOX_TESTS_DIR}.
+box ${YELLOW}self-test ${GREEN}run ${CYAN}[script]${RESET}	- Run a specific self-test.
+
 EOF
 }
 
 self_test_list() {
-    find . -maxdepth 1 -type f | cut -c3-99
+    echo
+    for testFile in $(getTest_Files); do
+        echo "$(basename "${testFile}")"
+    done
+    echo
 }
 
 self_test_run() {
