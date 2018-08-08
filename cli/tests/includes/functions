@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+#
+# `box test` sources this at the start
+#
+
+declare="${BOX_TESTS_DIR=}"
+declare -A TEST_STATS
+
+TEST_STATS["TOTAL"]=0
+TEST_STATS["PASSED"]=0
+TEST_STATS["FAILED"]=0
+
+
+#
+# `box test` calls this before running ALL test files
+#
+function testGlobalSetup() {
+    if [ -f "${BOX_TESTS_DIR}/all-tests/setup" ] ; then
+        source "${BOX_TESTS_DIR}/all-tests/setup"
+    fi
+}
+
+
+#
+# `box test` calls this before running each test file
+#
+function testFileSetup() {
+    unset -f setup
+    unset -f teardown
+}
+
+#
+# `box test` calls this before running each test file
+#
+function testFile() {
+    testFile="$1"
+    existingFuncs="$(getTestFuncs)"
+    source "${testFile}"
+    testFuncs="$(removeFrom "${existingFuncs}" "$(getTestFuncs)")"
+    if $(hasFunc setup) ; then
+        setup
+    fi
+    for func in ${testFuncs} ; do
+        providerFunc="${func/_Test/_Uses}"
+        if ! $(hasFunc $providerFunc) ; then
+            $func
+        else
+            echo $providerFunc
+            provider="$($providerFunc)"
+            args="$($provider)"
+            $func "${args}"
+        fi
+    done
+    if $(hasFunc tests) ; then
+        tests
+    fi
+    if $(hasFunc teardown) ; then
+        teardown
+    fi
+}
+
+#
+# Source the test file AND output the functions named "*_Test()" 
+#
+function hasFunc() {
+    func="$1"
+    if [ "" == "$(declare -F ${func})" ] ; then
+        return 1
+    fi
+    return 0
+}
+
+#
+# Remove the first string from the second string
+#
+function removeFrom() {
+    subset="$1"
+    superset="$2"
+    for x in ${subset} ; do
+        superset="$(StrReplace "${superset}" "${x}")"
+    done
+    echo -e "$(TrimSpace "${superset}")"
+}
+
+#
+# Replace 2nd param with 3rd param in first param, defaulting 3rd to ' '.
+#
+function StrReplace() {
+    [[ "" == "$3" ]] && replace=" " || replace="$3"
+    echo "$1" | sed "s/$2/$3/"
+}
+
+#
+# Remove leading and trailing whitespace
+#
+function TrimSpace() {
+    echo "$1" | xargs
+}
+
+#
+# `box test` calls this before running each test file
+#
+function testFileTeardown() {
+    unset -f setup
+    unset -f teardown
+    # delete all functions ending in "Test"
+}
+
+#
+# `box test` calls this before running ALL test files
+#
+function testGlobalTeardown() {
+    if [ -f "${BOX_TESTS_DIR}/all-tests/teardown" ] ; then
+        source "${BOX_TESTS_DIR}/all-tests/teardown"
+    fi
+}
+
+#
+# Output all functions that end with _Test on a newline
+#
+function getTestFuncs() {
+    declare -F | awk '/_Test$/{print $3}'
+}
+
+#
+# `box test` calls this after running a test file or multiple test files
+#
+function testResults() {
+    if [ 0 -ne "${TEST_STATS["FAILED"]}" ] ; then
+        echo "${TEST_STATS["FAILED"]} of ${TEST_STATS["TOTAL"]} tests FAILED."
+        exit 1
+    fi
+    if [ 0 -ne "${TEST_STATS["PASSED"]}" ] ; then
+        echo "${TEST_STATS["PASSED"]} of ${TEST_STATS["TOTAL"]} tests passed."
+        exit 0
+    fi
+}
+
+
+function incr_total_tests() {
+    (( TEST_STATS["TOTAL"]++ ))
+}
+function incr_tests_passed() {
+    (( TEST_STATS["PASSED"]++ ))
+}
+function incr_tests_failed() {
+    (( TEST_STATS["FAILED"]++ ))
+}

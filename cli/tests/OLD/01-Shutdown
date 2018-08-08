@@ -2,11 +2,13 @@
 
 declare="${BOX_CLI_DIR:=}"
 declare="${EXECTMPFILE:=}"
+declare="${BOX_FUNCTIONS_FILE:=}"
 
-source /opt/box/cli/includes/functions
+source "${BOX_FUNCTIONS_FILE}"
+
 case $1 in
 	'info')
-		echo "`basename $0`	- Test: Startup all containers."
+		echo "`basename $0`	- Test: Shutdown all containers."
 		exit 42
 		;;
 esac
@@ -16,12 +18,12 @@ esac
 
 exec_cmd docker container ls -q
 
-exec_cmd box startup
+exec_cmd box shutdown
 
 exec_cmd docker container ls -q
-if [ ! -s $EXECTMPFILE ]
+if [ -s $EXECTMPFILE ]
 then
-	echo_error "Some containers couldn't startup."
+	echo_error "Some containers couldn't shutdown."
 	echo "$EXECTMPFILE"
 	ls -l $EXECTMPFILE
 	cat $EXECTMPFILE

@@ -3,8 +3,10 @@
 declare="${BOX_CLI_DIR:=}"
 declare="${BOX_PROJECTS_ROOT:=}"
 declare="${BOX_PROJECT_PATH:=}"
+declare="${BOX_FUNCTIONS_FILE:=}"
 
-source /opt/box/cli/includes/functions
+source "${BOX_FUNCTIONS_FILE}"
+
 case $1 in
 	'info')
 		echo "`basename $0`	- Test: Startup all containers."
