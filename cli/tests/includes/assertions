@@ -7,8 +7,10 @@
 
 #
 # Call in a test to reports that a failure occurred
+# Designed to be used in *_Test functions that actually perform multiple tests.
+# Used after every failed test except the last.
 #
-function reportFailure() {
+function recordFailure() {
     message="$1"
     altMessage="$2"
     tests_IncrFailed

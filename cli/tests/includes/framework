@@ -123,7 +123,7 @@ function test_PassFail() {
     if [ "0" == "${error}" ] ; then
         tests_IncrPassed
     else
-        reportFailure "${output}" "Unknown error"
+        recordFailure "${output}" "Unknown error"
     fi
 }
 
