@@ -6,31 +6,6 @@
 #
 
 #
-# Call in a test to reports that a failure occurred
-# Designed to be used in *_Test functions that actually perform multiple tests.
-# Used after every failed test except the last.
-#
-function recordFailure() {
-    message="$1"
-    altMessage="$2"
-    tests_IncrFailed
-    if [ "" != "${message}" ] ; then
-        echo -e "FAIL: ${message}"
-    else
-        echo -e "FAIL: ${altMessage}"
-    fi
-}
-
-#
-# Record that a test passed
-# Designed to be used in *_Test functions that actually perform multiple tests.
-# Used after every passed test except the last.
-#
-function recordSuccess() {
-    tests_IncrPassed
-}
-
-#
 # Tests if the output of an expression is equal to the supplied value
 #
 function evalEquals() {

@@ -11,7 +11,7 @@ declare="${RESET=}"
 source "${BOX_TESTS_DIR}/includes/functions"
 source "${BOX_TESTS_DIR}/includes/assertions"
 
-function test_RunAll() {
+function tests_RunAll() {
 
     tests_GlobalSetup
 
@@ -27,7 +27,7 @@ function test_RunAll() {
 
 }
 
-function test_RunOne() {
+function tests_RunOne() {
     testFile="$1"
 
     tests_GlobalSetup
@@ -178,5 +178,34 @@ function tests_ShowResults() {
         exit 0
     fi
 
+}
+
+#
+# Call in a test to reports that a failure occurred
+# Designed to be used in *_Test functions that actually perform multiple tests.
+# Used after every failed test except the last.
+# NOTE: Using these IN .test FILES currently results in resetting the counter.
+#       I do not know why.
+#
+function recordFailure() {
+    message="$1"
+    altMessage="$2"
+    tests_IncrFailed
+    if [ "" != "${message}" ] ; then
+        echo -e "FAIL: ${message}"
+    else
+        echo -e "FAIL: ${altMessage}"
+    fi
+}
+
+#
+# Record that a test passed
+# Designed to be used in *_Test functions that actually perform multiple tests.
+# Used after every passed test except the last.
+# NOTE: Using these IN .test FILES currently results in resetting the counter.
+#       I do not know why.
+#
+function recordSuccess() {
+    tests_IncrPassed
 }
 
