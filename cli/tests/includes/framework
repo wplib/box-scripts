@@ -133,7 +133,6 @@ function test_FileTeardown() {
     unset -f setup
     unset -f teardown
     for func in ${TEST_STATS["FUNCS"]} ; do
-        echo "Deleting ${func}"
         unset -f "${func}"
     done
     TEST_STATS["FUNCS"]=""
