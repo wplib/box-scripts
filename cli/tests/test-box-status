@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+function boxStatus_Test() {
+    local output="$(box status)"
+    local prefix=The command [box status]
+    if [ -z "${output}" ]; then
+        echo "${prefix} produced no output."
+        return 1
+    fi
+    recordSuccess
+
+    local dl="# WPLib Box: Downloaded components:"
+    if StrContains( "${output}", "${dl}" ); then
+        echo "${prefix} did not contain ${dl}."
+        return 1
+    fi
+    recordSuccess
+
+    local sc="# WPLib Box: Stopped components:"
+    if StrContains( "${output}", "${sc}" ); then
+        echo "${prefix} did not contain ${sc}."
+        return 1
+    fi
+    recordSuccess
+
+    local rc="# WPLib Box: Runningx components:"
+    if StrContains( "${output}", "${rc}" ); then
+        echo "${prefix} did not contain ${rc}."
+        return 1
+    fi
+
+    #recordSuccess - Framework will record one success
+    return 0
+
+}
+
+
