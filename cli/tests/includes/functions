@@ -48,7 +48,7 @@ function StrContains() {
     string="$1"
     substring="$2"
     if [[ "${string}" = *"${substring}"* ]] ; then
-        return 0
+        return 1
     fi
-    return 1
+    return 0
 }
