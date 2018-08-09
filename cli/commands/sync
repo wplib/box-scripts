@@ -4,6 +4,7 @@
 #
 
 declare="${BOX_FUNCTIONS_FILE:=}"
+declare="${counter:=$1}"
 source "${BOX_FUNCTIONS_FILE}"
 
 if [ ! -f /projects/wplib.box/box/SYNCED ] ; then
@@ -12,14 +13,13 @@ if [ ! -f /projects/wplib.box/box/SYNCED ] ; then
     sudo touch /projects/wplib.box/box/SYNCED
 fi
 trap "exit 0" SIGINT SIGTERM
-counter=0
-while true; do
-    counter=$(( counter+1 ))
-    printf "\rSyncing [${counter}]..."
-    rsync --archive --hard-links --perms --recursive --links --safe-links --keep-dirlinks --times /projects/wplib.box/box/ /opt/box
-    sleep 1
-done
-
-
-
+if [ "" == "${counter}" ] ; then
+    counter=0
+fi
+counter=$(( counter+1 ))
+printf "\rSyncing [${counter}]..."
+rsync --dry-run --archive --recursive --perms /projects/wplib.box/box/ /opt/box
+rsync --archive --hard-links --perms --recursive --links --safe-links --keep-dirlinks --times /projects/wplib.box/box/ /opt/box
+sleep 1
+box sync "${counter}"
 
