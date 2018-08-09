@@ -43,20 +43,21 @@ function test_RunOne() {
 }
 
 declare="${BOX_TESTS_DIR=}"
-declare -A TEST_STATS
 
-TEST_STATS["TOTAL"]=0
-TEST_STATS["PASSED"]=0
-TEST_STATS["FAILED"]=0
-TEST_STATS["FUNCS"]=""
+export _TESTS_TOTAL=0
+export _TESTS_PASSED=0
+export _TESTS_FAILED=0
+export _TESTS_FUNCS=""
 
 function tests_IncrPassed() {
-    (( TEST_STATS["TOTAL"]++ ))
-    (( TEST_STATS["PASSED"]++ ))
+    (( _TESTS_PASSED++ ))
+    (( _TESTS_TOTAL++ ))
+    echo "P: ${_TESTS_PASSED}, F: ${_TESTS_FAILED}, T: ${_TESTS_TOTAL}, F(): ${_TESTS_FUNCS}" >> /projects/wplib.box/test.log
 }
 function tests_IncrFailed() {
-    (( TEST_STATS["TOTAL"]++ ))
-    (( TEST_STATS["FAILED"]++ ))
+    (( _TESTS_FAILED++ ))
+    (( _TESTS_TOTAL++ ))
+    echo "P: ${_TESTS_PASSED}, F: ${_TESTS_FAILED}, T: ${_TESTS_TOTAL}, F(): ${_TESTS_FUNCS}" >> /projects/wplib.box/test.log
 }
 
 #
@@ -84,7 +85,7 @@ function test_File() {
     existingFuncs="$(getTest_Funcs)"
     source "${testFile}"
     testFuncs="$(RemoveFrom "${existingFuncs}" "$(getTest_Funcs)")"
-    TEST_STATS["FUNCS"]="${testFuncs}"
+    _TESTS_FUNCS="${testFuncs}"
     if $(HasFunc setup) ; then
         setup
     fi
@@ -132,10 +133,10 @@ function test_PassFail() {
 function test_FileTeardown() {
     unset -f setup
     unset -f teardown
-    for func in ${TEST_STATS["FUNCS"]} ; do
+    for func in ${_TESTS_FUNCS} ; do
         unset -f "${func}"
     done
-    TEST_STATS["FUNCS"]=""
+    _TESTS_FUNCS=""
 }
 
 #
@@ -165,13 +166,13 @@ function getTest_Files() {
 # `box test` calls this after running a test file or multiple test files
 #
 function tests_ShowResults() {
-    if [ 0 -ne "${TEST_STATS["FAILED"]}" ] ; then
-        echo "${TEST_STATS["FAILED"]} of ${TEST_STATS["TOTAL"]} tests ${RED}FAILED${RESET}."
+    if [ 0 -ne "${_TESTS_FAILED}" ] ; then
+        echo "${_TESTS_FAILED} of ${_TESTS_TOTAL} tests ${RED}FAILED${RESET}."
         echo
         exit 1
     fi
-    if [ 0 -ne "${TEST_STATS["PASSED"]}" ] ; then
-        echo "${TEST_STATS["PASSED"]} of ${TEST_STATS["TOTAL"]} tests ${GREEN}passed.${RESET}"
+    if [ 0 -ne "${_TESTS_PASSED}" ] ; then
+        echo "${_TESTS_PASSED} of ${_TESTS_TOTAL} tests ${GREEN}passed.${RESET}"
         echo
 
         exit 0
