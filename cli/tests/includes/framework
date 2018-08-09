@@ -84,6 +84,7 @@ function test_File() {
     existingFuncs="$(getTest_Funcs)"
     source "${testFile}"
     testFuncs="$(RemoveFrom "${existingFuncs}" "$(getTest_Funcs)")"
+    TEST_STATS["FUNCS"]="${testFuncs}"
     if $(HasFunc setup) ; then
         setup
     fi
@@ -131,7 +132,11 @@ function test_PassFail() {
 function test_FileTeardown() {
     unset -f setup
     unset -f teardown
-    # delete all functions ending in "Test"
+    for func in ${TEST_STATS["FUNCS"]} ; do
+        echo "Deleting ${func}"
+        unset -f "${func}"
+    done
+    TEST_STATS["FUNCS"]=""
 }
 
 #
@@ -169,6 +174,7 @@ function tests_ShowResults() {
     if [ 0 -ne "${TEST_STATS["PASSED"]}" ] ; then
         echo "${TEST_STATS["PASSED"]} of ${TEST_STATS["TOTAL"]} tests ${GREEN}passed.${RESET}"
         echo
+
         exit 0
     fi
 
