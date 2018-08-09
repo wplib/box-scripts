@@ -1,39 +1,37 @@
 #!/usr/bin/env bash
 
-function boxStatus_Test() {
-    local output="$(box status)"
+function setup() {
+    export STATUS_OUTPUT="$(box status)"
+    echo
+}
 
-    if [ -z "${output}" ]; then
+function boxStatusHasOutput_Test() {
+
+    if [ -z "${STATUS_OUTPUT}" ]; then
         echo "The command [box status] produced no output."
         return 1
     fi
-    local prefix="The output of [box status]"
+}
 
-    recordSuccess
+function boxStatusContainsText_Data() {
+    # This defines a multi-line provider for 'containerRunning_Test()'.
+    # LineData can also provide multiple JSON strings, one per line
+    cat <<EOF
+Downloaded components:
+Stopped components:
+Running components:
+EOF
+}
 
-    local dl="Downloaded components:"
-    if ! StrContains "${output}" "${dl}"; then
-        echo "${prefix} did not contain: ${dl}."
+function boxStatusContainsText_Test() {
+    if ! StrContains "${STATUS_OUTPUT}" "$1"; then
+        echo "The output of [box status] did not contain: $1."
         return 1
     fi
-    recordSuccess
+}
 
-    local sc="Stopped components:"
-    if ! StrContains "${output}" "${sc}"; then
-        echo "${prefix} did not contain: ${sc}."
-        return 1
-    fi
-    recordSuccess
-
-    local rc="Running components:"
-    if ! StrContains "${output}" "${rc}"; then
-        echo "${prefix} did not contain: ${rc}."
-        return 1
-    fi
-
-    #recordSuccess - Framework will record one success
-    return 0
-
+function teardown() {
+    unset STATUS_OUTPUT
 }
 
 
