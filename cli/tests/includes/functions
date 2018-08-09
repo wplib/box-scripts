@@ -45,10 +45,9 @@ function TrimSpace() {
 # Return true if first string contains the second string.
 #
 function StrContains() {
-    string="$1"
-    substring="$2"
-    if [[ "${string}" = *"${substring}"* ]] ; then
-        return 1
+    if [[ "$1" == *"$2"* ]] ; then
+        return 0
     fi
-    return 0
+    return 1
 }
+
