@@ -8,7 +8,6 @@ declare="${ECHO_PREFIX:=}"
 declare="${GREEN:=}"
 declare="${YELLOW:=}"
 declare="${RESET:=}"
-declare="${BOX_PROJECT_DIR:=}"
 declare="${BOX_BASE_DIR:=}"
 declare="${BOX_ETC_DIR:=}"
 declare="${BOX_USER:=}"
@@ -16,6 +15,7 @@ declare="${BOX_USER_HOME:=}"
 declare="${BOX_USER_UID:=}"
 declare="${BOX_USER_GID:=}"
 declare="${BOX_PROJECTS_ROOT:=}"
+declare="${BOX_PROJECT_DIR:=}"
 declare="${BOX_PROJECT_FILE:=}"
 declare="${BOX_RELEASE_JSON:=}"
 declare="${BOX_SQL_DIR:=}"
@@ -113,6 +113,12 @@ function provision_fix()
 
 
 	# Setup boxuser, if not there.
+	#
+	#  QUESTION:  Why ${BOX_USER}, ${USERID} AND ${BOX_USER_UID}?
+	#
+	#             Seems this is ripe for confusion. It confused me.
+	#
+	#
 	USERID="$(id -u "${BOX_USER}")"
 	if [ "${USERID}" == "" ]
 	then
