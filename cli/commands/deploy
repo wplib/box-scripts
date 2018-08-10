@@ -12,11 +12,15 @@ declare="${BOX_PROJECT_DIR:=}"
 declare="${BOX_PROJECT_FILE:=}"
 
 function deploy_help() {
-    echo
 	cat <<EOF
-box ${GREEN}deploy${RESET} <host> - Deploys the host as defined in ${GREEN}project.json${RESET}.
+
+${YELLOW}WPLib Box ${GREEN}CLI${RESET} ${GREEN}deploy${RESET} usage:
+
+box ${YELLOW}deploy${RESET}	        - Show this help.
+box ${YELLOW}deploy ${GREEN}help${RESET}		- Show this help.
+box ${YELLOW}deploy ${RESET}[${CYAN}<host>]${RESET}	- Deploys the host as defined in ${GREEN}project.json${RESET}.
+
 EOF
-    echo
 }
 
 function get_current_git_branch() {
@@ -122,7 +126,7 @@ function ensure_no_uncommitted_files() {
     fi
 }
 
-function do_deploy() {
+function deploy_host() {
     local host_id="$1"
 
     json="$(get_deployment "${host_id}")"
@@ -162,19 +166,19 @@ exit
 
 
 ################################################################################
-SUBCMD="$1"
+CMD="$1"
 shift
-case $SUBCMD in
+case $CMD in
     'help')
-        deploy_help
         ;;
 
-    'foo'|'bar'|'baz')
-        echo "Yo!"
-		;;
+	*|'help')
 
-	*)
-        do_deploy "${SUBCMD}"
+        if [ "" == "${CMD}" ] ; then
+            deploy_help
+            exit 1
+        fi
+        deploy_host "${CMD}"
 		;;
 esac
 
