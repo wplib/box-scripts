@@ -129,7 +129,7 @@ function ensure_no_uncommitted_files() {
 function deploy_host() {
     local host_id="$1"
 
-    json="$(get_deployment "${host_id}")"
+    json="$(get_deploy "${host_id}")"
     echo $json | jq .
     exit
 
