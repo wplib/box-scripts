@@ -22,6 +22,7 @@ box ${GREEN}self-update${RESET}		- Update this CLI tool to the latest version fo
 
 box ${GREEN}self-test${RESET} [${CYAN}<args>${RESET}]	- Run tests for WPLib Box itself
 box ${GREEN}sync${RESET}                - Update box scripts in guest:/opt/box from host:/{project}/wplib.box/box
+box ${GREEN}launch-checklist${RESET} 	- Displays our new version launch checklist (we eat our own dog food.)
 
 box [${GREEN}help${RESET}]		- Display the above information.
 EOF
