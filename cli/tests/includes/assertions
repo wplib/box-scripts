@@ -6,20 +6,6 @@
 #
 
 #
-# Call in a test to reports that a failure occurred
-#
-function reportFailure() {
-    message="$1"
-    altMessage="$2"
-    tests_IncrFailed
-    if [ "" != "${message}" ] ; then
-        echo -e "FAIL: ${message}"
-    else
-        echo -e "FAIL: ${altMessage}"
-    fi
-}
-
-#
 # Tests if the output of an expression is equal to the supplied value
 #
 function evalEquals() {

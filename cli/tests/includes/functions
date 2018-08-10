@@ -41,3 +41,13 @@ function TrimSpace() {
     echo "$1" | xargs
 }
 
+#
+# Return true if first string contains the second string.
+#
+function StrContains() {
+    if [[ "$1" == *"$2"* ]] ; then
+        return 0
+    fi
+    return 1
+}
+
