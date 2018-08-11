@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 #
-# Tests if an express outputs a value that is equal.
-#
 # @TODO We need to write a lot more of these
 #
 
 #
+# eval<Criteria>() function expect an expression to eval() and then test/compare
+# test<Criteria>() function expect a value to test/compare.
+#
+
+#
 # Tests if the output of an expression is equal to the supplied value
+#
+# @example  evalEquals "echo hello", "hello"
 #
 function evalEquals() {
     local expr="$1"
@@ -21,6 +26,9 @@ function evalEquals() {
 
 #
 # Tests if two values are equal.
+#
+# @example: testEquals "$(echo hello)", "hello"
+# @example:  foo=xyz && testEquals "$foo", "xyz"
 #
 function testEquals() {
     local value1="$1"
