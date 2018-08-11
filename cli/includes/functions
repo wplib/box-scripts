@@ -9,14 +9,16 @@ export BOX_ARGS_ALL="$*"
 declare="${BOX_PROJECTS_ROOT:=/projects}"
 
 # Defines the current project in use for a single project box.
-declare="${BOX_PROJECT_PATH:=wplib.box}"
+declare="${BOX_CURRENT_PROJECT:=wplib.box}"
+
+export BOX_CURRENT_PROJECT_DIR="${BOX_PROJECTS_ROOT}/${BOX_CURRENT_PROJECT}"
 
 export BOX_USER="boxuser"
 export BOX_USER_UID="1000"
 export BOX_USER_GID="1000"
 export BOX_USER_HOME="/home/box"
 
-export BOX_PROJECT_DIR="${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}"
+export BOX_PROJECT_DIR="${BOX_PROJECTS_ROOT}/${BOX_CURRENT_PROJECT}"
 
 export BOX_BASE_DIR="/opt/box"
 export BOX_VERSION="$(cat ${BOX_BASE_DIR}/version)"
@@ -26,7 +28,7 @@ export BOX_RELEASE_DIR="${BOX_RELEASES_DIR}/${BOX_VERSION}"
 export BOX_RELEASE_JSON="${BOX_RELEASE_DIR}/project.json"
 export BOX_CLI_DIR="${BOX_BASE_DIR}/cli"
 export BOX_CLI_CMD="${BOX_BASE_DIR}/bin/box"
-export BOX_WEB_ROOT_DIR="${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/www"
+export BOX_WEB_ROOT_DIR="${BOX_CURRENT_PROJECT_DIR}/www"
 export BOX_WATCHERS_DIR="${BOX_WEB_ROOT_DIR}/watchers"
 export BOX_PHPCLI=${BOX_BASE_DIR}/bin/php
 export BOX_CACHE_DIR=${BOX_BASE_DIR}/cache
