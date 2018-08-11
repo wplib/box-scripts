@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Master test script.
 #
@@ -37,9 +37,9 @@ self_test_list() {
 
 self_test_run() {
     if [ "" == "$1" ]; then
-        test_RunAll
+        tests_RunAll
     else
-        test_RunOne "$1"
+        tests_RunOne "$1"
     fi
 }
 
