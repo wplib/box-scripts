@@ -3,21 +3,74 @@
 # @see https://www.computerhope.com/unix/rsync.htm
 #
 
-source /opt/box/cli/includes/functions
+declare="${BOX_FUNCTIONS_FILE:=}"
+declare="${YELLOW:=}"
+declare="${GREEN:=}"
+declare="${RESET:=}"
 
-if [ ! -d /projects/wplib.box/box ] ; then
+source "${BOX_FUNCTIONS_FILE}"
+
+if [ ! -f /projects/wplib.box/box/SYNCED ] ; then
     mkdir /projects/wplib.box/box
     rsync --archive --hard-links --perms --one-file-system /opt/box/ /projects/wplib.box/box
+    sudo touch /projects/wplib.box/box/SYNCED
 fi
 trap "exit 0" SIGINT SIGTERM
-counter=0
-while true; do
-    counter=$(( counter+1 ))
-    printf "\rSyncing [${counter}]..."
-    rsync --archive --hard-links --perms --recursive --links --safe-links --keep-dirlinks --times /projects/wplib.box/box/ /opt/box
-    sleep 1
-done
 
+sync_help() {
+	cat <<EOF
 
+${YELLOW}WPLib Box ${GREEN}CLI${RESET} ${GREEN}sync${RESET} usage:
 
+box ${YELLOW}sync${RESET}	        - Show this help.
 
+box ${YELLOW}sync ${GREEN}help${RESET}		- Show this help.
+
+box ${YELLOW}sync ${GREEN}once${RESET}		- Synchronize to /box directory in your project, once.
+box ${YELLOW}sync ${GREEN}non-stop${RESET}   	- Synchronize to /box directory in your project, non-stop.
+
+EOF
+}
+
+sync_run_once() {
+    local startMessage="$1"
+    local endMessage="$2"
+    if [ "" == "${startMessage}" ] ; then
+        startMessage="Syncing..."
+        endMessage="Done."
+    fi
+    printf "${startMessage}"
+    rsync --dry-run --archive --hard-links --perms --recursive --links --safe-links --keep-dirlinks --times --delete-after /projects/wplib.box/box/ /opt/box
+    rsync --archive --hard-links --perms --recursive --links --safe-links --keep-dirlinks --times --delete-after /projects/wplib.box/box/ /opt/box
+    echo -e "${endMessage}"
+}
+
+sync_run_nonstop() {
+    local counter=0
+    while true; do
+        counter=$(( counter+1 ))
+        sync_run_once "\rSyncing [${counter}]..."
+        sleep 1
+    done
+}
+
+################################################################################
+
+CMD="$1"
+shift
+
+case $CMD in
+	'once')
+		sync_run_once
+		;;
+
+	'run')
+		sync_run_nonstop
+		;;
+
+	*)
+		sync_help
+		exit 1
+		;;
+
+esac

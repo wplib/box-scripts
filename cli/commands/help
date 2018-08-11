@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
+declare="${GREEN:=}"
+declare="${CYAN:=}"
+declare="${YELLOW:=}"
+declare="${RESET:=}"
+
 cat <<EOF
 
 ${YELLOW}WPLib Box ${GREEN}CLI${RESET} usage:
 
+box ${GREEN}component${RESET} [${CYAN}<args>${RESET}]	- Manage WPLib Box components
 box ${GREEN}database${RESET} [${CYAN}<args>${RESET}]	- Manage databases.
 box ${GREEN}component${RESET} [${CYAN}<args>${RESET}]	- Manage Docker containers.
 
