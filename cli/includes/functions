@@ -62,6 +62,7 @@ export BOX_CONTENT_DIR=$(find_wp_content_dir)
 export BOX_PLUGINS_DIR=$(find_wp_plugins_dir)
 export BOX_MU_PLUGINS_DIR=$(find_wp_mu_plugins_dir)
 export BOX_VENDOR_DIR=$(find_composer_vendor_dir)
+export BOX_ERROR_FILE="$(mktemp -d "/tmp/errors-XXXXX")/errors.txt"
 
 #
 # Source functions
@@ -71,3 +72,4 @@ source "${BOX_INCLUDES_DIR}/container.functions"
 source "${BOX_INCLUDES_DIR}/project-json.functions"
 source "${BOX_INCLUDES_DIR}/git.functions"
 source "${BOX_INCLUDES_DIR}/template.functions"
+

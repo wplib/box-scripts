@@ -10,7 +10,7 @@ declare="${BOX_CONTENT_DIR:=}"
 declare="${BOX_LOGS_DIR:=}"
 declare="${BOX_PROJECT_DIR:=}"
 declare="${BOX_ARGS_ALL:=}"
-
+declare="${BOX_ERROR_FILE:=}"
 
 #
 # Checks if the Virtualbox wplib.box mount point is there.
@@ -529,4 +529,22 @@ function pushDir {
 }
 function popDir {
     popd  >/dev/null
+}
+
+function exitOnError() {
+    if [ "0" != "$?" ] ; then
+        exit 1
+    fi
+}
+
+function initErrorFile() {
+    echo > $BOX_ERROR_FILE
+}
+function writeErrorFile() {
+    echo -e "$1" >> $BOX_ERROR_FILE
+}
+function showErrorFile() {
+    echo ===[ERRORS]===
+    cat $BOX_ERROR_FILE
+    echo ==============
 }

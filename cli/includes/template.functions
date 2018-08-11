@@ -34,3 +34,24 @@ function apply_selectors() {
     echo "${json}"
 }
 
+function substitute_args() {
+    local source="$1"
+    local destination="$2"
+    local args="$3"
+    for arg in $args ; do
+        value="$(echo -e "${source}"| jq -r ".${arg}")"
+        if [ "" == "${value}" ] ; then
+            continue
+        fi
+        destination="${destination//\{\$${arg}\}/$value}"
+    done
+    echo "${destination}" | jq .
+}
+
+function get_provider_args() {
+    local provider="$1"
+    local filepath="$(get_provider_filepath "${provider}")"
+    local args="$(cat "${filepath}" | jq -r '.["$"][]?')"
+    echo -e "${args}"
+}
+

@@ -23,6 +23,57 @@ box ${YELLOW}deploy ${RESET}[${CYAN}<host>]${RESET}	- Deploys the host as define
 EOF
 }
 
+function deploy_host() {
+    initErrorFile
+
+    local host_id="$1"
+
+    if [ "" == "${host_id}" ]; then
+        output "Hostname required when calling 'deploy'"
+        exit
+    fi
+
+    #
+    # @todo Add an error handling get_deploy_host() function and call it here
+    #
+    json="$(get_raw_deploy_host "${host_id}")"
+    exitOnError
+
+    repo_url="$(get_source_repo_url)"
+    exitOnError
+
+    repo_branch="$(get_deploy_repo_branch "${host_id}")"
+    exitOnError
+
+    ensure_no_uncommitted_files
+
+    echo $repo_branch
+    exit
+
+
+exit
+    ensure_cache_dir
+    local repo_dir="$(get_repo_cache_dir "${repo_url}")"
+    local has_host="$(branch_has_deploy_host "${host_id}" "${repo_branch}")"
+
+exit
+
+    alert
+    alert "${YELLOW}Preparing to deploy:${RESET}"
+    alert
+    alert "\t${CYAN}Deploy repo: ${GREEN}${repo_url}${RESET}"
+    alert "\t${CYAN}Repo branch: ${GREEN}${repo_branch}${RESET}"
+    alert
+
+    if [ ! -d "${repo_dir}" ] ; then
+        make_cache_dir "$(dirname "${repo_dir}")"
+        clone_git_repo "${repo_dir}"
+    else
+        cd "${repo_dir}"
+        clone_git_repo "${repo_dir}"
+    fi
+}
+
 function get_current_git_branch() {
     pushDir
     local saveLESS="${LESS}"
@@ -66,46 +117,57 @@ function get_project_dir() {
     echo "${BOX_PROJECT_DIR}"
 }
 
-function get_deploy_source_repo_url() {
-    local source_repo_url="$(get_source_repo_url)"
+function get_source_repo_url() {
+    local source_repo_url="$(get_raw_source_repo_url)"
     local remote_repo_url="$(get_git_origin_remote_repo_url)"
     if [ "${source_repo_url}" != "${remote_repo_url}" ]; then
-        output ""
-        output "${RED}Your source repo and your git remote repo do not match. Cannot deploy.${RESET}"
-        output ""
-        output "\tSource: ${source_repo_url}"
-        output "\tRemote: ${remote_repo_url}"
-        output ""
-        output "Your source repo is found in ${BOX_PROJECT_FILE} as '.source.repository.url.'"
-        output "Your remote is found by running 'git remote -v'. You can set your remote to match your source with:"
-        output ""
-        output "\tgit remote set-url --push origin ${source_repo_url}"
-        output ""
-        exit
+        alert ""
+        alert "${RED}Your source repo and your git remote repo do not match. Cannot deploy.${RESET}"
+        alert ""
+        alert "\tSource: ${source_repo_url}"
+        alert "\tRemote: ${remote_repo_url}"
+        alert ""
+        alert "Your source repo is found in ${BOX_PROJECT_FILE} as '.source.repository.url.'"
+        alert "Your remote is found by running 'git remote -v'. You can set your remote to match your source with:"
+        alert ""
+        alert "\tgit remote set-url --push origin ${source_repo_url}"
+        alert ""
+        exit 1
     fi
     echo "${source_repo_url}"
 }
 
 function get_deploy_repo_branch() {
     local host_id="$1"
-    local project_branch="$(get_deploy_host_branch "${host_id}")"
-    echo "${project_branch}"
+    local project_branch="$(get_raw_deploy_host_branch "${host_id}")"
+    exitOnError
     local current_branch="$(get_current_git_branch)"
-    echo "${current_branch}"
+    exitOnError
+    if [ "null" == "${project_branch}" ] ; then
+        project_branch="n/a"
+    fi
+
     if [ "${current_branch}" != "${project_branch}" ]; then
         alert ""
-        alert "${RED}Your current branch does not match the deploy branch for the ${GREEN}${host_id}${RED} host. Cannot deploy.${RESET}"
+        alert "${RED}Your current branch does not match the deploy branch for the ${GREEN}${host_id}${RED} host."
+        alert "Cannot deploy.${RESET}"
         alert ""
-        alert "\t${CYAN}Deploy Host:    ${GREEN}${host_id}${RESET}"
-        alert "\t${CYAN}Project Branch: ${GREEN}${project_branch}${RESET}"
         alert "\t${CYAN}Current Branch: ${GREEN}${current_branch}${RESET}"
+        alert "\t${CYAN}Requested Deploy Host: ${GREEN}${host_id}${RESET}"
+        alert "\t${CYAN}Deploy branch for host ${RED}${host_id}${RESET}: ${GREEN}${project_branch}${RESET}"
         alert ""
-        alert "${YELLOW}You can set switch your current branch to the project branch for host ${GREEN}${host_id}${YELLOW}:${RESET}"
+        if [ "n/a" == "${project_branch}" ] ; then
+            alert "${RED}Review your project.json file to ensure you have a host ${GREEN}${host_id}${RED} defined in"
+            alert "the ${GREEN}.host${RED} section.${RESET}"
+        else
+            alert "${YELLOW}You can set switch to the project branch for host ${GREEN}${host_id}${YELLOW}, assuming \nall files in your current branch have been committed using:${RESET}"
+            alert ""
+            alert "\t${GREEN}git checkout ${project_branch}${RESET}"
+        fi
         alert ""
-        alert "\t${GREEN}git checkout ${project_branch}${RESET}"
-        alert ""
-        exit
+        exit 1
     fi
+    echo "${current_branch}"
 }
 
 function ensure_no_uncommitted_files() {
@@ -122,45 +184,7 @@ function ensure_no_uncommitted_files() {
         done
         IFS="${saveIFS}"
         alert ""
-        exit
-    fi
-}
-
-function deploy_host() {
-    local host_id="$1"
-
-    json="$(get_deploy "${host_id}")"
-    echo $json | jq .
-    exit
-
-    if [ "" == "${host_id}" ]; then
-        output "Hostname required when calling 'deploy'"
-        exit
-    fi
-    repo_url="$(get_deploy_source_repo_url)"
-    repo_branch="$(get_deploy_repo_branch "${host_id}")"
-    ensure_no_uncommitted_files
-
-exit
-    ensure_cache_dir
-    local repo_dir="$(get_repo_cache_dir "${repo_url}")"
-    local has_host="$(branch_has_deploy_host "${host_id}" "${repo_branch}")"
-
-exit
-
-    output
-    output "${YELLOW}Preparing to deploy:${RESET}"
-    output
-    output "\t${CYAN}Deploy repo: ${GREEN}${repo_url}${RESET}"
-    output "\t${CYAN}Repo branch: ${GREEN}${repo_branch}${RESET}"
-    output
-
-    if [ ! -d "${repo_dir}" ] ; then
-        make_cache_dir "$(dirname "${repo_dir}")"
-        clone_git_repo "${repo_dir}"
-    else
-        cd "${repo_dir}"
-        clone_git_repo "${repo_dir}"
+        exit 1
     fi
 }
 

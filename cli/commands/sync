@@ -42,7 +42,9 @@ sync_run_once() {
     printf "${startMessage}"
     rsync --dry-run --archive --hard-links --perms --recursive --links --safe-links --keep-dirlinks --times --delete-after /projects/wplib.box/box/ /opt/box
     rsync --archive --hard-links --perms --recursive --links --safe-links --keep-dirlinks --times --delete-after /projects/wplib.box/box/ /opt/box
-    echo -e "${endMessage}"
+    if ! [ -z "${endMessage}" ] ; then
+        echo -e "${endMessage}"
+    fi
 }
 
 sync_run_nonstop() {
@@ -64,7 +66,7 @@ case $CMD in
 		sync_run_once
 		;;
 
-	'run')
+	'nonstop'|'non-stop')
 		sync_run_nonstop
 		;;
 

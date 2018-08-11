@@ -8,14 +8,17 @@
 	],
 	"ROOT": "{.frameworks.wordpress.root_path}",
 	"CONTENT": "{.frameworks.wordpress.content_path}",
-	"HOST_NAME": "{.hosts.{$host_id}.name}",
-	"DOMAIN": "codeserver.{.HOST_NAME}.{$site_id}.drush.in",
-	"USERNAME": "codeserver.{.HOST_NAME}.{$site_id}",
-	"protocol": "ssh",
-	"port": 2222,
-	"path": "/~/repository.git",
+	"HOSTNAME": "{.hosts.{$host_id}.name}",
+	"DOMAIN": "codeserver.{.HOSTNAME}.{$site_id}.drush.in",
+	"USERNAME": "codeserver.{.HOSTNAME}.{$site_id}",
 	"repository": {
-		"url": "{.protocol}://{.USERNAME}@{.DOMAIN}:{.port}{.path}"
+		"hostname": "{.HOSTNAME}",
+		"domain": "{.DOMAIN}",
+		"username": "{.USERNAME}",
+		"protocol": "ssh",
+		"port": 2222,
+		"path": "/~/repository.git",
+		"url": "{.repository.protocol}://{.USERNAME}@{.DOMAIN}:{.repository.port}{.repository.path}"
 	},
 	"frameworks": {
 		"wordpress": {
