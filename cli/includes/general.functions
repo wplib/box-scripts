@@ -538,7 +538,7 @@ function exitOnError() {
 }
 
 function initErrorFile() {
-    echo > $BOX_ERROR_FILE
+    touch $BOX_ERROR_FILE
 }
 function writeErrorFile() {
     echo -e "$1" >> $BOX_ERROR_FILE

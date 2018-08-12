@@ -31,7 +31,8 @@ export BOX_CLI_CMD="${BOX_BASE_DIR}/bin/box"
 export BOX_WEB_ROOT_DIR="${BOX_CURRENT_PROJECT_DIR}/www"
 export BOX_WATCHERS_DIR="${BOX_WEB_ROOT_DIR}/watchers"
 export BOX_PHPCLI=${BOX_BASE_DIR}/bin/php
-export BOX_CACHE_DIR=${BOX_BASE_DIR}/cache
+export BOX_CACHE_DIR="/tmp/box-cache"
+mkdir -p "${BOX_CACHE_DIR}"
 
 export BOX_GIT_DIR="${BOX_BASE_DIR}/.git"
 export BOX_LOGS_DIR="${BOX_PROJECT_DIR}/logs"

@@ -2,9 +2,19 @@
 
 declare="${BOX_PROJECT_FILE:=}"
 declare="${BOX_ETC_DIR:=}"
+declare="${BOX_PROJECT_DIR:=}"
+
+function get_raw_project_file() {
+    cat "${BOX_PROJECT_FILE}"
+}
+
+function get_raw_project_dir() {
+    echo "${BOX_PROJECT_DIR}"
+}
+
 
 function get_raw_deploy() {
-    local deploy="$(cat "${BOX_PROJECT_FILE}" | jq -r ".deploy")"
+    local deploy="$(get_raw_project_file | jq -r ".deploy")"
     echo "${deploy}"
 }
 
@@ -16,14 +26,10 @@ function get_raw_source_repo_url() {
     echo "${repo_url}"
 }
 
-function branch_has_deploy_host() {
+
+function get_raw_source_host_branch() {
     local host_id="$1"
-    local branch="$2"
-    local json=".deploy.hosts[]"
-    local hosts="$(get_raw_deploy | jq -r "${json}")"
-    local select="select(.branch|match(\"${branch}\")?)"
-    local type="$(echo "${hosts}" | jq -r "${select}|type")"
-    [[ "${type}" == "object" ]] && echo "yes" || echo "no"
+    echo "${host_id}"
 }
 
 function get_raw_deploy_host_branch() {
@@ -39,8 +45,29 @@ function get_raw_deploy_host_branch() {
 function get_raw_deploy_host() {
     local host_id="$1"
     local host="$(get_raw_deploy | jq -r ".hosts.${host_id}")"
-
     echo "${host}"
 }
 
+function get_raw_deploy_repo_url() {
+    local host_id="$1"
+    local repo_url="$(get_raw_deploy | jq -r ".hosts.${host_id}.repository.url")"
+    echo "${repo_url}"
+}
+
+
+function get_raw_deploy_repo_branch() {
+    local host_id="$1"
+    local repo_url="$(get_raw_deploy | jq -r ".hosts.${host_id}.branch")"
+    echo "${repo_url}"
+}
+
+#function branch_has_deploy_host() {
+#    local host_id="$1"
+#    local branch="$2"
+#    local json=".deploy.hosts[]"
+#    local hosts="$(get_raw_deploy | jq -r "${json}")"
+#    local select="select(.branch|match(\"${branch}\")?)"
+#    local type="$(echo "${hosts}" | jq -r "${select}|type")"
+#    [[ "${type}" == "object" ]] && echo "yes" || echo "no"
+#}
 

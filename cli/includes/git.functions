@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+declare="${BOX_PROJECT_DIR:=}"
+declare="${BOX_CACHE_DIR:=}"
+declare="${LESS:=}"
+
 function clone_git_repo() {
     repo_url="$1"
 }
@@ -22,3 +26,40 @@ function get_git_uncommitted_files() {
     echo "${files}"
 }
 
+function ensure_repo_cached_locally() {
+    local repo_url="$1"
+    local branch="$2"
+    local cache_dir="$(get_raw_repo_cache_dir "${repo_url}")"
+    local saveDir="$(pwd)"
+    local parent_dir="$(dirname "${cache_dir}")"
+    local repo_name="$(basename "${cache_dir}")"
+    ensure_cache_dir
+    mkdir -p "${parent_dir}"
+    if ! [ -d "${cache_dir}" ]; then
+        cd "${parent_dir}"
+        git clone -q "${repo_url}" "${repo_name}"
+        cd "${cache_dir}"
+        git checkout -q -b "${branch}" "origin/${branch}"
+    fi
+    cd "${cache_dir}"
+    git checkout -q "${branch}"
+    git fetch -q --all
+    git reset -q  --hard "origin/${branch}"
+    git pull origin -q "${branch}"
+}
+
+function ensure_cache_dir() {
+    declare=${BOX_USER:=}
+    sudo mkdir -p "${BOX_CACHE_DIR}"
+    sudo chmod 755 "${BOX_CACHE_DIR}"
+    sudo chown "${BOX_USER}:${BOX_USER}" "${BOX_CACHE_DIR}"
+}
+
+function get_current_git_branch() {
+    pushDir
+    unset LESS
+    cd "${BOX_PROJECT_DIR}"
+    branch="$(git rev-parse --abbrev-ref HEAD)"
+    echo $branch
+    popDir
+}

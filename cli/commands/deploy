@@ -36,53 +36,50 @@ function deploy_host() {
     #
     # @todo Add an error handling get_deploy_host() function and call it here
     #
-    json="$(get_raw_deploy_host "${host_id}")"
+    json="$(get_deploy_host "${host_id}")"
     exitOnError
 
-    repo_url="$(get_source_repo_url)"
+    source_url="$(get_source_repo_url)"
     exitOnError
 
-    repo_branch="$(get_deploy_repo_branch "${host_id}")"
+    source_branch="$(get_source_repo_branch "${host_id}")"
+    exitOnError
+
+
+    deploy_url="$(get_raw_deploy_repo_url "${host_id}")"
+    exitOnError
+
+    deploy_branch="$(get_raw_deploy_repo_branch "${host_id}")"
     exitOnError
 
     ensure_no_uncommitted_files
 
-    echo $repo_branch
-    exit
+    output
+    output "${YELLOW}Preparing to deploy:${RESET}"
+    output
+    output "\t${CYAN}Source repo:   ${GREEN}${source_url}${RESET}"
+    output "\t${CYAN}Source branch: ${GREEN}${source_branch}${RESET}"
+    output
+    output "\t${CYAN}Deploy repo:   ${GREEN}${deploy_url}${RESET}"
+    output "\t${CYAN}Deploy branch: ${GREEN}${deploy_branch}${RESET}"
+    output
 
+    echo "Ensuring cached repositories"
+    ensure_repo_cached_locally "${source_url}" "${source_branch}"
+    ensure_repo_cached_locally "${deploy_url}" "${deploy_branch}"
 
-exit
-    ensure_cache_dir
-    local repo_dir="$(get_repo_cache_dir "${repo_url}")"
-    local has_host="$(branch_has_deploy_host "${host_id}" "${repo_branch}")"
-
-exit
-
-    alert
-    alert "${YELLOW}Preparing to deploy:${RESET}"
-    alert
-    alert "\t${CYAN}Deploy repo: ${GREEN}${repo_url}${RESET}"
-    alert "\t${CYAN}Repo branch: ${GREEN}${repo_branch}${RESET}"
-    alert
-
-    if [ ! -d "${repo_dir}" ] ; then
-        make_cache_dir "$(dirname "${repo_dir}")"
-        clone_git_repo "${repo_dir}"
-    else
-        cd "${repo_dir}"
-        clone_git_repo "${repo_dir}"
-    fi
 }
 
-function get_current_git_branch() {
-    pushDir
-    local saveLESS="${LESS}"
-    LESS=eFRX
-    cd "${BOX_PROJECT_DIR}"
-    branch="$(git rev-parse --abbrev-ref HEAD)"
-    echo $branch
-    LESS="${saveLESS}"
-    popDir
+function simplify_pantheon_repo_cache_dir() {
+    local repo_url="$1"
+    local provider="$(get_raw_project_file | jq -r '.deploy.provider')"
+    if [ "pantheon" == "${provider}" ] ; then
+        local site_id="$(get_raw_project_file | jq -r '.deploy.site_id')"
+        local site_name="$(get_raw_project_file | jq -r '.deploy.site_name')"
+        repo_url="${repo_url//\.${site_id}/}"    # Replace guid with URL name
+        repo_url="${repo_url//2222\/~\/repository/${site_name}}"    # Replace goggledegook with site_name
+    fi
+    echo "${repo_url}"
 }
 
 function make_cache_dir() {
@@ -90,36 +87,39 @@ function make_cache_dir() {
     mkdir --parents "${cache_dir}"
 }
 
-function get_repo_cache_dir() {
+function get_raw_repo_cache_dir() {
     declare=${BOX_CACHE_DIR:=}
     local repo_url="$1"
-    local path="tmp"
-    if [[ "${repo_url}" =~ ^https?:// ]]; then
-        path="${repo_url#*//}"
-    fi
-    if [[ "${repo_url}" =~ ^ssh:// ]]; then
-        path="${repo_url#*@}"   // Strip leading username, e.g. `git@`
-        path="${path%.*}"       // Strip trailing .git extension
-        path="${path/:/\/}"     // Replace ':' with '/'
-    fi
-    cache_dir="${BOX_CACHE_DIR}/${path}"
+    local path="${repo_url}"
+    path="${repo_url#*://}"     # Strip leading protocol; ssh://, https://, http://
+    path="${path#*@}"    # Strip leading username, e.g. git@
+    path="${path%.git*}"        # Strip trailing .git extension
+    path="${path/:/\/}"         # Replace ':' with '/'
+    local cache_dir="${BOX_CACHE_DIR}/${path}"
+    cache_dir="$(simplify_pantheon_repo_cache_dir "${cache_dir}")"
     echo "${cache_dir}"
 }
 
-function ensure_cache_dir() {
-    declare=${BOX_USER:=}
-    sudo mkdir -p "${BOX_CACHE_DIR}"
-    sudo chmod 755 "${BOX_CACHE_DIR}"
-    sudo chown "${BOX_USER}:${BOX_USER}" "${BOX_CACHE_DIR}"
-}
-
-function get_project_dir() {
-    echo "${BOX_PROJECT_DIR}"
+function get_deploy_host() {
+    local host_id="$1"
+    json="$(cat "${BOX_PROJECT_FILE}" | jq -r ".deploy.hosts.${host_id}|type")"
+    if [ "object" != "${json}" ]; then
+        alert ""
+        alert "ERROR: ${RED}Your ${GREEN}project.json${RED} file does not define a host named ${YELLOW}\"${GREEN}${host_id}${YELLOW}\"${RED}.${RESET}"
+        alert ""
+        alert "Please edit your ${GREEN}project.json${RESET} file and add ${YELLOW}\"${GREEN}${host_id}${YELLOW}\"${RESET} as a property of ${GREEN}.deploy.hosts.${RESET}"
+        alert ""
+        exit 1
+    fi
+    echo -e "${json}"
 }
 
 function get_source_repo_url() {
     local source_repo_url="$(get_raw_source_repo_url)"
     local remote_repo_url="$(get_git_origin_remote_repo_url)"
+    if [[ "${source_repo_url}" =~ ^ssh:// ]]; then
+        source_repo_url="${source_repo_url#*//}"
+    fi
     if [ "${source_repo_url}" != "${remote_repo_url}" ]; then
         alert ""
         alert "${RED}Your source repo and your git remote repo do not match. Cannot deploy.${RESET}"
@@ -137,16 +137,15 @@ function get_source_repo_url() {
     echo "${source_repo_url}"
 }
 
-function get_deploy_repo_branch() {
+function get_source_repo_branch() {
     local host_id="$1"
-    local project_branch="$(get_raw_deploy_host_branch "${host_id}")"
+    local project_branch="$(get_raw_source_host_branch "${host_id}")"
     exitOnError
     local current_branch="$(get_current_git_branch)"
     exitOnError
     if [ "null" == "${project_branch}" ] ; then
         project_branch="n/a"
     fi
-
     if [ "${current_branch}" != "${project_branch}" ]; then
         alert ""
         alert "${RED}Your current branch does not match the deploy branch for the ${GREEN}${host_id}${RED} host."
