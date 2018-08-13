@@ -72,11 +72,13 @@ function deploy_host() {
 
     output "   ${YELLOW}Updating repository caches...${RESET}"
 
-    ensure_repo_cached_locally "${source_url}" "${source_branch}" 2>&1 >> $DEPLOY_LOG
+    ensure_repo_cached_locally "${source_url}" "${source_branch}" >> $DEPLOY_LOG 2>&1
 
-    ensure_repo_cached_locally "${deploy_url}" "${deploy_branch}" 2>&1  >> $DEPLOY_LOG
+    ensure_repo_cached_locally "${deploy_url}" "${deploy_branch}" >> $DEPLOY_LOG 2>&1
 
-    ensure_source_composer_install "${source_dir}" 2>&1  >> $DEPLOY_LOG
+    output "   ${YELLOW}Running Composer Install on source...${RESET}"
+
+    ensure_source_composer_install "${source_dir}" >> $DEPLOY_LOG 2>&1
 
     #
     # Sync vendor path files
@@ -114,60 +116,86 @@ function deploy_host() {
     # Copy *just* the files in www/blog/ and not subdirectories
     # See: https://askubuntu.com/a/632102/486620
     #
-    sync_files_shallow "${source_dir}" "${deploy_dir}" \
+    sync_files_shallow \
+        "${source_dir}" \
+        "${deploy_dir}" \
         "${wp_source_core_path}" \
         "${wp_deploy_core_path}"  >> $DEPLOY_LOG
+
+    remove_deploy_delete_files "${deploy_dir}"  >> $DEPLOY_LOG
 
     echo "Deploy complete."
 
 }
 
+function remove_deploy_delete_files() {
+    local deploy_dir="$1"
+    checkParam "${deploy_dir}" "You must pass a destination directory as 1st argument to remove_deploy_delete_files()."
+    exitOnError
+
+    local exclude_files="$(get_raw_deploy_delete_files)"
+    local saveIFS="${IFS}"
+    IFS=$'\n'
+    for file in $exclude_files ; do
+        file="${deploy_dir}${file}"
+        if [ "" == "$(ls ${file} 2>/dev/null)" ] ; then
+            echo "Skipping deletion of ${file} [File not found.]"
+            continue
+        fi
+        echo "Deleting ${file}"
+        rm -rf "${file}"
+    done
+    IFS="${saveIFS}"
+}
+
 function sync_files_shallow() {
+
     local source_dir="$1"
-    checkParam "${source_dir}" "You must pass a source directory as 1st argument to sync_files()."
+    checkParam "${source_dir}" "You must pass a source directory as 1st argument to sync_files_shallow()."
     exitOnError
 
     local deploy_dir="$2"
-    checkParam "${deploy_dir}" "You must pass a destination directory as 2nd argument to sync_files()."
+    checkParam "${deploy_dir}" "You must pass a destination directory as 2nd argument to sync_files_shallow()."
     exitOnError
 
     local source_path="$3"
-    checkParam "${source_path}" "You must pass a source path as 3rd argument to sync_files()."
+    checkParam "${source_path}" "You must pass a source path as 3rd argument to sync_files_shallow()."
     exitOnError
 
     local deploy_path="$4"
-    checkParam "${deploy_path}" "You must pass a destination directory as 4th argument to sync_files()."
+    checkParam "${deploy_path}" "You must pass a destination path as 4th argument to sync_files_shallow()."
     exitOnError
 
-    rsync --archive --filter"- */" --filter"+ *" \
-        "$(RTrimSlashes "${source_dir}/${source_path}")" \
-        "$(RTrimSlashes "${deploy_dir}/${deploy_path}")"
+    local exclude_files_list="$(write_sync_exclude_files_by "path" "${source_path}")"
+
+    rsync --archive --filter="- */" --filter="+ *" --exclude-from="${exclude_files_list}" \
+        "$(RTrimSlashes "${source_dir}${source_path}")" \
+        "$(RTrimSlashes "${deploy_dir}${deploy_path}")"
 
 }
 
 function sync_files_deep() {
     local source_dir="$1"
-    checkParam "${source_dir}" "You must pass a source directory as 1st argument to sync_files()."
-    exitOnError
+    checkParam "${source_dir}" "You must pass a source directory as 1st argument to sync_files_deep()."
 
     local deploy_dir="$2"
-    checkParam "${deploy_dir}" "You must pass a destination directory as 2nd argument to sync_files()."
+    checkParam "${deploy_dir}" "You must pass a destination directory as 2nd argument to sync_files_deep()."
     exitOnError
 
     local source_path="$3"
-    checkParam "${source_path}" "You must pass a source path as 3rd argument to sync_files()."
+    checkParam "${source_path}" "You must pass a source path as 3rd argument to sync_files_deep()."
     exitOnError
 
     local deploy_path="$4"
-    checkParam "${deploy_path}" "You must pass a destination directory as 4th argument to sync_files()."
+    checkParam "${deploy_path}" "You must pass a destination path as 4th argument to sync_files_deep()."
     exitOnError
 
-    local exclude_files_list="$(write_sync_exclude_files_by "path" "/wp-content")"
+    local exclude_files_list="$(write_sync_exclude_files_by "path" "${source_path}")"
 
     rsync --archive --delete-after --verbose \
         --exclude ".git" --exclude ".git*" --exclude-from="${exclude_files_list}" \
-        "${source_dir}/${source_path}/" \
-        "${deploy_dir}/${deploy_path}"
+        "${source_dir}${source_path}/" \
+        "${deploy_dir}${deploy_path}"
 
     rm -rf "${exclude_files_list}"
 
@@ -197,6 +225,11 @@ function write_sync_exclude_files_by() {
             saveIFS="${IFS}"
             IFS=$'\n'
             for file in $exclude_files ; do
+                if [ "/" == "${file:0:1}" ] ; then
+                    # if not an absolute reference, then file is to be excludes everywhere
+                    echo -e "${file}" >> $exclude_file_list
+                    continue
+                fi
                 if ! [[ ${file} =~ ^${value}/(.+)$ ]] ; then
                     continue
                 fi

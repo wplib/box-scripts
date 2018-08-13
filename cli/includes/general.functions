@@ -573,24 +573,20 @@ function checkParam() {
     return 0
 }
 
-function TrimSlashes() {
-    local path="$1"
-    if [[ "${path}" =~ ^/(.*)/$ ]] ; then
-        $path="${BASH_REMATCH[1]}"
-    fi
-    echo "${path}"
-}
 function RTrimSlashes() {
     local path="$1"
     if [[ "${path}" =~ ^(.*)/$ ]] ; then
-        $path="${BASH_REMATCH[1]}"
+        path="${BASH_REMATCH[1]}"
     fi
     echo "${path}"
 }
 function LTrimSlashes() {
     local path="$1"
     if [[ "${path}" =~ ^/(.*)$ ]] ; then
-        $path="${BASH_REMATCH[1]}"
+        path="${BASH_REMATCH[1]}"
     fi
     echo "${path}"
+}
+function TrimSlashes() {
+    echo "$(RTrimSlashes "$(LTrimSlashes "$1")" )"
 }
