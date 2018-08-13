@@ -24,6 +24,10 @@ EOF
 }
 
 function deploy_host() {
+
+    local DEPLOY_LOG="/tmp/box-tmp/deploy.log"
+    rm -rf "${DEPLOY_LOG}"
+
     initErrorFile
 
     local host_id="$1"
@@ -33,51 +37,211 @@ function deploy_host() {
         exit
     fi
 
-    #
-    # @todo Add an error handling get_deploy_host() function and call it here
-    #
-    json="$(get_deploy_host "${host_id}")"
+    check_deploy_host "${host_id}"
     exitOnError
 
     source_url="$(get_source_repo_url)"
     exitOnError
 
+    source_dir="$(get_raw_repo_cache_dir "${source_url}")"
+    exitOnError
+
     source_branch="$(get_source_repo_branch "${host_id}")"
     exitOnError
 
-
-    deploy_url="$(get_raw_deploy_repo_url "${host_id}")"
+    deploy_url="$(get_raw_host_repo_url "${host_id}")"
     exitOnError
 
-    deploy_branch="$(get_raw_deploy_repo_branch "${host_id}")"
+    deploy_dir="$(get_raw_repo_cache_dir "${deploy_url}")"
     exitOnError
 
-    ensure_no_uncommitted_files
+    deploy_branch="$(get_raw_deploy_host_branch "${host_id}")"
+    exitOnError
+
+    ################ensure_no_uncommitted_files
 
     output
     output "${YELLOW}Preparing to deploy:${RESET}"
     output
-    output "\t${CYAN}Source repo:   ${GREEN}${source_url}${RESET}"
-    output "\t${CYAN}Source branch: ${GREEN}${source_branch}${RESET}"
+    output "   ${CYAN}Source branch: ${GREEN}${source_branch}${RESET}"
+    output "   ${CYAN}Source repo:   ${GREEN}${source_url}${RESET}"
     output
-    output "\t${CYAN}Deploy repo:   ${GREEN}${deploy_url}${RESET}"
-    output "\t${CYAN}Deploy branch: ${GREEN}${deploy_branch}${RESET}"
+    output "   ${CYAN}Deploy branch: ${GREEN}${deploy_branch}${RESET}"
+    output "   ${CYAN}Deploy repo:   ${GREEN}${deploy_url}${RESET}"
     output
 
-    echo "Ensuring cached repositories"
-    ensure_repo_cached_locally "${source_url}" "${source_branch}"
-    ensure_repo_cached_locally "${deploy_url}" "${deploy_branch}"
+    output "   ${YELLOW}Updating repository caches...${RESET}"
 
+    ensure_repo_cached_locally "${source_url}" "${source_branch}" 2>&1 >> $DEPLOY_LOG
+
+    ensure_repo_cached_locally "${deploy_url}" "${deploy_branch}" 2>&1  >> $DEPLOY_LOG
+
+    ensure_source_composer_install "${source_dir}" 2>&1  >> $DEPLOY_LOG
+
+    #
+    # Sync vendor path files
+    #
+    sync_files_deep "${source_dir}" "${deploy_dir}" \
+        "$(get_raw_source_wp_vendor_path)" \
+        "$(get_raw_deploy_wp_vendor_path)"  >> $DEPLOY_LOG
+
+    #
+    # Sync content path files
+    #
+    sync_files_deep "${source_dir}" "${deploy_dir}" \
+        "$(get_raw_source_wp_content_path)" \
+        "$(get_raw_deploy_wp_content_path)"  >> $DEPLOY_LOG
+
+    local wp_source_core_path="$(get_raw_source_wp_core_path)"
+    local wp_deploy_core_path="$(get_raw_deploy_wp_core_path)"
+
+    #
+    # Sync core wp-admin path files
+    #
+    sync_files_deep "${source_dir}" "${deploy_dir}" \
+        "${wp_source_core_path}/wp-admin" \
+        "${wp_deploy_core_path}/wp-admin"  >> $DEPLOY_LOG
+
+    #
+    # Sync core wp-includes path files
+    #
+    sync_files_deep "${source_dir}" "${deploy_dir}" \
+        "${wp_source_core_path}/wp-includes" \
+        "${wp_deploy_core_path}/wp-includes"  >> $DEPLOY_LOG
+
+    #
+    # Sync core root files
+    # Copy *just* the files in www/blog/ and not subdirectories
+    # See: https://askubuntu.com/a/632102/486620
+    #
+    sync_files_shallow "${source_dir}" "${deploy_dir}" \
+        "${wp_source_core_path}" \
+        "${wp_deploy_core_path}"  >> $DEPLOY_LOG
+
+    echo "Deploy complete."
+
+}
+
+function sync_files_shallow() {
+    local source_dir="$1"
+    checkParam "${source_dir}" "You must pass a source directory as 1st argument to sync_files()."
+    exitOnError
+
+    local deploy_dir="$2"
+    checkParam "${deploy_dir}" "You must pass a destination directory as 2nd argument to sync_files()."
+    exitOnError
+
+    local source_path="$3"
+    checkParam "${source_path}" "You must pass a source path as 3rd argument to sync_files()."
+    exitOnError
+
+    local deploy_path="$4"
+    checkParam "${deploy_path}" "You must pass a destination directory as 4th argument to sync_files()."
+    exitOnError
+
+    rsync --archive --filter"- */" --filter"+ *" \
+        "$(RTrimSlashes "${source_dir}/${source_path}")" \
+        "$(RTrimSlashes "${deploy_dir}/${deploy_path}")"
+
+}
+
+function sync_files_deep() {
+    local source_dir="$1"
+    checkParam "${source_dir}" "You must pass a source directory as 1st argument to sync_files()."
+    exitOnError
+
+    local deploy_dir="$2"
+    checkParam "${deploy_dir}" "You must pass a destination directory as 2nd argument to sync_files()."
+    exitOnError
+
+    local source_path="$3"
+    checkParam "${source_path}" "You must pass a source path as 3rd argument to sync_files()."
+    exitOnError
+
+    local deploy_path="$4"
+    checkParam "${deploy_path}" "You must pass a destination directory as 4th argument to sync_files()."
+    exitOnError
+
+    local exclude_files_list="$(write_sync_exclude_files_by "path" "/wp-content")"
+
+    rsync --archive --delete-after --verbose \
+        --exclude ".git" --exclude ".git*" --exclude-from="${exclude_files_list}" \
+        "${source_dir}/${source_path}/" \
+        "${deploy_dir}/${deploy_path}"
+
+    rm -rf "${exclude_files_list}"
+
+}
+
+function get_raw_deploy_exclude_files() {
+    local exclude="$(get_raw_deploy | jqr ".files.exclude[]")"
+    echo "${exclude}"
+}
+
+function get_raw_deploy_delete_files() {
+    local exclude="$(get_raw_deploy | jqr ".files.delete[]")"
+    echo "${exclude}"
+}
+
+function write_sync_exclude_files_by() {
+    local by="$1"
+    local value="$2"
+
+    mkdir -p /tmp/box-tmp/
+    local exclude_file_list="$(mktemp /tmp/box-tmp/exclude-XXXX.txt)"
+    touch "${exclude_file_list}"
+    local exclude_files="$(get_sync_exclude_files)"
+    if [ "" != "${value}" ] ; then
+        case "${by}" in
+        'path')
+            saveIFS="${IFS}"
+            IFS=$'\n'
+            for file in $exclude_files ; do
+                if ! [[ ${file} =~ ^${value}/(.+)$ ]] ; then
+                    continue
+                fi
+                echo -e "/${BASH_REMATCH[1]}" >> $exclude_file_list
+            done
+            IFS="${saveIFS}"
+            ;;
+
+        *)
+            alert "The criteria [${by}] is not valid for get_sync_exclude_files_by()"
+            exit 1
+            ;;
+
+        esac
+    fi
+    echo "${exclude_file_list}"
+}
+
+function get_sync_exclude_files() {
+    local exclude_files="$(get_raw_deploy_exclude_files)\n$(get_raw_deploy_delete_files)\n$(get_raw_deploy_keep_files)"
+    echo -e "${exclude_files}"
+}
+
+function ensure_source_composer_install() {
+    local repo_dir="$1"
+    checkParam "${repo_dir}" "You must pass a repository directory as 1st argument to ensure_source_composer_install()."
+    exitOnError
+    output "Running Composer to install externals."
+    pushDir
+    cd "${repo_dir}"
+    composer install
+    exitOnError
+    popDir
 }
 
 function simplify_pantheon_repo_cache_dir() {
     local repo_url="$1"
+    checkParam "${repo_url}" "You must pass a repository URL as 1st argument to simplify_pantheon_repo_cache_dir()."
+    exitOnError
     local provider="$(get_raw_project_file | jq -r '.deploy.provider')"
     if [ "pantheon" == "${provider}" ] ; then
         local site_id="$(get_raw_project_file | jq -r '.deploy.site_id')"
         local site_name="$(get_raw_project_file | jq -r '.deploy.site_name')"
         repo_url="${repo_url//\.${site_id}/}"    # Replace guid with URL name
-        repo_url="${repo_url//2222\/~\/repository/${site_name}}"    # Replace goggledegook with site_name
+        repo_url="${repo_url//\/2222\/~\/repository/\/${site_name}}"  # Remove goggledegook
     fi
     echo "${repo_url}"
 }
@@ -90,6 +254,8 @@ function make_cache_dir() {
 function get_raw_repo_cache_dir() {
     declare=${BOX_CACHE_DIR:=}
     local repo_url="$1"
+    checkParam "${repo_url}" "You must pass a repository URL as 1st argument to get_raw_repo_cache_dir()."
+    exitOnError
     local path="${repo_url}"
     path="${repo_url#*://}"     # Strip leading protocol; ssh://, https://, http://
     path="${path#*@}"    # Strip leading username, e.g. git@
@@ -100,14 +266,23 @@ function get_raw_repo_cache_dir() {
     echo "${cache_dir}"
 }
 
+function check_deploy_host() {
+    local host_id="$1"
+    checkParam "${host_id}" "You must pass a host name/id as 1st argument to check_deploy_host()."
+    exitOnError
+    echo "$(get_deploy_host "${host_id}")" > /dev/null
+}
+
 function get_deploy_host() {
     local host_id="$1"
-    json="$(cat "${BOX_PROJECT_FILE}" | jq -r ".deploy.hosts.${host_id}|type")"
-    if [ "object" != "${json}" ]; then
+    checkParam "${host_id}" "You must pass a host name/id as 1st argument to get_deploy_host()."
+    exitOnError
+    json="$(cat "${BOX_PROJECT_FILE}" | jq -r ".deploy.hosts.${host_id}?")"
+    if [ "object" != "$(echo "${json}"|jqr 'type')" ]; then
         alert ""
         alert "ERROR: ${RED}Your ${GREEN}project.json${RED} file does not define a host named ${YELLOW}\"${GREEN}${host_id}${YELLOW}\"${RED}.${RESET}"
         alert ""
-        alert "Please edit your ${GREEN}project.json${RESET} file and add ${YELLOW}\"${GREEN}${host_id}${YELLOW}\"${RESET} as a property of ${GREEN}.deploy.hosts.${RESET}"
+        alert "Please edit your ${GREEN}project.json${RESET} file and add ${YELLOW}\"${GREEN}${host_id}${YELLOW}\"${RESET} as a property of ${GREEN}.hosts.${RESET}"
         alert ""
         exit 1
     fi
@@ -139,7 +314,7 @@ function get_source_repo_url() {
 
 function get_source_repo_branch() {
     local host_id="$1"
-    local project_branch="$(get_raw_source_host_branch "${host_id}")"
+    local project_branch="$(get_raw_source_branch_by "host" "${host_id}")"
     exitOnError
     local current_branch="$(get_current_git_branch)"
     exitOnError

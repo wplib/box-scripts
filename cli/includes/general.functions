@@ -2,6 +2,7 @@
 
 declare="${ECHO_PREFIX:=}"
 declare="${YELLOW:=}"
+declare="${RED:=}"
 declare="${GREEN:=}"
 declare="${RESET:=}"
 declare="${BOX_CLI_DIR:=}"
@@ -533,6 +534,9 @@ function popDir {
 
 function exitOnError() {
     if [ "0" != "$?" ] ; then
+        if [ "" != "$1" ] ; then
+            alert "$1"
+        fi
         exit 1
     fi
 }
@@ -547,4 +551,46 @@ function showErrorFile() {
     echo ===[ERRORS]===
     cat $BOX_ERROR_FILE
     echo ==============
+}
+
+function jqr() {
+    local query="$1"
+    output="$(jq -r "${query}")"
+    if [ "0" != "$?" ]; then
+        exitOnError "${RED}JQ ERROR${YELLOW} executing query: ${GREEN}${query}${RESET}"
+    fi
+    echo "${output}"
+}
+
+
+function checkParam() {
+    if [ "" == "$1" ]; then
+        alert
+        alert "${RED}ERROR:${YELLOW} ${2}${RESET}"
+        alert
+        return 1
+    fi
+    return 0
+}
+
+function TrimSlashes() {
+    local path="$1"
+    if [[ "${path}" =~ ^/(.*)/$ ]] ; then
+        $path="${BASH_REMATCH[1]}"
+    fi
+    echo "${path}"
+}
+function RTrimSlashes() {
+    local path="$1"
+    if [[ "${path}" =~ ^(.*)/$ ]] ; then
+        $path="${BASH_REMATCH[1]}"
+    fi
+    echo "${path}"
+}
+function LTrimSlashes() {
+    local path="$1"
+    if [[ "${path}" =~ ^/(.*)$ ]] ; then
+        $path="${BASH_REMATCH[1]}"
+    fi
+    echo "${path}"
 }

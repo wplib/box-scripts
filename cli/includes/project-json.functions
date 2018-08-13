@@ -12,62 +12,154 @@ function get_raw_project_dir() {
     echo "${BOX_PROJECT_DIR}"
 }
 
-
 function get_raw_deploy() {
-    local deploy="$(get_raw_project_file | jq -r ".deploy")"
+    local deploy="$(get_raw_project_file | jqr ".deploy")"
     echo "${deploy}"
 }
 
+function get_raw_deploy_exclude_files() {
+    local exclude="$(get_raw_deploy | jqr ".files.exclude[]")"
+    echo "${exclude}"
+}
+
+function get_raw_deploy_delete_files() {
+    local exclude="$(get_raw_deploy | jqr ".files.delete[]")"
+    echo "${exclude}"
+}
+
+function get_raw_deploy_keep_files() {
+    local exclude="$(get_raw_deploy | jqr ".files.keep[]")"
+    echo "${exclude}"
+}
+
+function get_raw_source() {
+    local deploy="$(get_raw_project_file | jqr ".source")"
+    echo "${deploy}"
+}
+
+function get_raw_source_wordpress_paths() {
+    local paths="$(get_raw_project_file | jqr ".source.frameworks.wordpress")"
+    echo "${paths}"
+}
+
+function get_raw_source_wp_content_path() {
+    local content_path="$(get_raw_source_wordpress_paths | jqr ".content_path")"
+    echo "$(RTrimSlashes "${content_path}")"
+}
+
+function get_raw_source_wp_core_path() {
+    local core_path="$(get_raw_source_wordpress_paths | jqr ".core_path")"
+    echo "$(RTrimSlashes "${core_path}")"
+}
+
+function get_raw_source_wp_vendor_path() {
+    local vendor_path="$(get_raw_source_wordpress_paths | jqr ".vendor_path")"
+    echo "$(RTrimSlashes "${vendor_path}")"
+}
+
+function get_raw_source_wp_root_path() {
+    local root_path="$(get_raw_source_wordpress_paths | jqr ".root_path")"
+    echo "$(RTrimSlashes "${root_path}")"
+}
+
 function get_raw_source_repo_url() {
-    repo_url="$(cat "${BOX_PROJECT_FILE}" | jq -r ".source.repository.url")"
+    repo_url="$(cat "${BOX_PROJECT_FILE}" | jqr ".source.repository.url")"
     if [[ "${repo_url}" =~ ^ssh:// ]]; then
         repo_url="${repo_url#*//}"
     fi
     echo "${repo_url}"
 }
 
-
-function get_raw_source_host_branch() {
-    local host_id="$1"
-    echo "${host_id}"
-}
-
+#
+# .deploy.hosts.{host_id} contain an object with a .branch property
+#
 function get_raw_deploy_host_branch() {
     local host_id="$1"
     host="$(get_raw_deploy_host "${host_id}")"
-    branch="$(echo "${host}" | jq -r ".branch")"
+    branch="$(echo "${host}" | jqr ".branch")"
     if [ "" == "${branch}" ] ; then
         branch="${host_id}"
     fi
     echo "${branch}"
 }
 
+#
+# .source.hosts.{host_id} contain an object with a .branch property
+#
+function get_raw_source_branch_by() {
+    local by="$1"
+    local host_id="$2"
+    local branch
+    case $by in
+	'host')
+        local branches="$(get_raw_source | jqr '.branches')"
+         exitOnError "No .source.branches"
+
+        entries="$(echo ${branches}| jqr '.|to_entries[]')"
+        exitOnError "Unexpected: Cannot convert .source.branches to entries"
+
+        local host="$(echo "${entries}"| jqr "select(.value.host|match(\"${host_id}\"))")"
+        exitOnError "Cannot find [${host_id}] as a .host in .source.branches"
+
+        branch="$(echo ${host}| jqr '.key')"
+        exitOnError "Unexpected: No .key in: jq '.source.branches|to_entries'"
+		;;
+
+	*)
+		alert "The criteria [${by}] is not valid for get_raw_source_branch_by()"
+		exit 1
+		;;
+
+    esac
+    echo "${branch}"
+}
+
 function get_raw_deploy_host() {
     local host_id="$1"
-    local host="$(get_raw_deploy | jq -r ".hosts.${host_id}")"
+    checkParam "${host_id}" "You must pass a host name/id as 1st argument to get_raw_host()."
+    exitOnError
+    local host="$(get_raw_deploy | jqr ".hosts.${host_id}")"
     echo "${host}"
 }
 
-function get_raw_deploy_repo_url() {
+function get_raw_host() {
     local host_id="$1"
-    local repo_url="$(get_raw_deploy | jq -r ".hosts.${host_id}.repository.url")"
+    checkParam "${host_id}" "You must pass a host name/id as 1st argument to get_raw_host()."
+    exitOnError
+    local host="$(get_raw_project_file | jqr ".hosts.${host_id}")"
+    echo "${host}"
+}
+
+function get_raw_host_repo_url() {
+    local host_id="$1"
+    checkParam "${host_id}" "You must pass a host name/id as 1st argument to get_raw_host()."
+    exitOnError
+    local repo_url="$(get_raw_host "${host_id}"| jqr ".repository.url")"
     echo "${repo_url}"
 }
 
-
-function get_raw_deploy_repo_branch() {
-    local host_id="$1"
-    local repo_url="$(get_raw_deploy | jq -r ".hosts.${host_id}.branch")"
-    echo "${repo_url}"
+function get_raw_deploy_wordpress_paths() {
+    local paths="$(get_raw_project_file | jqr ".deploy.frameworks.wordpress")"
+    echo "${paths}"
 }
 
-#function branch_has_deploy_host() {
-#    local host_id="$1"
-#    local branch="$2"
-#    local json=".deploy.hosts[]"
-#    local hosts="$(get_raw_deploy | jq -r "${json}")"
-#    local select="select(.branch|match(\"${branch}\")?)"
-#    local type="$(echo "${hosts}" | jq -r "${select}|type")"
-#    [[ "${type}" == "object" ]] && echo "yes" || echo "no"
-#}
+function get_raw_deploy_wp_content_path() {
+    local content_path="$(get_raw_deploy_wordpress_paths | jqr ".content_path")"
+    echo "$(RTrimSlashes "${content_path}")"
+}
+
+function get_raw_deploy_wp_core_path() {
+    local core_path="$(get_raw_deploy_wordpress_paths | jqr ".core_path")"
+    echo "$(RTrimSlashes "${core_path}")"
+}
+
+function get_raw_deploy_wp_vendor_path() {
+    local vendor_path="$(get_raw_deploy_wordpress_paths | jqr ".vendor_path")"
+    echo "$(RTrimSlashes "${vendor_path}")"
+}
+
+function get_raw_deploy_wp_root_path() {
+    local root_path="$(get_raw_deploy_wordpress_paths | jqr ".root_path")"
+    echo "$(RTrimSlashes "${root_path}")"
+}
 

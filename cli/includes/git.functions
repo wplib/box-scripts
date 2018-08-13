@@ -37,15 +37,16 @@ function ensure_repo_cached_locally() {
     mkdir -p "${parent_dir}"
     if ! [ -d "${cache_dir}" ]; then
         cd "${parent_dir}"
-        git clone -q "${repo_url}" "${repo_name}"
+        git clone "${repo_url}" "${repo_name}"
         cd "${cache_dir}"
-        git checkout -q -b "${branch}" "origin/${branch}"
+        git checkout -b "${branch}" "origin/${branch}"
     fi
     cd "${cache_dir}"
-    git checkout -q "${branch}"
-    git fetch -q --all
-    git reset -q  --hard "origin/${branch}"
-    git pull origin -q "${branch}"
+    git checkout "${branch}"
+    git fetch --all
+    git reset --hard "origin/${branch}"
+    git pull origin "${branch}"
+    git clean -fd
 }
 
 function ensure_cache_dir() {
