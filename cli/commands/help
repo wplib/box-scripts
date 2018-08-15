@@ -12,7 +12,7 @@ ${YELLOW}WPLib Box ${GREEN}CLI${RESET} usage:
 box ${GREEN}help${RESET}		- Output this list of commands.
 box ${GREEN}status${RESET}		- Output status of WPLib Box's standard service components.
 box ${GREEN}version${RESET}		- Output the current version of this WPLib Box VM.
-box ${GREEN}user${RESET}		- Output and update user information in /opt/box/user.json
+box ${GREEN}user${RESET}		- Output and update user information in user.json
 
 box ${GREEN}component${RESET}	        - Manage WPLib Box components
 box ${GREEN}database${RESET} 	        - Manage databases.
@@ -27,8 +27,8 @@ box ${GREEN}sync${RESET}                - Update box scripts in guest:/opt/box f
 box ${GREEN}deploy${RESET}              - Deploy the current Git repo using information in your project.json file
 box ${GREEN}cache${RESET}               - Clear the cache used by the 'box deploy' command.
 
-box ${GREEN}self-test${RESET}	        - Run tests for WPLib Box itself
-box ${GREEN}launch-checklist${RESET} 	- Displays our new version launch checklist (we eat our own dog food.)
+box ${GREEN}self-test${RESET}	        - Run tests for WPLib Box itself (We have many yet to write. Wanna help?)
+box ${GREEN}launch-checklist${RESET} 	- Our launch checklist for new versions of WPLib Box (we eat our own dog food.)
 
 EOF
 
