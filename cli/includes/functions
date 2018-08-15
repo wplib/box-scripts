@@ -21,6 +21,9 @@ export BOX_USER_HOME="/home/box"
 export BOX_PROJECT_DIR="${BOX_PROJECTS_ROOT}/${BOX_CURRENT_PROJECT}"
 
 export BOX_BASE_DIR="/opt/box"
+export BOX_USER_FILE="${BOX_BASE_DIR}/user.json"
+export BOX_CONFIG_FILE="${BOX_BASE_DIR}/box.json"
+
 export BOX_VERSION="$(cat ${BOX_BASE_DIR}/version)"
 export BOX_ETC_DIR="${BOX_BASE_DIR}/etc"
 export BOX_RELEASES_DIR="${BOX_ETC_DIR}/releases"
@@ -40,6 +43,7 @@ export BOX_SQL_DIR="${BOX_PROJECT_DIR}/sql"
 export BOX_SQL_PROVISION_LOCK="${BOX_PROJECT_DIR}.provisioned"
 export BOX_COMPOSER_FILE="${BOX_PROJECT_DIR}/composer.json"
 export BOX_PROJECT_FILE="${BOX_PROJECT_DIR}/project.json"
+
 
 export BOX_COMMANDS_DIR="${BOX_CLI_DIR}/commands"
 export BOX_INCLUDES_DIR="${BOX_CLI_DIR}/includes"

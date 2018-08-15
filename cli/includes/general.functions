@@ -590,3 +590,13 @@ function LTrimSlashes() {
 function TrimSlashes() {
     echo "$(RTrimSlashes "$(LTrimSlashes "$1")" )"
 }
+
+#
+# See: https://stackoverflow.com/a/12973694/102699
+#
+function TrimSpace() {
+    echo "$(echo $1|xargs)"
+}
+
+
+
