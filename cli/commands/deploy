@@ -16,15 +16,17 @@ function deploy_help() {
 
 ${YELLOW}WPLib Box ${GREEN}CLI${RESET} ${GREEN}deploy${RESET} usage:
 
-box ${YELLOW}deploy${RESET}	        - Show this help.
-box ${YELLOW}deploy ${GREEN}help${RESET}		- Show this help.
-box ${YELLOW}deploy ${RESET}[${CYAN}<host>]${RESET}	- Deploys the host as defined in ${GREEN}project.json${RESET}.
+box ${YELLOW}deploy${RESET}	                - Show this help.
+box ${YELLOW}deploy ${GREEN}help${RESET}		        - Show this help.
+box ${YELLOW}deploy ${RESET}[${CYAN}<host>]${RESET}	        - Deploys the host as defined in ${GREEN}project.json${RESET}.
+box ${YELLOW}deploy unlock ${RESET}[${CYAN}<host>]${RESET}	- Unlocks a host locked for deploy ${YELLOW}[CAUTION!]${RESET}
 
 EOF
 }
 
 function deploy_host() {
 
+    ensure_box_tmp
     local DEPLOY_LOG="/tmp/box-tmp/deploy.log"
     rm -rf "${DEPLOY_LOG}"
 
@@ -36,6 +38,9 @@ function deploy_host() {
         output "Hostname required when calling 'deploy'"
         exit
     fi
+
+    lock_deploy "${host_id}"
+    exitOnError
 
     check_deploy_host "${host_id}"
     exitOnError
@@ -123,10 +128,75 @@ function deploy_host() {
         "${wp_deploy_core_path}"  >> $DEPLOY_LOG
 
     remove_deploy_delete_files "${deploy_dir}"  >> $DEPLOY_LOG
+exit
+
+    # Sort by https://stackoverflow.com/a/5917762/102699
+    last_build="$(echo -e $deploy_tags | grep -v deploy-lock | awk '{ print length, $2 }' | sort -r -n | cut -d" " -f2- | head -n 1 | sed -e 's#^refs/tags/##')"
+
+    #git add.
+    #commit
 
     echo "Deploy complete."
 
 }
+
+function lock_deploy() {
+    result="success"
+    local host_id="$1"
+    local lock_slug="$(get_git_deploy_lock_slug "${host_id}")"
+    local deploy_lock="$(TrimSpace "$(get_git_deploy_lock "${host_id}")")"
+    if ! [ "" != "{$deploy_lock}" ]; then
+        result="fail"
+    else
+        lock_git_deploy "${host_id}"
+        if [ "0" != "$?" ] ; then
+            result="fail"
+        fi
+    fi
+    if [ "fail" == "${result}" ] ; then
+        alert ""
+        alert "${RED}Your current Git repository already has a ${GREEN}deploy lock${RED}. Cannot deploy.${RESET}"
+        alert ""
+        alert "If you know this lock to be in error you can delete with this command:"
+        alert ""
+        alert "\t${GREEN}box deploy unlock ${host_id}${RESET}"
+        alert ""
+        alert "However, ${YELLOW}caution is in order${RESET}. If you attempt to run a deploy while"
+        alert "another is running ${RED}expect the unexpected${RESET}."
+        alert ""
+        alert "P.S. A deploy lock is a Git 'tag' whose name is 'deploy-lock-*' where '*'"
+        alert "contains your deploy host and your email address, e.g:"
+        alert ""
+        alert "\t${GREEN}${lock_slug}${RESET}"
+        alert ""
+        exit 1
+    fi
+}
+
+function deploy_unlock_host() {
+    local host_id="$1"
+    local user_email="$(get_raw_user_email)"
+    if [ "" == "${user_email}" ] ; then
+        box user show
+        exit 1
+    fi
+
+    unlock_git_deploy "${host_id}"
+    if [ "0" != "$?" ] ; then
+        local lock_slug="$(get_git_deploy_lock_slug "${host_id}")"
+        alert "Deploy ${GREEN}${host_id}${RESET} unlocked ${RED}FAILED${RESET}."
+        alert "Try these commands and Google the error messages to diagnose:"
+        alert ""
+        alert "\t${GREEN}git push origin :refs/tags/${lock_slug}${RESET}"
+        alert "\t${GREEN}git tag -d ${lock_slug}${RESET}"
+        alert ""
+        alert "Also feel free to reach out to our SLack support for help."
+        alert ""
+        exit 1
+    fi
+    output "Deploy ${GREEN}${host_id}${RESET} unlocked."
+}
+
 
 function remove_deploy_delete_files() {
     local deploy_dir="$1"
@@ -138,7 +208,7 @@ function remove_deploy_delete_files() {
     IFS=$'\n'
     for file in $exclude_files ; do
         file="${deploy_dir}${file}"
-        if [ "" == "$(ls ${file} 2>/dev/null)" ] ; then
+        if [ "" == "$(ls -A ${file} 2>/dev/null)" ] ; then
             echo "Skipping deletion of ${file} [File not found.]"
             continue
         fi
@@ -332,13 +402,18 @@ function get_source_repo_url() {
         alert ""
         alert "${RED}Your source repo and your git remote repo do not match. Cannot deploy.${RESET}"
         alert ""
-        alert "\tSource: ${source_repo_url}"
-        alert "\tRemote: ${remote_repo_url}"
+        alert "\t${CYAN}Source: ${GREEN}${source_repo_url}${RESET}"
+        alert "\t${CYAN}Remote: ${GREEN}${remote_repo_url}${RESET}"
         alert ""
-        alert "Your source repo is found in ${BOX_PROJECT_FILE} as '.source.repository.url.'"
-        alert "Your remote is found by running 'git remote -v'. You can set your remote to match your source with:"
+        alert "Your source repo is found in ${GREEN}${BOX_PROJECT_FILE}${RESET} as ${GREEN}.source.repository.url.${RESET}"
+        alert "Your remote is found by running ${GREEN}git remote -v${RESET}. If you are in the correct directory you"
+        alert "can set your remote to match your source with:"
         alert ""
-        alert "\tgit remote set-url --push origin ${source_repo_url}"
+        alert "\t${GREEN}git remote set-url --push origin ${source_repo_url}${RESET}"
+        alert ""
+        alert "However, ${GREEN}caution is in order${RESET}. We can only give you hints about how you can resolve"
+        alert "this issue, but your circumstances might require another solution, and Git can be"
+        alert "a rather unforgiving beast if you do the wrong thing. So measure twice, cut once!${RESET}"
         alert ""
         exit 1
     fi
@@ -395,12 +470,16 @@ function ensure_no_uncommitted_files() {
     fi
 }
 
+function ensure_box_tmp() {
+    mkdir -p /tmp/box-tmp/
+}
 
 ################################################################################
 CMD="$1"
 shift
 case $CMD in
-    'help')
+    'unlock')
+        deploy_unlock_host "$1"
         ;;
 
 	*|'help')

@@ -64,3 +64,62 @@ function get_current_git_branch() {
     echo $branch
     popDir
 }
+
+function set_git_user_name_email() {
+    name="$1"
+    email="$2"
+    git config --global user.name "${name}"
+    git config --global user.email "${email}"
+}
+
+#
+# Return all tags starting with "deploy-" but not ones containing (ending with) "^{}"
+#
+function get_git_deploy_tags() {
+    deploy_tags="$(git ls-remote --tags 2> /dev/null | awk '{print substr($2,11)}' | grep "^deploy-" | grep -vF "^{}")"
+    echo -e ${deploy_tags}
+}
+
+#
+# Return the deploy lock slug for a lock ID
+#
+function get_git_deploy_lock_slug() {
+    local host_id="$1"
+    local user_email="$(get_raw_user_email)"
+    echo -e "deploy-lock-${host_id}-${user_email}"
+}
+
+#
+# Return a deploy lock for the given lock ID: "${branch}-${email}"
+#
+function get_git_deploy_lock() {
+    local host_id="$1"
+    local lock_slug="$(get_git_deploy_lock_slug "${host_id}")"
+    deploy_lock="$(get_git_deploy_tags | grep "^${lock_slug}")"
+    echo -e "${deploy_lock}"
+}
+
+#
+# Return all tags starting with "deploy-" but not ones containing (ending with) "^{}"
+#
+function lock_git_deploy() {
+    local host_id="$1"
+    local lock_slug="$(get_git_deploy_lock_slug "${host_id}")"
+    git tag -m "Deploy lock for ${host_id}" -a "${lock_slug}" 2> /dev/null
+    if [ "0" != "$?" ]; then
+        return 1
+    fi
+    git push --tags  2> /dev/null
+    if [ "0" != "$?" ]; then
+        git tag -d "${lock_slug}" 2> /dev/null
+        return 1
+    fi
+}
+
+function unlock_git_deploy() {
+    local host_id="$1"
+    local lock_slug="$(get_git_deploy_lock_slug "${host_id}")"
+    git tag -d ${lock_slug} 2>&1 > /dev/null
+    git push origin ":refs/tags/${lock_slug}" 2>&1 > /dev/null
+}
+

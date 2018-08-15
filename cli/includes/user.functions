@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+declare="${BOX_USER_FILE:=}"
+
+function get_raw_user_name() {
+    cat $BOX_USER_FILE | jq -r '.name'
+}
+
+function get_raw_user_email() {
+    cat $BOX_USER_FILE | jq -r '.email'
+}
