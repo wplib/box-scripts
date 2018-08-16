@@ -39,10 +39,10 @@ function deploy_host() {
         exit
     fi
 
-    lock_deploy "${host_id}"
+    check_deploy_host "${host_id}"
     exitOnError
 
-    check_deploy_host "${host_id}"
+    lock_deploy "${host_id}"
     exitOnError
 
     source_url="$(get_source_repo_url)"
@@ -77,13 +77,13 @@ function deploy_host() {
 
     output "   ${YELLOW}Updating repository caches...${RESET}"
 
-    ensure_repo_cached_locally "${source_url}" "${source_branch}" >> $DEPLOY_LOG 2>&1
+    cache_repo_locally "${source_url}" "${source_branch}" >> $DEPLOY_LOG 2>&1
 
-    ensure_repo_cached_locally "${deploy_url}" "${deploy_branch}" >> $DEPLOY_LOG 2>&1
+    cache_repo_locally "${deploy_url}" "${deploy_branch}" >> $DEPLOY_LOG 2>&1
 
     output "   ${YELLOW}Running Composer Install on source...${RESET}"
 
-    ensure_source_composer_install "${source_dir}" >> $DEPLOY_LOG 2>&1
+    run_composer_install "${source_dir}" >> $DEPLOY_LOG 2>&1
 
     #
     # Sync vendor path files
@@ -164,8 +164,8 @@ function lock_deploy() {
         alert "However, ${YELLOW}caution is in order${RESET}. If you attempt to run a deploy while"
         alert "another is running ${RED}expect the unexpected${RESET}."
         alert ""
-        alert "P.S. A deploy lock is a Git 'tag' whose name is 'deploy-lock-*' where '*'"
-        alert "contains your deploy host and your email address, e.g:"
+        alert "P.S. A deploy lock is a Git 'tag' whose name is 'deploy-lock-{host}' where '{host}'"
+        alert "is the name of your deploy host. This is your current deploy-lock:"
         alert ""
         alert "\t${GREEN}${lock_slug}${RESET}"
         alert ""
@@ -175,22 +175,19 @@ function lock_deploy() {
 
 function deploy_unlock_host() {
     local host_id="$1"
-    local user_email="$(get_raw_user_email)"
-    if [ "" == "${user_email}" ] ; then
-        box user show
-        exit 1
-    fi
-
     unlock_git_deploy "${host_id}"
     if [ "0" != "$?" ] ; then
         local lock_slug="$(get_git_deploy_lock_slug "${host_id}")"
         alert "Deploy ${GREEN}${host_id}${RESET} unlocked ${RED}FAILED${RESET}."
-        alert "Try these commands and Google the error messages to diagnose:"
+        alert "Try these commands and then Google any error messages to diagnose:"
         alert ""
         alert "\t${GREEN}git push origin :refs/tags/${lock_slug}${RESET}"
         alert "\t${GREEN}git tag -d ${lock_slug}${RESET}"
         alert ""
-        alert "Also feel free to reach out to our SLack support for help."
+        alert "Also feel free to reach out to our Slack support for help:"
+        alert ""
+        alert "\t${CYAN}Our Slack:      ${GREEN}https://wplib.slack.org${RESET}"
+        alert "\t${CYAN}Join our Slack: ${GREEN}https://launchpass/wplib${RESET}"
         alert ""
         exit 1
     fi
@@ -323,9 +320,9 @@ function get_sync_exclude_files() {
     echo -e "${exclude_files}"
 }
 
-function ensure_source_composer_install() {
+function run_composer_install() {
     local repo_dir="$1"
-    checkParam "${repo_dir}" "You must pass a repository directory as 1st argument to ensure_source_composer_install()."
+    checkParam "${repo_dir}" "You must pass a repository directory as 1st argument to run_composer_install()."
     exitOnError
     output "Running Composer to install externals."
     pushDir

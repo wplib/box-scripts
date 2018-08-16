@@ -26,7 +26,7 @@ function get_git_uncommitted_files() {
     echo "${files}"
 }
 
-function ensure_repo_cached_locally() {
+function cache_repo_locally() {
     local repo_url="$1"
     local branch="$2"
     local cache_dir="$(get_raw_repo_cache_dir "${repo_url}")"
@@ -85,12 +85,11 @@ function get_git_deploy_tags() {
 #
 function get_git_deploy_lock_slug() {
     local host_id="$1"
-    local user_email="$(get_raw_user_email)"
-    echo -e "deploy-lock-${host_id}-${user_email}"
+    echo -e "deploy-lock-${host_id}"
 }
 
 #
-# Return a deploy lock for the given lock ID: "${branch}-${email}"
+# Return a deploy lock for the given lock ID in $host_id
 #
 function get_git_deploy_lock() {
     local host_id="$1"
@@ -119,7 +118,7 @@ function lock_git_deploy() {
 function unlock_git_deploy() {
     local host_id="$1"
     local lock_slug="$(get_git_deploy_lock_slug "${host_id}")"
-    git tag -d ${lock_slug} 2>&1 > /dev/null
-    git push origin ":refs/tags/${lock_slug}" 2>&1 > /dev/null
+    git tag -d ${lock_slug} 1> /dev/null 2> /dev/null
+    git push origin ":refs/tags/${lock_slug}" 1> /dev/null 2> /dev/null
 }
 
