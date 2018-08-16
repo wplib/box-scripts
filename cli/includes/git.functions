@@ -2,6 +2,7 @@
 
 declare="${BOX_PROJECT_DIR:=}"
 declare="${BOX_CACHE_DIR:=}"
+declare="${DEPLOY_LOG:=}"
 declare="${LESS:=}"
 
 function clone_git_repo() {
@@ -76,16 +77,8 @@ function set_git_user_name_email() {
 # Return all tags starting with "deploy-" but not ones containing (ending with) "^{}"
 #
 function get_git_deploy_tags() {
-    deploy_tags="$(git ls-remote --tags 2> /dev/null | awk '{print substr($2,11)}' | grep "^deploy-" | grep -vF "^{}")"
+    local deploy_tags="$(git ls-remote --tags 2> /dev/null | awk '{print substr($2,11)}' | grep "^deploy-" | grep -vF "^{}")"
     echo -e ${deploy_tags}
-}
-
-#
-# Return the deploy lock slug for a lock ID
-#
-function get_git_deploy_lock_slug() {
-    local host_id="$1"
-    echo -e "deploy-lock-${host_id}"
 }
 
 #
@@ -93,8 +86,8 @@ function get_git_deploy_lock_slug() {
 #
 function get_git_deploy_lock() {
     local host_id="$1"
-    local lock_slug="$(get_git_deploy_lock_slug "${host_id}")"
-    deploy_lock="$(get_git_deploy_tags | grep "^${lock_slug}")"
+    local lock_slug="$(get_deploy_lock_slug "${host_id}")"
+    local deploy_lock="$(get_git_deploy_tags | grep "^${lock_slug}")"
     echo -e "${deploy_lock}"
 }
 
@@ -103,7 +96,7 @@ function get_git_deploy_lock() {
 #
 function lock_git_deploy() {
     local host_id="$1"
-    local lock_slug="$(get_git_deploy_lock_slug "${host_id}")"
+    local lock_slug="$(get_deploy_lock_slug "${host_id}")"
     git tag -m "Deploy lock for ${host_id}" -a "${lock_slug}" 2> /dev/null
     if [ "0" != "$?" ]; then
         return 1
@@ -117,8 +110,59 @@ function lock_git_deploy() {
 
 function unlock_git_deploy() {
     local host_id="$1"
-    local lock_slug="$(get_git_deploy_lock_slug "${host_id}")"
-    git tag -d ${lock_slug} 1> /dev/null 2> /dev/null
-    git push origin ":refs/tags/${lock_slug}" 1> /dev/null 2> /dev/null
+    local lock_slug="$(get_deploy_lock_slug "${host_id}")"
+    git tag -d ${lock_slug} 2>&1 $DEPLOY_LOG
+    git push origin ":refs/tags/${lock_slug}" 2>&1 $DEPLOY_LOG
 }
 
+#
+# Sorting by length, then by value: https://stackoverflow.com/a/5917762/102699
+#
+function get_git_next_deploy_num() {
+    local host_id="$1"
+    local deploy_nums="$(get_git_deploy_tags | grep "^deploy-{$host_id}" | grep -v "^deploy-lock")"
+    # Sort by https://stackoverflow.com/a/5917762/102699
+    last_deploy="$(echo -e $deploy_nums | awk '{ print length, $2 }' | sort -r -n | cut -d" " -f2- | head -n 1 | sed -e 's#^refs/tags/##')"
+    echo $(( last_deploy + 1 ))
+}
+
+function git_raw_tag_deploy() {
+    local host_id="$1"
+    local source_dir="$2"
+    local filename="$(get_deploy_filename "${host_id}")"
+    local now="$(data +"%A, %Y-%m-%d %r %Z [UTC-%:z]")"
+    local user_name="$(get_user_display_name)"
+    exitOnError
+    pushDir
+    cd "${source_dir}"
+    local deploy_num="$(cat "${filename}")"
+    if [ "" == "${deploy_num}" ] ; then
+        return 1
+    fi
+    git add "${filename}" 2>&1 $DEPLOY_LOG
+    if [ "0" == "?$" ] ; then
+        return 2
+    fi
+    local message="Host ${host_id} deployed by ${user_name} on ${now}."
+    git commit -m "${message}" 2>&1 $DEPLOY_LOG
+    if [ "0" == "?$" ] ; then
+        return 3
+    fi
+
+    git push 2>&1 $DEPLOY_LOG
+    if [ "0" == "?$" ] ; then
+        return 4
+    fi
+
+    local deploy_tag="$(get_deploy_tag "${host_id}" "${deploy_num}")"
+    git tag -a "${deploy_tag}" -m "${message}" 2>&1 $DEPLOY_LOG
+    if [ "0" == "?$" ] ; then
+        return 5
+    fi
+    git push --tags 2>&1 $DEPLOY_LOG
+    if [ "0" == "?$" ] ; then
+        git tag -d "${deploy_tag}" 2>&1 $DEPLOY_LOG
+        return 6
+    fi
+    echo "${deploy_tag}"
+}

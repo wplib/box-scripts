@@ -26,10 +26,6 @@ EOF
 
 function deploy_host() {
 
-    ensure_box_tmp
-    local DEPLOY_LOG="/tmp/box-tmp/deploy.log"
-    rm -rf "${DEPLOY_LOG}"
-
     initErrorFile
 
     local host_id="$1"
@@ -128,10 +124,22 @@ function deploy_host() {
         "${wp_deploy_core_path}"  >> $DEPLOY_LOG
 
     remove_deploy_delete_files "${deploy_dir}"  >> $DEPLOY_LOG
-exit
+    exitOnError
 
-    # Sort by https://stackoverflow.com/a/5917762/102699
-    last_build="$(echo -e $deploy_tags | grep -v deploy-lock | awk '{ print length, $2 }' | sort -r -n | cut -d" " -f2- | head -n 1 | sed -e 's#^refs/tags/##')"
+
+
+    # Need to commit files here
+
+
+
+
+    write_next_deploy_file "${host_id}" "${source_dir}"
+    exitOnError
+
+    tag_this_deploy "${host_id}" "${source_dir}"
+    exitOnError
+
+exit
 
     #git add.
     #commit
@@ -140,10 +148,82 @@ exit
 
 }
 
+function write_next_deploy_file() {
+    local host_id="$1"
+    local source_dir="$2"
+    pushDir
+    cd "${source_dir}"
+    local deploy_num="$(get_git_next_deploy_num "${host_id}")"
+    local filename="$(get_deploy_filename "${host_id}")"
+    echo "${deploy_num}" > $BOX_PROJECT_DIR/$filename
+    popDir
+}
+
+function get_deploy_filename() {
+    local host_id="$1"
+    local filename="$(StrToUpper "${host_id}").deploy"
+    echo "${filename}"
+}
+
+#
+# Return the deploy lock slug for a lock ID
+#
+function get_deploy_lock_slug() {
+    local host_id="$1"
+    echo -e "deploy-lock-${host_id}"
+}
+
+
+function get_deploy_tag() {
+    local host_id="$1"
+    local deploy_num="$2"
+    local deploy_tag="deploy-"${host_id}-${deploy_num}")"
+    echo "${deploy_tag}"
+}
+
+function tag_this_deploy() {
+    local host_id="$1"
+    local source_dir="$2"
+    deploy_tag="$(git_raw_tag_deploy "${host_id}" "${source_dir}")"
+    return="$?"
+    case "${return}" in
+    1)
+        local filename="$(get_deploy_filename "${host_id}")"
+        message="${RED}Deploy file ${GREEN}${filename}${RED} not written. Cannot deploy${RESET}."
+        ;;
+    2)
+        message="${RED}Could not add ${GREEN}${filename}${RED} to local repo. Cannot deploy${RESET}."
+        ;;
+    3)
+        message="${RED}Could not commit ${GREEN}${filename}${RED} to local repo. Cannot deploy${RESET}."
+        ;;
+    4)
+        message="${RED}Could not push commit of ${GREEN}${filename}${RED} to remote repo at origin. Cannot deploy${RESET}."
+        ;;
+    5)
+        message="${RED}Could not tag deploy locally with ${GREEN}${deploy_tag}${RED}. Cannot deploy${RESET}."
+        ;;
+    6)
+        message="${RED}Could not tag deploy remotely at origin with ${GREEN}${deploy_tag}${RED}. Cannot deploy${RESET}."
+        ;;
+    *)
+        return=0
+    esac
+    if [ "0" == "${return}" ] ; then
+        output "Deploy tagged as ${deploy_tag}."
+    else
+        alert ""
+        alert "${message}"
+        alert ""
+        suggest_help_on_slack
+    fi
+    return "${return}"
+}
+
 function lock_deploy() {
     result="success"
     local host_id="$1"
-    local lock_slug="$(get_git_deploy_lock_slug "${host_id}")"
+    local lock_slug="$(get_deploy_lock_slug "${host_id}")"
     local deploy_lock="$(TrimSpace "$(get_git_deploy_lock "${host_id}")")"
     if ! [ "" != "{$deploy_lock}" ]; then
         result="fail"
@@ -177,23 +257,18 @@ function deploy_unlock_host() {
     local host_id="$1"
     unlock_git_deploy "${host_id}"
     if [ "0" != "$?" ] ; then
-        local lock_slug="$(get_git_deploy_lock_slug "${host_id}")"
+        local lock_slug="$(get_deploy_lock_slug "${host_id}")"
         alert "Deploy ${GREEN}${host_id}${RESET} unlocked ${RED}FAILED${RESET}."
         alert "Try these commands and then Google any error messages to diagnose:"
         alert ""
         alert "\t${GREEN}git push origin :refs/tags/${lock_slug}${RESET}"
         alert "\t${GREEN}git tag -d ${lock_slug}${RESET}"
         alert ""
-        alert "Also feel free to reach out to our Slack support for help:"
-        alert ""
-        alert "\t${CYAN}Our Slack:      ${GREEN}https://wplib.slack.org${RESET}"
-        alert "\t${CYAN}Join our Slack: ${GREEN}https://launchpass/wplib${RESET}"
-        alert ""
+        suggest_help_on_slack
         exit 1
     fi
     output "Deploy ${GREEN}${host_id}${RESET} unlocked."
 }
-
 
 function remove_deploy_delete_files() {
     local deploy_dir="$1"
@@ -465,10 +540,6 @@ function ensure_no_uncommitted_files() {
         alert ""
         exit 1
     fi
-}
-
-function ensure_box_tmp() {
-    mkdir -p /tmp/box-tmp/
 }
 
 ################################################################################

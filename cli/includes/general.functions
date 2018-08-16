@@ -3,6 +3,7 @@
 declare="${ECHO_PREFIX:=}"
 declare="${YELLOW:=}"
 declare="${RED:=}"
+declare="${CYAN:=}"
 declare="${GREEN:=}"
 declare="${RESET:=}"
 declare="${BOX_CLI_DIR:=}"
@@ -598,5 +599,19 @@ function TrimSpace() {
     echo "$(echo $1|xargs)"
 }
 
+#
+# See: https://stackoverflow.com/a/12973694/102699
+#
+function StrToUpper() {
+    echo "${1^^}"
+}
 
 
+
+function suggest_help_on_slack() {
+    alert "Also feel free to reach out to our Slack support for help:"
+    alert ""
+    alert "\t${CYAN}Our Slack:      ${GREEN}https://wplib.slack.org${RESET}"
+    alert "\t${CYAN}Join our Slack: ${GREEN}https://launchpass/wplib${RESET}"
+    alert ""
+}

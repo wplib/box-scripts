@@ -9,3 +9,30 @@ function get_raw_user_name() {
 function get_raw_user_email() {
     cat $BOX_USER_FILE | jq -r '.email'
 }
+
+
+function get_user_email() {
+    local email="$(get_raw_user_email)"
+    if [ "" == "${email}" ] ; then
+        box user show
+        exit 1
+    fi
+    echo -e "${email}"
+}
+
+function get_user_name() {
+    local name="$(get_raw_user_name)"
+    if [ "" == "${name}" ] ; then
+        box user show
+        exit 1
+    fi
+    echo -e "${name}"
+}
+
+function get_user_display_name() {
+    local name="$(get_user_name)"
+    local email="$(get_user_email)"
+    echo "{$name} <{$email}>"
+}
+
+

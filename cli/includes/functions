@@ -57,7 +57,13 @@ export BOX_TESTS_DIR="${BOX_CLI_DIR}/tests"
 
 export BOX_SCRIPTS_REPO="https://github.com/wplib/box-scripts/"
 
+mkdir -p /tmp/box-tmp
+export DEPLOY_LOG="/tmp/box-tmp/deploy.log"
+rm -rf "${DEPLOY_LOG}"
+
+
 source ${BOX_INCLUDES_DIR}/colors
+
 
 source ${BOX_INCLUDES_DIR}/general.functions
 source ${BOX_INCLUDES_DIR}/container.functions
