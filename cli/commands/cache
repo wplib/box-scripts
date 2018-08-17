@@ -27,7 +27,9 @@ EOF
 
 cache_clear() {
     rm -rf "${BOX_CACHE_DIR}"
-    output "Cache cleared."
+    output ""
+    output "Cache ${GREEN}cleared${RESET}."
+    output ""
 }
 
 ################################################################################

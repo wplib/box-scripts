@@ -63,7 +63,7 @@ function get_raw_source_wp_root_path() {
 }
 
 function get_raw_source_repo_url() {
-    repo_url="$(cat "${BOX_PROJECT_FILE}" | jqr ".source.repository.url")"
+    local repo_url="$(cat "${BOX_PROJECT_FILE}" | jqr ".source.repository.url")"
     if [[ "${repo_url}" =~ ^ssh:// ]]; then
         repo_url="${repo_url#*//}"
     fi

@@ -111,8 +111,8 @@ function lock_git_deploy() {
 function unlock_git_deploy() {
     local host_id="$1"
     local lock_slug="$(get_deploy_lock_slug "${host_id}")"
-    git tag -d ${lock_slug} 2>&1 $DEPLOY_LOG
-    git push origin ":refs/tags/${lock_slug}" 2>&1 $DEPLOY_LOG
+    git tag -d ${lock_slug} >$DEPLOY_LOG 2>&1
+    git push origin ":refs/tags/${lock_slug}" >$DEPLOY_LOG 2>&1
 }
 
 #
@@ -120,17 +120,21 @@ function unlock_git_deploy() {
 #
 function get_git_next_deploy_num() {
     local host_id="$1"
+    local source_dir="$2"
+    pushDir
+    cd "${source_dir}"
     local deploy_nums="$(get_git_deploy_tags | grep "^deploy-{$host_id}" | grep -v "^deploy-lock")"
     # Sort by https://stackoverflow.com/a/5917762/102699
     last_deploy="$(echo -e $deploy_nums | awk '{ print length, $2 }' | sort -r -n | cut -d" " -f2- | head -n 1 | sed -e 's#^refs/tags/##')"
     echo $(( last_deploy + 1 ))
+    popDir
 }
 
 function git_raw_tag_deploy() {
     local host_id="$1"
     local source_dir="$2"
-    local filename="$(get_deploy_filename "${host_id}")"
-    local now="$(data +"%A, %Y-%m-%d %r %Z [UTC-%:z]")"
+    local filename="$(get_deploy_filename "${host_id}" "${source_dir}")"
+    local now="$(date +"%A, %Y-%m-%d %r %Z [UTC-%:z]")"
     local user_name="$(get_user_display_name)"
     exitOnError
     pushDir
@@ -139,30 +143,36 @@ function git_raw_tag_deploy() {
     if [ "" == "${deploy_num}" ] ; then
         return 1
     fi
-    git add "${filename}" 2>&1 $DEPLOY_LOG
+    git add "${filename}" >$DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
         return 2
     fi
     local message="Host ${host_id} deployed by ${user_name} on ${now}."
-    git commit -m "${message}" 2>&1 $DEPLOY_LOG
+    git commit -m "${message}" >$DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
         return 3
     fi
 
-    git push 2>&1 $DEPLOY_LOG
+    git pull >$DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
         return 4
     fi
 
-    local deploy_tag="$(get_deploy_tag "${host_id}" "${deploy_num}")"
-    git tag -a "${deploy_tag}" -m "${message}" 2>&1 $DEPLOY_LOG
+    git push >$DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
         return 5
     fi
-    git push --tags 2>&1 $DEPLOY_LOG
+
+    local deploy_tag="$(get_deploy_tag "${host_id}" "${deploy_num}")"
+    git tag -a "${deploy_tag}" -m "${message}" >$DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
-        git tag -d "${deploy_tag}" 2>&1 $DEPLOY_LOG
         return 6
     fi
+    git push --tags >$DEPLOY_LOG 2>&1
+    if [ "0" == "?$" ] ; then
+        git tag -d "${deploy_tag}" >$DEPLOY_LOG 2>&1
+        return 7
+    fi
     echo "${deploy_tag}"
+    popDir
 }

@@ -606,8 +606,6 @@ function StrToUpper() {
     echo "${1^^}"
 }
 
-
-
 function suggest_help_on_slack() {
     alert "Also feel free to reach out to our Slack support for help:"
     alert ""

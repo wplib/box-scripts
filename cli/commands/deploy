@@ -8,6 +8,7 @@ declare="${CYAN:=}"
 declare="${WHITE:=}"
 declare="${RESET:=}"
 declare="${LESS:=}"
+declare="${DEPLOY_LOG:=}"
 declare="${BOX_PROJECT_DIR:=}"
 declare="${BOX_PROJECT_FILE:=}"
 
@@ -126,17 +127,18 @@ function deploy_host() {
     remove_deploy_delete_files "${deploy_dir}"  >> $DEPLOY_LOG
     exitOnError
 
-
-
     # Need to commit files here
 
-
-
-
-    write_next_deploy_file "${host_id}" "${source_dir}"
+    deploy_file="$(write_next_deploy_file "${host_id}" "${source_dir}")"
     exitOnError
 
     tag_this_deploy "${host_id}" "${source_dir}"
+    exitOnError
+
+    #
+    # Copy the deploy file from source to deploy
+    #
+    cp "${deploy_file}" "${deploy_dir}"
     exitOnError
 
 exit
@@ -151,18 +153,18 @@ exit
 function write_next_deploy_file() {
     local host_id="$1"
     local source_dir="$2"
-    pushDir
-    cd "${source_dir}"
-    local deploy_num="$(get_git_next_deploy_num "${host_id}")"
-    local filename="$(get_deploy_filename "${host_id}")"
-    echo "${deploy_num}" > $BOX_PROJECT_DIR/$filename
-    popDir
+    local deploy_num="$(get_git_next_deploy_num "${host_id}" "${source_dir}")"
+    local filename="$(get_deploy_filename "${host_id}" "${source_dir}")"
+    echo "${deploy_num}" > $filename
+    echo "${filename}"
 }
 
 function get_deploy_filename() {
     local host_id="$1"
+    local source_dir="$2"
     local filename="$(StrToUpper "${host_id}").deploy"
-    echo "${filename}"
+    echo "${source_dir}/${filename}"
+    exit 1
 }
 
 #
@@ -173,11 +175,10 @@ function get_deploy_lock_slug() {
     echo -e "deploy-lock-${host_id}"
 }
 
-
 function get_deploy_tag() {
     local host_id="$1"
     local deploy_num="$2"
-    local deploy_tag="deploy-"${host_id}-${deploy_num}")"
+    local deploy_tag="deploy-${host_id}-${deploy_num}"
     echo "${deploy_tag}"
 }
 
@@ -188,7 +189,7 @@ function tag_this_deploy() {
     return="$?"
     case "${return}" in
     1)
-        local filename="$(get_deploy_filename "${host_id}")"
+        local filename="$(get_deploy_filename "${host_id}" "${source_dir}")"
         message="${RED}Deploy file ${GREEN}${filename}${RED} not written. Cannot deploy${RESET}."
         ;;
     2)
@@ -198,19 +199,24 @@ function tag_this_deploy() {
         message="${RED}Could not commit ${GREEN}${filename}${RED} to local repo. Cannot deploy${RESET}."
         ;;
     4)
-        message="${RED}Could not push commit of ${GREEN}${filename}${RED} to remote repo at origin. Cannot deploy${RESET}."
+        message="${RED}Error pulling commits from remote repo at origin. Cannot deploy${RESET}."
         ;;
     5)
-        message="${RED}Could not tag deploy locally with ${GREEN}${deploy_tag}${RED}. Cannot deploy${RESET}."
+        message="${RED}Could not push commit of ${GREEN}${filename}${RED} to remote repo at origin. Cannot deploy${RESET}."
         ;;
     6)
+        message="${RED}Could not tag deploy locally with ${GREEN}${deploy_tag}${RED}. Cannot deploy${RESET}."
+        ;;
+    7)
         message="${RED}Could not tag deploy remotely at origin with ${GREEN}${deploy_tag}${RED}. Cannot deploy${RESET}."
         ;;
     *)
         return=0
     esac
     if [ "0" == "${return}" ] ; then
-        output "Deploy tagged as ${deploy_tag}."
+        output ""
+        output "Deploy tagged as ${GREEN}${deploy_tag}${RESET}."
+        output ""
     else
         alert ""
         alert "${message}"
@@ -267,7 +273,9 @@ function deploy_unlock_host() {
         suggest_help_on_slack
         exit 1
     fi
+    output ""
     output "Deploy ${GREEN}${host_id}${RESET} unlocked."
+    output ""
 }
 
 function remove_deploy_delete_files() {
