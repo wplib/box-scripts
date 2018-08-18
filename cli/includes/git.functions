@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+declare="${BOX_DEPLOY_LOCK_SLUG:=}"
 declare="${BOX_PROJECT_DIR:=}"
 declare="${BOX_CACHE_DIR:=}"
 declare="${DEPLOY_LOG:=}"
@@ -58,12 +59,12 @@ function ensure_cache_dir() {
 }
 
 function get_current_git_branch() {
-    pushDir
+    PushDir
     unset LESS
     cd "${BOX_PROJECT_DIR}"
     branch="$(git rev-parse --abbrev-ref HEAD)"
     echo $branch
-    popDir
+    PopDir
 }
 
 function set_git_user_name_email() {
@@ -74,105 +75,148 @@ function set_git_user_name_email() {
 }
 
 #
-# Return all tags starting with "deploy-" but not ones containing (ending with) "^{}"
+# Return all tags starting with "deploy-" but not "deploy-lock" or ones containing (ending with) "^{}"
 #
 function get_git_deploy_tags() {
-    local deploy_tags="$(git ls-remote --tags 2> /dev/null | awk '{print substr($2,11)}' | grep "^deploy-" | grep -vF "^{}")"
+    PushDir "${BOX_PROJECT_DIR}"
+    local deploy_tags="$(git ls-remote --tags 2> /dev/null | awk '{print substr($2,11)}' | grep "^deploy-"  | grep -v "${BOX_DEPLOY_LOCK_SLUG}" | grep -vF "^{}")"
     echo -e ${deploy_tags}
-}
-
-#
-# Return a deploy lock for the given lock ID in $host_id
-#
-function get_git_deploy_lock() {
-    local host_id="$1"
-    local lock_slug="$(get_deploy_lock_slug "${host_id}")"
-    local deploy_lock="$(get_git_deploy_tags | grep "^${lock_slug}")"
-    echo -e "${deploy_lock}"
+    PopDir
 }
 
 #
 # Return all tags starting with "deploy-" but not ones containing (ending with) "^{}"
 #
 function lock_git_deploy() {
-    local host_id="$1"
-    local lock_slug="$(get_deploy_lock_slug "${host_id}")"
-    git tag -m "Deploy lock for ${host_id}" -a "${lock_slug}" 2> /dev/null
+    local user_name="$1"
+    PushDir "${BOX_PROJECT_DIR}"
+    git tag -a "${BOX_DEPLOY_LOCK_SLUG}" -m "Deploy lock by ${user_name}" >$DEPLOY_LOG 2>&1
     if [ "0" != "$?" ]; then
         return 1
     fi
-    git push --tags  2> /dev/null
+    git push --tags  >$DEPLOY_LOG 2>&1
     if [ "0" != "$?" ]; then
-        git tag -d "${lock_slug}" 2> /dev/null
-        return 1
+        git tag -d "${BOX_DEPLOY_LOCK_SLUG}" 2> /dev/null
+        return 2
     fi
+    PopDir
 }
 
 function unlock_git_deploy() {
-    local host_id="$1"
-    local lock_slug="$(get_deploy_lock_slug "${host_id}")"
-    git tag -d ${lock_slug} >$DEPLOY_LOG 2>&1
-    git push origin ":refs/tags/${lock_slug}" >$DEPLOY_LOG 2>&1
+    PushDir "${BOX_PROJECT_DIR}"
+    #
+    # This generates error 1 if tag does not exist
+    #
+    result="$(git tag -d ${BOX_DEPLOY_LOCK_SLUG} 2>&1)"
+    if ! [[ "${result}" =~ ^Deleted ]]; then
+        if [ "${result}" != "error: tag 'deploy-lock' not found." ]; then
+            return 1
+        fi
+    fi
+
+    #
+    # This does not generate error on non-existent ref
+    #
+    git push origin ":refs/tags/${BOX_DEPLOY_LOCK_SLUG}" > $DEPLOY_LOG 2>&1
+    if [ "0" != "$?" ]; then
+        return 2
+    fi
+    PopDir
 }
 
 #
 # Sorting by length, then by value: https://stackoverflow.com/a/5917762/102699
 #
 function get_git_next_deploy_num() {
-    local host_id="$1"
-    local source_dir="$2"
-    pushDir
-    cd "${source_dir}"
-    local deploy_nums="$(get_git_deploy_tags | grep "^deploy-{$host_id}" | grep -v "^deploy-lock")"
+    PushDir "${BOX_PROJECT_DIR}"
+    local deploy_nums="$(get_git_deploy_tags)"
+    exitOnError
     # Sort by https://stackoverflow.com/a/5917762/102699
     last_deploy="$(echo -e $deploy_nums | awk '{ print length, $2 }' | sort -r -n | cut -d" " -f2- | head -n 1 | sed -e 's#^refs/tags/##')"
     echo $(( last_deploy + 1 ))
-    popDir
+    PopDir
 }
 
 function git_raw_tag_deploy() {
     local host_id="$1"
-    local source_dir="$2"
-    local filename="$(get_deploy_filename "${host_id}" "${source_dir}")"
+    local repo_dir="$2"
+    local filename="$(get_deploy_filename)"
+
+    PushDir "${repo_dir}"
+
+    #
+    # Generates return values 1 thru 4 on error
+    #
+    message="$(git_raw_add_commit_push "${host_id}" "${repo_dir}" "${filename}")"
+    error="?$"
+    if [ "0" == "${error}" ] ; then
+        PopDir
+        echo "${message}"
+        return "${error}"
+    fi
+
+    local deploy_num="$(get_current_deploy_num)"
+    if [ "0" == "?$" ] ; then
+        PopDir
+        return 5
+    fi
+
+    local deploy_tag="$(get_deploy_tag "${deploy_num}")"
+    git tag -a "${deploy_tag}" -m "${message}" >$DEPLOY_LOG 2>&1
+    if [ "0" == "?$" ] ; then
+        PopDir
+        return 6
+    fi
+
+    git push --tags >$DEPLOY_LOG 2>&1
+    if [ "0" == "?$" ] ; then
+        git tag -d "${deploy_tag}" >$DEPLOY_LOG 2>&1
+        PopDir
+        return 7
+    fi
+    PopDir
+    echo "${deploy_tag}"
+}
+
+function git_raw_add_commit_push() {
+    local host_id="$1"
+    local repo_dir="$2"
+    local filename="$3"
+
     local now="$(date +"%A, %Y-%m-%d %r %Z [UTC-%:z]")"
     local user_name="$(get_user_display_name)"
     exitOnError
-    pushDir
-    cd "${source_dir}"
-    local deploy_num="$(cat "${filename}")"
-    if [ "" == "${deploy_num}" ] ; then
-        return 1
-    fi
+
+    local message="Host ${host_id} deployed by ${user_name} on ${now}."
+
+    PushDir "${repo_dir}"
+
     git add "${filename}" >$DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
-        return 2
+        PopDir
+        return 1
     fi
-    local message="Host ${host_id} deployed by ${user_name} on ${now}."
+
     git commit -m "${message}" >$DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
-        return 3
+        PopDir
+        return 2
     fi
 
     git pull >$DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
-        return 4
+        PopDir
+        return 3
     fi
 
     git push >$DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
-        return 5
+        PopDir
+        return 4
     fi
 
-    local deploy_tag="$(get_deploy_tag "${host_id}" "${deploy_num}")"
-    git tag -a "${deploy_tag}" -m "${message}" >$DEPLOY_LOG 2>&1
-    if [ "0" == "?$" ] ; then
-        return 6
-    fi
-    git push --tags >$DEPLOY_LOG 2>&1
-    if [ "0" == "?$" ] ; then
-        git tag -d "${deploy_tag}" >$DEPLOY_LOG 2>&1
-        return 7
-    fi
-    echo "${deploy_tag}"
-    popDir
+    PopDir
+    echo "${message}"
 }
+
+

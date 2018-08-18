@@ -520,7 +520,7 @@ function alert() {
 }
 
 
-function pushDir {
+function PushDir {
     local dir
     if [ "$#" -eq 0 ] ; then
         dir="$(pwd)"
@@ -529,7 +529,7 @@ function pushDir {
     fi
     pushd "${dir}" >/dev/null
 }
-function popDir {
+function PopDir {
     popd  >/dev/null
 }
 
@@ -612,4 +612,10 @@ function suggest_help_on_slack() {
     alert "\t${CYAN}Our Slack:      ${GREEN}https://wplib.slack.org${RESET}"
     alert "\t${CYAN}Join our Slack: ${GREEN}https://launchpass/wplib${RESET}"
     alert ""
+}
+
+function iif() {
+    local criteria="$1"
+    local if_true="$2"
+    local if_false="$3"
 }

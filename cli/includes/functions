@@ -12,14 +12,14 @@ declare="${BOX_PROJECTS_ROOT:=/projects}"
 declare="${BOX_CURRENT_PROJECT:=wplib.box}"
 
 export BOX_CURRENT_PROJECT_DIR="${BOX_PROJECTS_ROOT}/${BOX_CURRENT_PROJECT}"
+export BOX_PROJECT_DIR="${BOX_PROJECTS_ROOT}/${BOX_CURRENT_PROJECT}"
+
 
 export BOX_USER="boxuser"
 export BOX_USER_UID="1000"
 export BOX_USER_GID="1000"
 export BOX_USER_HOME="/home/box"
 export BOX_USER_FILE="${BOX_USER_HOME}/user.json"
-
-export BOX_PROJECT_DIR="${BOX_PROJECTS_ROOT}/${BOX_CURRENT_PROJECT}"
 
 export BOX_BASE_DIR="/opt/box"
 export BOX_CONFIG_FILE="${BOX_BASE_DIR}/box.json"
@@ -57,10 +57,12 @@ export BOX_TESTS_DIR="${BOX_CLI_DIR}/tests"
 
 export BOX_SCRIPTS_REPO="https://github.com/wplib/box-scripts/"
 
+export BOX_DEPLOY_LOCK_SLUG="deploy-lock"
+
 mkdir -p /tmp/box-tmp
 export DEPLOY_LOG="/tmp/box-tmp/deploy.log"
 rm -rf "${DEPLOY_LOG}"
-
+touch  "${DEPLOY_LOG}"
 
 source ${BOX_INCLUDES_DIR}/colors
 

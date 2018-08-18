@@ -11,6 +11,8 @@ declare="${LESS:=}"
 declare="${DEPLOY_LOG:=}"
 declare="${BOX_PROJECT_DIR:=}"
 declare="${BOX_PROJECT_FILE:=}"
+declare="${BOX_DEPLOY_LOCK_SLUG:=}"
+
 
 function deploy_help() {
 	cat <<EOF
@@ -25,6 +27,7 @@ box ${YELLOW}deploy unlock ${RESET}[${CYAN}<host>]${RESET}	- Unlocks a host lock
 EOF
 }
 
+
 function deploy_host() {
 
     initErrorFile
@@ -36,10 +39,11 @@ function deploy_host() {
         exit
     fi
 
+
     check_deploy_host "${host_id}"
     exitOnError
 
-    lock_deploy "${host_id}"
+    lock_deploy
     exitOnError
 
     source_url="$(get_source_repo_url)"
@@ -60,7 +64,8 @@ function deploy_host() {
     deploy_branch="$(get_raw_deploy_host_branch "${host_id}")"
     exitOnError
 
-    ################ensure_no_uncommitted_files
+    ensure_no_uncommitted_files
+    exitOnError
 
     output
     output "${YELLOW}Preparing to deploy:${RESET}"
@@ -72,16 +77,18 @@ function deploy_host() {
     output "   ${CYAN}Deploy repo:   ${GREEN}${deploy_url}${RESET}"
     output
 
-    output "   ${YELLOW}Updating repository caches...${RESET}"
+    output "   Updating repository caches..."
 
     cache_repo_locally "${source_url}" "${source_branch}" >> $DEPLOY_LOG 2>&1
 
     cache_repo_locally "${deploy_url}" "${deploy_branch}" >> $DEPLOY_LOG 2>&1
 
-    output "   ${YELLOW}Running Composer Install on source...${RESET}"
+    output "   Running composer install..."
 
     run_composer_install "${source_dir}" >> $DEPLOY_LOG 2>&1
+    exitOnError
 
+    output "   Syncing updated and/or new source files..."
     #
     # Sync vendor path files
     #
@@ -124,72 +131,133 @@ function deploy_host() {
         "${wp_source_core_path}" \
         "${wp_deploy_core_path}"  >> $DEPLOY_LOG
 
+    output "   Removing blacklisted files..."
+
     remove_deploy_delete_files "${deploy_dir}"  >> $DEPLOY_LOG
+    exitOnError
+
+    output "   Writing 'DEPLOY' files..."
+
+    #
+    # Write and commit a DEPLOY file with sequential number of latest deploy.
+    #
+    add_next_deploy_file  "${host_id}"
+    exitOnError
+
+    #
+    # Copy the deploy lock to source_dir cache to deploy_dir cache
+    #
+    copy_file "$(get_deploy_filename)" "${source_dir}"
+    exitOnError
+
+    copy_file "$(get_deploy_filename)" "${deploy_dir}"
     exitOnError
 
     # Need to commit files here
 
-    deploy_file="$(write_next_deploy_file "${host_id}" "${source_dir}")"
+    output "   Tagging this deploy..."
+
+    tag_this_deploy "${host_id}" "${BOX_PROJECT_DIR}"  quiet
     exitOnError
 
-    tag_this_deploy "${host_id}" "${source_dir}"
+    tag_this_deploy "${host_id}" "${deploy_dir}" quiet
     exitOnError
 
-    #
-    # Copy the deploy file from source to deploy
-    #
-    cp "${deploy_file}" "${deploy_dir}"
-    exitOnError
+    output "   Deploy tagged as $(get_current_deploy_tag)."
+    output "   Unlocking deploy."
 
-exit
+    deploy_unlock quiet
+    exitOnError
 
     #git add.
     #commit
 
-    echo "Deploy complete."
+    output "   Deploy complete."
+    output ""
 
 }
 
-function write_next_deploy_file() {
+function get_current_deploy_num() {
+    PushDir "${BOX_PROJECT_DIR}"
+    filename="$(get_deploy_filename)"
+    PopDir
+    cat "${filename}"
+}
+
+function add_next_deploy_file() {
     local host_id="$1"
-    local source_dir="$2"
-    local deploy_num="$(get_git_next_deploy_num "${host_id}" "${source_dir}")"
-    local filename="$(get_deploy_filename "${host_id}" "${source_dir}")"
+    PushDir "${BOX_PROJECT_DIR}"
+    local deploy_num="$(get_git_next_deploy_num)"
+    exitOnError
+    filename="$(get_deploy_filename)"
     echo "${deploy_num}" > $filename
-    echo "${filename}"
+    if [ "0" != "$?" ] ; then
+        alert ""
+        alert "${RED}Could not write DEPLOY file. Deploy failed${RESET}."
+        alert ""
+        alert "\t${CYAN}Filename: ${GREEN}${filename}${RESET}"
+        alert ""
+        suggest_help_on_slack
+        PopDir
+        return 1
+    fi
+
+    #
+    # Generates return values 1 thru 4 on error
+    #
+    message="$(git_raw_add_commit_push "${host_id}" "${BOX_PROJECT_DIR}" "$(basename "${filename}")")"
+    result="?$"
+    if [ "0" != "${result}" ] ; then
+        PopDir
+        return 0
+    fi
+    case "${result}" in
+    1)
+        message="${RED}Could not add ${GREEN}${filename}${RED} to local repo. Cannot deploy${RESET}."
+        ;;
+    2)
+        message="${RED}Could not commit ${GREEN}${filename}${RED} to local repo. Cannot deploy${RESET}."
+        ;;
+    3)
+        message="${RED}Error pulling commits from remote repo at origin. Cannot deploy${RESET}."
+        ;;
+    4)
+        message="${RED}Could not push commit of ${GREEN}${filename}${RED} to remote repo at origin. Cannot deploy${RESET}."
+        ;;
+    *)
+        result=0
+    esac
+    if [ "0" != "${result}" ] ; then
+        alert ""
+        alert "${message}"
+        alert ""
+        suggest_help_on_slack
+    fi
+    PopDir
+    return "${result}"
+
 }
 
-function get_deploy_filename() {
-    local host_id="$1"
-    local source_dir="$2"
-    local filename="$(StrToUpper "${host_id}").deploy"
-    echo "${source_dir}/${filename}"
-    exit 1
-}
-
-#
-# Return the deploy lock slug for a lock ID
-#
-function get_deploy_lock_slug() {
-    local host_id="$1"
-    echo -e "deploy-lock-${host_id}"
+function get_current_deploy_tag() {
+    local deploy_num="$(get_current_deploy_num)"
+    echo "$(get_deploy_tag "${deploy_num}")"
 }
 
 function get_deploy_tag() {
-    local host_id="$1"
-    local deploy_num="$2"
-    local deploy_tag="deploy-${host_id}-${deploy_num}"
+    local deploy_num="$1"
+    local deploy_tag="deploy-${deploy_num}"
     echo "${deploy_tag}"
 }
 
 function tag_this_deploy() {
     local host_id="$1"
-    local source_dir="$2"
-    deploy_tag="$(git_raw_tag_deploy "${host_id}" "${source_dir}")"
-    return="$?"
-    case "${return}" in
+    local repo_dir="$2"
+    local quiet="$3"
+    local filename="$(get_deploy_filename "${repo_dir}")"
+    deploy_tag="$(git_raw_tag_deploy "${host_id}" "${repo_dir}")"
+    result="$?"
+    case "${result}" in
     1)
-        local filename="$(get_deploy_filename "${host_id}" "${source_dir}")"
         message="${RED}Deploy file ${GREEN}${filename}${RED} not written. Cannot deploy${RESET}."
         ;;
     2)
@@ -211,30 +279,42 @@ function tag_this_deploy() {
         message="${RED}Could not tag deploy remotely at origin with ${GREEN}${deploy_tag}${RED}. Cannot deploy${RESET}."
         ;;
     *)
-        return=0
+        result=0
     esac
-    if [ "0" == "${return}" ] ; then
-        output ""
-        output "Deploy tagged as ${GREEN}${deploy_tag}${RESET}."
-        output ""
+    if [ "0" == "${result}" ] ; then
+        if [ "" == "${quiet}" ] ; then
+            output ""
+            output "Deploy tagged as ${GREEN}${deploy_tag}${RESET}."
+            output ""
+        fi
     else
         alert ""
         alert "${message}"
         alert ""
         suggest_help_on_slack
     fi
-    return "${return}"
+    return "${result}"
+}
+
+function get_deploy_filename() {
+    local dir="$1"
+    if [ "" == "${dir}" ] ; then
+        dir="${BOX_PROJECT_DIR}"
+    fi
+    echo "${dir}/DEPLOY"
 }
 
 function lock_deploy() {
     result="success"
-    local host_id="$1"
-    local lock_slug="$(get_deploy_lock_slug "${host_id}")"
-    local deploy_lock="$(TrimSpace "$(get_git_deploy_lock "${host_id}")")"
-    if ! [ "" != "{$deploy_lock}" ]; then
+    if ! [ "" != "${BOX_DEPLOY_LOCK_SLUG}" ]; then
         result="fail"
     else
-        lock_git_deploy "${host_id}"
+        local user_name="$(get_user_display_name)"
+        if [ "" == "${user_name}" ] ; then
+            box user show
+            exit 1
+        fi
+        lock_git_deploy "${user_name}"
         if [ "0" != "$?" ] ; then
             result="fail"
         fi
@@ -245,37 +325,38 @@ function lock_deploy() {
         alert ""
         alert "If you know this lock to be in error you can delete with this command:"
         alert ""
-        alert "\t${GREEN}box deploy unlock ${host_id}${RESET}"
+        alert "\t${GREEN}box deploy unlock${RESET}"
         alert ""
         alert "However, ${YELLOW}caution is in order${RESET}. If you attempt to run a deploy while"
         alert "another is running ${RED}expect the unexpected${RESET}."
         alert ""
-        alert "P.S. A deploy lock is a Git 'tag' whose name is 'deploy-lock-{host}' where '{host}'"
-        alert "is the name of your deploy host. This is your current deploy-lock:"
+        alert "P.S. A deploy lock is simply a Git 'tag' whose name is:"
         alert ""
-        alert "\t${GREEN}${lock_slug}${RESET}"
+        alert "\t${GREEN}deploy-lock${RESET}"
         alert ""
-        exit 1
+        return 2
     fi
 }
 
-function deploy_unlock_host() {
-    local host_id="$1"
-    unlock_git_deploy "${host_id}"
+function deploy_unlock() {
+    local quiet="$1"
+    unlock_git_deploy
     if [ "0" != "$?" ] ; then
-        local lock_slug="$(get_deploy_lock_slug "${host_id}")"
-        alert "Deploy ${GREEN}${host_id}${RESET} unlocked ${RED}FAILED${RESET}."
+        alert ""
+        alert "Deploy unlock ${RED}FAILED${RESET}."
         alert "Try these commands and then Google any error messages to diagnose:"
         alert ""
-        alert "\t${GREEN}git push origin :refs/tags/${lock_slug}${RESET}"
-        alert "\t${GREEN}git tag -d ${lock_slug}${RESET}"
+        alert "\t${GREEN}git push origin :refs/tags/${BOX_DEPLOY_LOCK_SLUG}${RESET}"
+        alert "\t${GREEN}git tag -d ${BOX_DEPLOY_LOCK_SLUG}${RESET}"
         alert ""
         suggest_help_on_slack
-        exit 1
+        return 1
     fi
-    output ""
-    output "Deploy ${GREEN}${host_id}${RESET} unlocked."
-    output ""
+    if [ "" == "${quiet}" ] ; then
+        output ""
+        output "Deploy ${GREEN}unlocked${RESET}."
+        output ""
+    fi
 }
 
 function remove_deploy_delete_files() {
@@ -296,6 +377,23 @@ function remove_deploy_delete_files() {
         rm -rf "${file}"
     done
     IFS="${saveIFS}"
+}
+
+function copy_file() {
+    local from_file="$1"
+    local to_dir="$2"
+    cp "${from_file}" "${to_dir}"
+    if [ "0" != "$?" ] ; then
+        alert ""
+        alert "${RED}Could not copy the DEPLOY market file to the cached repo directory. Cannot deploy.${RESET}"
+        alert ""
+        alert "\t${CYAN}Copy: ${GREEN}${from_file}${RESET}"
+        alert "\t${CYAN}To:   ${GREEN}${to_dir}${RESET}"
+        alert ""
+        suggest_help_on_slack
+        exit 1
+    fi
+
 }
 
 function sync_files_shallow() {
@@ -408,11 +506,11 @@ function run_composer_install() {
     checkParam "${repo_dir}" "You must pass a repository directory as 1st argument to run_composer_install()."
     exitOnError
     output "Running Composer to install externals."
-    pushDir
+    PushDir
     cd "${repo_dir}"
     composer install
     exitOnError
-    popDir
+    PopDir
 }
 
 function simplify_pantheon_repo_cache_dir() {
@@ -514,17 +612,20 @@ function get_source_repo_branch() {
         alert "${RED}Your current branch does not match the deploy branch for the ${GREEN}${host_id}${RED} host."
         alert "Cannot deploy.${RESET}"
         alert ""
-        alert "\t${CYAN}Current Branch: ${GREEN}${current_branch}${RESET}"
-        alert "\t${CYAN}Requested Deploy Host: ${GREEN}${host_id}${RESET}"
-        alert "\t${CYAN}Deploy branch for host ${RED}${host_id}${RESET}: ${GREEN}${project_branch}${RESET}"
+        alert "\t${CYAN}The current Git branch:        ${GREEN}${current_branch}${RESET}"
+        alert "\t${CYAN}Host you specified for deploy: ${GREEN}${host_id}${RESET}"
+        alert "\t${CYAN}Deploy branch in project.json: ${GREEN}${project_branch}${RESET}"
         alert ""
         if [ "n/a" == "${project_branch}" ] ; then
             alert "${RED}Review your project.json file to ensure you have a host ${GREEN}${host_id}${RED} defined in"
             alert "the ${GREEN}.host${RED} section.${RESET}"
         else
-            alert "${YELLOW}You can set switch to the project branch for host ${GREEN}${host_id}${YELLOW}, assuming \nall files in your current branch have been committed using:${RESET}"
+            alert "You can set switch to the branch for the ${GREEN}${host_id}${RESET} host using:"
             alert ""
             alert "\t${GREEN}git checkout ${project_branch}${RESET}"
+            alert ""
+            alert "The above only works if files in the ${GREEN}${current_branch}${RESET} branch have been committed."
+            alert ""
         fi
         alert ""
         exit 1
@@ -555,7 +656,7 @@ CMD="$1"
 shift
 case $CMD in
     'unlock')
-        deploy_unlock_host "$1"
+        deploy_unlock
         ;;
 
 	*|'help')

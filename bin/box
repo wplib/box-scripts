@@ -64,9 +64,6 @@ if [ "" == "${error}" ];then
 fi
 
 if [[ $error -ne 0 ]]; then
-    echo -e "\t" 1>&2
-    echo "The '$1' command terminated WITH ERRORS." 1>&2
-    echo -e "\t" 1>&2
     exit 1
 fi
 

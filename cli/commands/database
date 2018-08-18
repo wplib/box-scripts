@@ -365,7 +365,7 @@ ${checksums: : -1}
 JSON
 
     if [ $? -ne 0 ]; then
-        alert "Could not generate ${sql_filepath}/{$sql_basename}.chunks.json"
+        alert "Could not generate ${sql_filepath}/${sql_basename}.chunks.json"
         return 12
     fi
 
@@ -409,7 +409,7 @@ Copyright (C) 2018 NewClarity Consulting LLC; All rights reserved worldwide
 EOF
 
     if [ $? -ne 0 ]; then
-        alert "Could not generate ${sql_filepath}/{$sql_basename}.README.fcps"
+        alert "Could not generate ${sql_filepath}/${sql_basename}.README.fcps"
         return 13
     fi
 
