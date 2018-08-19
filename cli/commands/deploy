@@ -49,10 +49,10 @@ function deploy_host() {
     check_deploy_host "${host_id}"
     exitOnError
 
-    ensure_no_uncommitted_files
+    #ensure_no_uncommitted_files
     exitOnError
 
-    lock_deploy
+   # lock_deploy
     exitOnError
 
     source_url="$(get_source_repo_url)"
@@ -98,22 +98,19 @@ function deploy_host() {
     exitOnError
 
     output "   Syncing updated and/or new source files..."
-    #
-    # Sync vendor path files
-    #
-    sync_files_deep "${source_dir}" "${deploy_dir}" \
-        "$(get_raw_source_wp_vendor_path)" \
-        "$(get_raw_deploy_wp_vendor_path)"  >> $DEPLOY_LOG
-
-    #
-    # Sync content path files
-    #
-    sync_files_deep "${source_dir}" "${deploy_dir}" \
-        "$(get_raw_source_wp_content_path)" \
-        "$(get_raw_deploy_wp_content_path)"  >> $DEPLOY_LOG
-
     local wp_source_core_path="$(get_raw_source_wp_core_path)"
     local wp_deploy_core_path="$(get_raw_deploy_wp_core_path)"
+
+    #
+    # Sync core root files
+    # Copy *just* the files in www/blog/ and not subdirectories
+    # See: https://askubuntu.com/a/632102/486620
+    #
+    sync_files_shallow \
+        "${source_dir}" \
+        "${deploy_dir}" \
+        "${wp_source_core_path}" \
+        "${wp_deploy_core_path}"  >> $DEPLOY_LOG
 
     #
     # Sync core wp-admin path files
@@ -130,22 +127,25 @@ function deploy_host() {
         "${wp_deploy_core_path}/wp-includes"  >> $DEPLOY_LOG
 
     #
-    # Sync core root files
-    # Copy *just* the files in www/blog/ and not subdirectories
-    # See: https://askubuntu.com/a/632102/486620
+    # Sync vendor path files
     #
-    sync_files_shallow \
-        "${source_dir}" \
-        "${deploy_dir}" \
-        "${wp_source_core_path}" \
-        "${wp_deploy_core_path}"  >> $DEPLOY_LOG
+    sync_files_deep "${source_dir}" "${deploy_dir}" \
+        "$(get_raw_source_wp_vendor_path)" \
+        "$(get_raw_deploy_wp_vendor_path)"  >> $DEPLOY_LOG
+
+    #
+    # Sync content path files
+    #
+    sync_files_deep "${source_dir}" "${deploy_dir}" \
+        "$(get_raw_source_wp_content_path)" \
+        "$(get_raw_deploy_wp_content_path)"  >> $DEPLOY_LOG
 
     output "   Removing blacklisted files..."
     remove_deploy_delete_files "${deploy_dir}"  >> $DEPLOY_LOG
     exitOnError
 
     output "   Copying whitelisted files..."
-    copy_deploy_keep_files "${source_dir}" "${deploy_dir}"  >> $DEPLOY_LOG
+    deploy_keep_files "${source_dir}" "${deploy_dir}"  >> $DEPLOY_LOG
     exitOnError
 
     #
@@ -167,7 +167,6 @@ function deploy_host() {
     # Need to commit files here
 
     output "   Tagging this deploy..."
-
     tag_this_deploy "${host_id}" "${BOX_PROJECT_DIR}"  quiet
     exitOnError
 
@@ -227,7 +226,6 @@ function git_add_commit_push() {
     echo "${message}"
 
 }
-
 
 function add_next_deploy_file() {
     local host_id="$1"
@@ -354,25 +352,49 @@ function deploy_unlock() {
         output ""
     fi
 }
-function copy_deploy_keep_files() {
+function deploy_keep_files() {
     local source_dir="$1"
     local deploy_dir="$2"
-    checkParam "${deploy_dir}" "You must pass a source directory for 1st argument and a destination directory as 2nd argument to copy_deploy_keep_files()."
+    checkParam "${deploy_dir}" "You must pass a source directory for 1st argument and a destination directory as 2nd argument to deploy_keep_files()."
     exitOnError
 
     local keep_files="$(get_raw_deploy_keep_files)"
-    local saveIFS="${IFS}"
-    IFS=$'\n'
     for file in $keep_files ; do
-        source_file="${source_dir}${file}"
+        deploy_file="${deploy_dir}${file}"
+        source_paths="$(get_raw_source_wordpress_paths)"
+        deploy_paths="$(get_raw_deploy_wordpress_paths)"
+        path_len="0"
+        for path_name in $(get_raw_deploy_wordpress_path_names); do
+            deploy_path="$(echo $deploy_paths|jqr ".${path_name}")"
+            if ! [[ ${file} =~ ^${deploy_path}/(.+)$ ]] ; then
+                continue
+            fi
+            if [ "${path_len}" -lt "${#deploy_path}" ] ; then
+                path_len="${#deploy_path}"
+                source_path="$(echo $source_paths|jqr ".${path_name}")"
+                source_file="${source_dir}${source_path}/${BASH_REMATCH[1]}"
+            fi
+        done
+        if [ "" == "${source_file}" ]; then
+            source_file=""${source_dir}${file}""
+        fi
         if [ "" == "$(ls -A ${source_file} 2>/dev/null)" ] ; then
-            echo "Skipping copy of ${source_file} [File not found.]"
-            continue
+            if [ "" != "$(ls -A ${deploy_file} 2>/dev/null)" ] ; then
+                # We have it. All is good
+                continue
+            fi
+            alert ""
+            alert "${RED}A 'keep' file  could not be found. Cannot deploy.${RESET}"
+            alert ""
+            alert "\t${CYAN}Source file: ${GREEN}${source_file}${RESET}"
+            alert "\t${CYAN}Deploy file: ${GREEN}${deploy_file}${RESET}"
+            alert ""
+            suggest_help_on_slack
+            exit 1
         fi
         echo "Copying ${file} to ${deploy_dir}"
         cp -R "${source_file}" "${deploy_dir}/${file}"
     done
-    IFS="${saveIFS}"
 }
 
 function remove_deploy_delete_files() {
@@ -472,14 +494,15 @@ function write_sync_exclude_files_by() {
     mkdir -p /tmp/box-tmp/
     local exclude_file_list="$(mktemp /tmp/box-tmp/exclude-XXXX.txt)"
     touch "${exclude_file_list}"
-    local exclude_files="$(get_sync_exclude_files)"
+    local exclude_files=$(get_sync_exclude_files)
+
     if [ "" != "${value}" ] ; then
         case "${by}" in
         'path')
             saveIFS="${IFS}"
             IFS=$'\n'
             for file in $exclude_files ; do
-                if [ "/" == "${file:0:1}" ] ; then
+                if [ "/" != "${file:0:1}" ] ; then
                     # if not an absolute reference, then file is to be excludes everywhere
                     echo -e "${file}" >> $exclude_file_list
                     continue
@@ -487,7 +510,7 @@ function write_sync_exclude_files_by() {
                 if ! [[ ${file} =~ ^${value}/(.+)$ ]] ; then
                     continue
                 fi
-                echo -e "/${BASH_REMATCH[1]}" >> $exclude_file_list
+                echo -e "${value}/${BASH_REMATCH[1]}" >> $exclude_file_list
             done
             IFS="${saveIFS}"
             ;;

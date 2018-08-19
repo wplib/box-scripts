@@ -99,11 +99,11 @@ function get_git_deploy_tags() {
 function lock_git_deploy() {
     local user_name="$1"
     PushDir "${BOX_PROJECT_DIR}"
-    git tag -a "${BOX_DEPLOY_LOCK_SLUG}" -m "Deploy lock by ${user_name}" >$DEPLOY_LOG 2>&1
+    git tag -a "${BOX_DEPLOY_LOCK_SLUG}" -m "Deploy lock by ${user_name}" >> $DEPLOY_LOG 2>&1
     if [ "0" != "$?" ]; then
         return 1
     fi
-    git push --tags  >$DEPLOY_LOG 2>&1
+    git push --tags  >> $DEPLOY_LOG 2>&1
     if [ "0" != "$?" ]; then
         git tag -d "${BOX_DEPLOY_LOCK_SLUG}" 2> /dev/null
         return 2
@@ -126,7 +126,7 @@ function unlock_git_deploy() {
     #
     # This does not generate error on non-existent ref
     #
-    git push origin ":refs/tags/${BOX_DEPLOY_LOCK_SLUG}" > $DEPLOY_LOG 2>&1
+    git push origin ":refs/tags/${BOX_DEPLOY_LOCK_SLUG}" >> $DEPLOY_LOG 2>&1
     if [ "0" != "$?" ]; then
         return 2
     fi
@@ -171,15 +171,15 @@ function git_raw_tag_deploy() {
     fi
 
     local deploy_tag="$(get_deploy_tag "${deploy_num}")"
-    git tag -a "${deploy_tag}" -m "${message}" >$DEPLOY_LOG 2>&1
+    git tag -a "${deploy_tag}" -m "${message}" >> $DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
         PopDir
         return $BOX_ERR_NODEPLOYTAG
     fi
 
-    git push --tags >$DEPLOY_LOG 2>&1
+    git push --tags >> $DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
-        git tag -d "${deploy_tag}" >$DEPLOY_LOG 2>&1
+        git tag -d "${deploy_tag}" >> $DEPLOY_LOG 2>&1
         PopDir
         return $BOX_ERR_GITTAGSPUSHFAIL
     fi
@@ -191,7 +191,7 @@ function git_raw_pull() {
     local repo_dir="$1"
     PushDir "${repo_dir}"
     cd "${repo_dir}"
-    git pull >$DEPLOY_LOG 2>&1
+    git pull >> $DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
         PopDir
         return $BOX_ERR_GITPULLFAIL
@@ -212,29 +212,37 @@ function git_raw_add_commit_push() {
 
     PushDir "${repo_dir}"
 
-    git add "${filename}" >$DEPLOY_LOG 2>&1
+    git add "${filename}" >> $DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
         PopDir
         return $BOX_ERR_GITADDFAIL
     fi
 
-    git commit -m "${message}" >$DEPLOY_LOG 2>&1
+    git commit -m "${message}" >> $DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
         PopDir
         return $BOX_ERR_GITCOMMITFAIL
     fi
 
-    git pull >$DEPLOY_LOG 2>&1
+    git pull >> $DEPLOY_LOG 2>&1
     if [ "0" == "?$" ] ; then
         PopDir
         return $BOX_ERR_GITPULLFAIL
     fi
 
-    git push >$DEPLOY_LOG 2>&1
+    output="$(git push 2>&1)"
     if [ "0" == "?$" ] ; then
         PopDir
         return $BOX_ERR_GITPUSHFAIL
     fi
+    echo -e "${output}" >> $DEPLOY_LOG 2>&1
+    if [[ "${output}" = *"[remote rejected]"* ]] ; then
+        echo "${output}"
+        PopDir
+        return $BOX_ERR_GITPUSHFAIL
+    fi
+
+    git push >> $DEPLOY_LOG 2>&1
 
     PopDir
     echo "${message}"

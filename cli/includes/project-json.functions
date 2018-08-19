@@ -42,6 +42,11 @@ function get_raw_source_wordpress_paths() {
     echo "${paths}"
 }
 
+function get_raw_source_wordpress_path_names() {
+    local paths="$(get_raw_project_file | jqr ".source.frameworks.wordpress|keys[]")"
+    echo "${paths}"
+}
+
 function get_raw_source_wp_content_path() {
     local content_path="$(get_raw_source_wordpress_paths | jqr ".content_path")"
     echo "/$(TrimSlashes "${content_path}")"
@@ -140,6 +145,11 @@ function get_raw_host_repo_url() {
 
 function get_raw_deploy_wordpress_paths() {
     local paths="$(get_raw_project_file | jqr ".deploy.frameworks.wordpress")"
+    echo "${paths}"
+}
+
+function get_raw_deploy_wordpress_path_names() {
+    local paths="$(get_raw_project_file | jqr ".deploy.frameworks.wordpress|keys[]")"
     echo "${paths}"
 }
 
