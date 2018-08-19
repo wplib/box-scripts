@@ -141,7 +141,7 @@ function get_git_next_deploy_num() {
     local deploy_nums="$(get_git_deploy_tags)"
     exitOnError
     # Sort by https://stackoverflow.com/a/5917762/102699
-    last_deploy="$(echo -e $deploy_nums | sed 's/ /\n/' | awk '{ print substr($1,8) }' | sort -rn | head -n 1)"
+    last_deploy="$(echo -e $deploy_nums | sed 's/ /\n/g' | awk '{ print substr($1,8) }' | sort -rn | head -n 1)"
     echo $(( last_deploy + 1 ))
     PopDir
 }

@@ -141,15 +141,17 @@ function deploy_host() {
         "${wp_deploy_core_path}"  >> $DEPLOY_LOG
 
     output "   Removing blacklisted files..."
-
     remove_deploy_delete_files "${deploy_dir}"  >> $DEPLOY_LOG
     exitOnError
 
-    output "   Writing 'DEPLOY' files..."
+    output "   Copying whitelisted files..."
+    copy_deploy_keep_files "${source_dir}" "${deploy_dir}"  >> $DEPLOY_LOG
+    exitOnError
 
     #
     # Write and commit a DEPLOY file with sequential number of latest deploy.
     #
+    output "   Writing 'DEPLOY' files..."
     add_next_deploy_file  "${host_id}"
     exitOnError
 
@@ -352,6 +354,26 @@ function deploy_unlock() {
         output ""
     fi
 }
+function copy_deploy_keep_files() {
+    local source_dir="$1"
+    local deploy_dir="$2"
+    checkParam "${deploy_dir}" "You must pass a source directory for 1st argument and a destination directory as 2nd argument to copy_deploy_keep_files()."
+    exitOnError
+
+    local keep_files="$(get_raw_deploy_keep_files)"
+    local saveIFS="${IFS}"
+    IFS=$'\n'
+    for file in $keep_files ; do
+        source_file="${source_dir}${file}"
+        if [ "" == "$(ls -A ${source_file} 2>/dev/null)" ] ; then
+            echo "Skipping copy of ${source_file} [File not found.]"
+            continue
+        fi
+        echo "Copying ${file} to ${deploy_dir}"
+        cp -R "${source_file}" "${deploy_dir}/${file}"
+    done
+    IFS="${saveIFS}"
+}
 
 function remove_deploy_delete_files() {
     local deploy_dir="$1"
@@ -441,16 +463,6 @@ function sync_files_deep() {
 
     rm -rf "${exclude_files_list}"
 
-}
-
-function get_raw_deploy_exclude_files() {
-    local exclude="$(get_raw_deploy | jqr ".files.exclude[]")"
-    echo "${exclude}"
-}
-
-function get_raw_deploy_delete_files() {
-    local exclude="$(get_raw_deploy | jqr ".files.delete[]")"
-    echo "${exclude}"
 }
 
 function write_sync_exclude_files_by() {
