@@ -49,10 +49,10 @@ function deploy_host() {
     check_deploy_host "${host_id}"
     exitOnError
 
-    #ensure_no_uncommitted_files
+    ensure_no_uncommitted_files
     exitOnError
 
-   # lock_deploy
+    lock_deploy
     exitOnError
 
     source_url="$(get_source_repo_url)"
@@ -352,6 +352,7 @@ function deploy_unlock() {
         output ""
     fi
 }
+
 function deploy_keep_files() {
     local source_dir="$1"
     local deploy_dir="$2"
@@ -452,11 +453,17 @@ function sync_files_shallow() {
     checkParam "${deploy_path}" "You must pass a destination path as 4th argument to sync_files_shallow()."
     exitOnError
 
-    local exclude_files_list="$(write_sync_exclude_files_by "path" "${source_path}")"
+    local exclude_files_list="$(write_sync_exclude_files_by "path" "${deploy_path}")"
 
+    echo ">>>====================================================================="
+    echo "Rsyncing ${source_dir}${source_path}/ to ${deploy_dir}${deploy_path}"
     rsync --archive --filter="- */" --filter="+ *" --exclude-from="${exclude_files_list}" \
         "$(RTrimSlashes "${source_dir}${source_path}")" \
         "$(RTrimSlashes "${deploy_dir}${deploy_path}")"
+
+    cat "${exclude_files_list}"
+    echo "<<<====================================================================="
+    rm -rf "${exclude_files_list}"
 
 }
 
@@ -476,13 +483,18 @@ function sync_files_deep() {
     checkParam "${deploy_path}" "You must pass a destination path as 4th argument to sync_files_deep()."
     exitOnError
 
-    local exclude_files_list="$(write_sync_exclude_files_by "path" "${source_path}")"
+    local exclude_files_list="$(write_sync_exclude_files_by "path" "${deploy_path}")"
 
+
+    echo ">>>====================================================================="
+    echo "Rsyncing ${source_dir}${source_path}/ to ${deploy_dir}${deploy_path}"
     rsync --archive --delete-after --verbose \
         --exclude ".git" --exclude ".git*" --exclude-from="${exclude_files_list}" \
         "${source_dir}${source_path}/" \
         "${deploy_dir}${deploy_path}"
 
+    cat "${exclude_files_list}"
+    echo "<<<====================================================================="
     rm -rf "${exclude_files_list}"
 
 }
@@ -499,8 +511,6 @@ function write_sync_exclude_files_by() {
     if [ "" != "${value}" ] ; then
         case "${by}" in
         'path')
-            saveIFS="${IFS}"
-            IFS=$'\n'
             for file in $exclude_files ; do
                 if [ "/" != "${file:0:1}" ] ; then
                     # if not an absolute reference, then file is to be excludes everywhere
@@ -510,9 +520,8 @@ function write_sync_exclude_files_by() {
                 if ! [[ ${file} =~ ^${value}/(.+)$ ]] ; then
                     continue
                 fi
-                echo -e "${value}/${BASH_REMATCH[1]}" >> $exclude_file_list
+                echo -e "${BASH_REMATCH[1]}" >> $exclude_file_list
             done
-            IFS="${saveIFS}"
             ;;
 
         *)

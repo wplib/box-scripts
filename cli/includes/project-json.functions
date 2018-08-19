@@ -23,13 +23,13 @@ function get_raw_deploy_exclude_files() {
 }
 
 function get_raw_deploy_delete_files() {
-    local exclude="$(get_raw_deploy | jqr ".files.delete[]")"
-    echo "${exclude}"
+    local delete="$(get_raw_deploy | jqr ".files.delete[]")"
+    echo "${delete}"
 }
 
 function get_raw_deploy_keep_files() {
-    local exclude="$(get_raw_deploy | jqr ".files.keep[]")"
-    echo "${exclude}"
+    local keep="$(get_raw_deploy | jqr ".files.keep[]")"
+    echo "${keep}"
 }
 
 function get_raw_source() {
