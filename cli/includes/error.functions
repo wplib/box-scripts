@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+declare="${RED:=}"
+declare="${GREEN:=}"
+declare="${RESET:=}"
+
+export BOX_ERR_NODEPLOYNUM=401
+export BOX_ERR_NODEPLOYTAG=402
+
+export BOX_ERR_GITADDFAIL=501
+export BOX_ERR_GITCOMMITFAIL=502
+export BOX_ERR_GITPULLFAIL=503
+export BOX_ERR_GITPUSHFAIL=504
+export BOX_ERR_GITTAGSPUSHFAIL=505
+
+function git_error_message() {
+    local result="$1"
+    local filename="$2"
+    local extra="$3"
+    case "${result}" in
+        $BOX_ERR_GITADDFAIL)
+            message="${RED}Could not add ${GREEN}${filename}${RED} to local repo. ${RESET}."
+            ;;
+        $BOX_ERR_GITCOMMITFAIL)
+            message="${RED}Could not commit ${GREEN}${filename}${RED} to local repo. ${RESET}."
+            ;;
+        $BOX_ERR_GITPULLFAIL)
+            message="${RED}Error pulling commits from remote repo at origin. ${RESET}."
+            ;;
+        $BOX_ERR_GITPUSHFAIL)
+            message="${RED}Could not push commit of ${GREEN}${filename}${RED} to remote repo at origin. ${RESET}."
+            ;;
+        $BOX_ERR_NODEPLOYNUM)
+            message="${RED}Deploy file ${GREEN}${filename}${RED} not written. ${RESET}."
+            ;;
+        $BOX_ERR_NODEPLOYTAG)
+            message="${RED}Could not tag deploy locally with ${GREEN}${extra}${RED}. ${RESET}."
+            ;;
+        $BOX_ERR_GITTAGSPUSHFAIL)
+            message="${RED}Could not tag remotely at origin with ${GREEN}${extra}${RED}. ${RESET}."
+            ;;
+        *)
+            return 0
+    esac
+    echo "${message}"
+}
+

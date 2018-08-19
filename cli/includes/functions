@@ -81,6 +81,7 @@ export BOX_ERROR_FILE="$(mktemp -d "/tmp/errors-XXXXX")/errors.txt"
 # Source functions
 #
 source "${BOX_INCLUDES_DIR}/general.functions"
+source "${BOX_INCLUDES_DIR}/error.functions"
 source "${BOX_INCLUDES_DIR}/container.functions"
 source "${BOX_INCLUDES_DIR}/project-json.functions"
 source "${BOX_INCLUDES_DIR}/git.functions"

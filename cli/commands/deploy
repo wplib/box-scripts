@@ -13,6 +13,13 @@ declare="${BOX_PROJECT_DIR:=}"
 declare="${BOX_PROJECT_FILE:=}"
 declare="${BOX_DEPLOY_LOCK_SLUG:=}"
 
+declare="${BOX_ERR_NODEPLOYNUM:=}"
+declare="${BOX_ERR_NODEPLOYTAG:=}"
+declare="${BOX_ERR_GITADDFAIL:=}"
+declare="${BOX_ERR_GITCOMMITFAIL:=}"
+declare="${BOX_ERR_GITPULLFAIL:=}"
+declare="${BOX_ERR_GITPUSHFAIL:=}"
+declare="${BOX_ERR_GITTAGSPUSHFAIL:=}"
 
 function deploy_help() {
 	cat <<EOF
@@ -39,8 +46,10 @@ function deploy_host() {
         exit
     fi
 
-
     check_deploy_host "${host_id}"
+    exitOnError
+
+    ensure_no_uncommitted_files
     exitOnError
 
     lock_deploy
@@ -64,7 +73,7 @@ function deploy_host() {
     deploy_branch="$(get_raw_deploy_host_branch "${host_id}")"
     exitOnError
 
-    ensure_no_uncommitted_files
+    git_pull "${BOX_PROJECT_DIR}"
     exitOnError
 
     output
@@ -169,8 +178,9 @@ function deploy_host() {
     deploy_unlock quiet
     exitOnError
 
-    #git add.
-    #commit
+    message="$(git_add_commit_push "${host_id}" "${deploy_dir}" ".")"
+    exitOnError
+    output "   ${message}"
 
     output "   Deploy complete."
     output ""
@@ -183,6 +193,39 @@ function get_current_deploy_num() {
     PopDir
     cat "${filename}"
 }
+
+function git_pull() {
+    local repo_dir="$1"
+    git_raw_pull "${repo_dir}"
+    result="$?"
+    if [ "0" != "${result}" ] ; then
+        alert ""
+        alert "$(git_error_message "${result}")"
+        alert ""
+        suggest_help_on_slack
+        return $result
+    fi
+    return $result
+}
+
+function git_add_commit_push() {
+    local host_id="$1"
+    local repo_dir="$2"
+    local filename="$3"
+
+    message="$(git_raw_add_commit_push "${host_id}" "${repo_dir}" "${filename}")"
+    result="$?"
+    if [ "0" != "${result}" ] ; then
+        alert ""
+        alert "$(git_error_message "${result}" "${filename}")"
+        alert ""
+        suggest_help_on_slack
+        return 1
+    fi
+    echo "${message}"
+
+}
+
 
 function add_next_deploy_file() {
     local host_id="$1"
@@ -202,40 +245,16 @@ function add_next_deploy_file() {
         return 1
     fi
 
-    #
-    # Generates return values 1 thru 4 on error
-    #
     message="$(git_raw_add_commit_push "${host_id}" "${BOX_PROJECT_DIR}" "$(basename "${filename}")")"
-    result="?$"
-    if [ "0" != "${result}" ] ; then
-        PopDir
-        return 0
-    fi
-    case "${result}" in
-    1)
-        message="${RED}Could not add ${GREEN}${filename}${RED} to local repo. Cannot deploy${RESET}."
-        ;;
-    2)
-        message="${RED}Could not commit ${GREEN}${filename}${RED} to local repo. Cannot deploy${RESET}."
-        ;;
-    3)
-        message="${RED}Error pulling commits from remote repo at origin. Cannot deploy${RESET}."
-        ;;
-    4)
-        message="${RED}Could not push commit of ${GREEN}${filename}${RED} to remote repo at origin. Cannot deploy${RESET}."
-        ;;
-    *)
-        result=0
-    esac
+    result="$?"
     if [ "0" != "${result}" ] ; then
         alert ""
-        alert "${message}"
+        alert "$(git_error_message "${result}" "${filename}")"
         alert ""
         suggest_help_on_slack
     fi
     PopDir
-    return "${result}"
-
+    return $result
 }
 
 function get_current_deploy_tag() {
@@ -256,31 +275,6 @@ function tag_this_deploy() {
     local filename="$(get_deploy_filename "${repo_dir}")"
     deploy_tag="$(git_raw_tag_deploy "${host_id}" "${repo_dir}")"
     result="$?"
-    case "${result}" in
-    1)
-        message="${RED}Deploy file ${GREEN}${filename}${RED} not written. Cannot deploy${RESET}."
-        ;;
-    2)
-        message="${RED}Could not add ${GREEN}${filename}${RED} to local repo. Cannot deploy${RESET}."
-        ;;
-    3)
-        message="${RED}Could not commit ${GREEN}${filename}${RED} to local repo. Cannot deploy${RESET}."
-        ;;
-    4)
-        message="${RED}Error pulling commits from remote repo at origin. Cannot deploy${RESET}."
-        ;;
-    5)
-        message="${RED}Could not push commit of ${GREEN}${filename}${RED} to remote repo at origin. Cannot deploy${RESET}."
-        ;;
-    6)
-        message="${RED}Could not tag deploy locally with ${GREEN}${deploy_tag}${RED}. Cannot deploy${RESET}."
-        ;;
-    7)
-        message="${RED}Could not tag deploy remotely at origin with ${GREEN}${deploy_tag}${RED}. Cannot deploy${RESET}."
-        ;;
-    *)
-        result=0
-    esac
     if [ "0" == "${result}" ] ; then
         if [ "" == "${quiet}" ] ; then
             output ""
@@ -289,7 +283,7 @@ function tag_this_deploy() {
         fi
     else
         alert ""
-        alert "${message}"
+        alert "$(git_error_message "${result}" "${filename}" "${message}" "${deploy_tag}")"
         alert ""
         suggest_help_on_slack
     fi
