@@ -141,7 +141,7 @@ function get_git_next_deploy_num() {
     local deploy_nums="$(get_git_deploy_tags)"
     exitOnError
     # Sort by https://stackoverflow.com/a/5917762/102699
-    last_deploy="$(echo -e $deploy_nums | awk '{ print length, $2 }' | sort -r -n | cut -d" " -f2- | head -n 1 | sed -e 's#^refs/tags/##')"
+    last_deploy="$(echo -e $deploy_nums | sed 's/ /\n/' | awk '{ print substr($1,8) }' | sort -rn | head -n 1)"
     echo $(( last_deploy + 1 ))
     PopDir
 }
@@ -205,8 +205,10 @@ function git_raw_add_commit_push() {
     local filename="$3"
     local user_name="$(get_user_display_name)"
     exitOnError
+    local deploy_num="$(get_current_deploy_num)"
+    exitOnError
 
-    local message="Deployed by ${user_name}."
+    local message="Deploy #${deploy_num} by ${user_name}."
 
     PushDir "${repo_dir}"
 
