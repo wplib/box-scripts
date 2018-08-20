@@ -8,6 +8,11 @@ declare="${BOX_ERR_GITPULLFAIL:=}"
 declare="${BOX_ERR_GITPUSHFAIL:=}"
 declare="${BOX_ERR_GITTAGSPUSHFAIL:=}"
 declare="${BOX_ERR_GITFETCHFAIL:=}"
+declare="${BOX_ERR_GITTAGDELETEFAIL:=}"
+declare="${BOX_ERR_GITREMOTETAGDELETEFAIL:=}"
+declare="${BOX_ERR_GITSHOWREFFAIL:=}"
+declare="${BOX_ERR_GITLOGFAIL:=}"
+declare="${BOX_ERR_COMMITMSGFAIL:=}"
 
 declare="${BOX_ERR_GITPULLNOTNEEDED:=}"
 declare="${BOX_ERR_GITPULLNEEDED:=}"
@@ -20,10 +25,6 @@ declare="${BOX_CACHE_DIR:=}"
 declare="${DEPLOY_LOG:=}"
 
 declare="${LESS:=}"
-
-function clone_git_repo() {
-    repo_url="$1"
-}
 
 #
 # Returns the URL for the 'origin' remote.
@@ -93,32 +94,83 @@ function set_git_user_name_email() {
 #
 # Return all tags starting with "deploy-" but not "deploy-lock" or ones containing (ending with) "^{}"
 #
-function get_git_deploy_tags() {
-    PushDir "${BOX_PROJECT_DIR}"
+function get_git_raw_deploy_tags() {
+    local repo_dir="$(default "$1" "${BOX_PROJECT_DIR}")"
+    trace $LINENO "Repo dir: $repo_dir"
+    PushDir "${repo_dir}"
     local deploy_tags="$(git ls-remote --tags 2> /dev/null | awk '{print substr($2,11)}' | grep "^deploy-"  | grep -v "${BOX_DEPLOY_LOCK_SLUG}" | grep -vF "^{}")"
+    result="$?"
+    trace $LINENO "Git list remote tags: $deploy_tags"
+    if [ "0" != "${result}" ]; then
+        trace $LINENO "Result: $result"
+        return $result
+    fi
     echo -e ${deploy_tags}
     PopDir
+}
+
+function get_git_prior_commit_hash() {
+    local tag="$1"
+    local repo_dir="$(default "$2" "${BOX_PROJECT_DIR}")"
+    trace $LINENO "Repo dir: $repo_dir"
+    PushDir "${repo_dir}"
+    output="$(git show-ref -s "${tag}")"
+    result="$?"
+    trace $LINENO "Git hash of tag $tag: $output"
+    if [ "0" != "${result}" ]; then
+        trace $LINENO "Result: $result"
+        PopDir
+        return $BOX_ERR_GITSHOWREFFAIL
+    fi
+    trace $LINENO
+    PopDir
+    echo "${output}"
+}
+
+function get_git_raw_deploy_log() {
+    local hash="$1"
+    local repo_dir="$(default "$2" "${BOX_PROJECT_DIR}")"
+    trace $LINENO "Repo dir: $repo_dir"
+    PushDir "${repo_dir}"
+    output="$(git log "${hash}..HEAD" --oneline | cut -d' ' -f2-999)"
+    result="$?"
+    trace $LINENO "Git log of hash $hash: $output"
+    if [ "0" != "${result}" ]; then
+        trace $LINENO "Result: $result"
+        PopDir
+        return $BOX_ERR_COMMITMSGFAIL
+    fi
+    trace $LINENO
+    PopDir
+    echo "${output}"
 }
 
 #
 # Return all tags starting with "deploy-" but not ones containing (ending with) "^{}"
 #
 function lock_git_deploy() {
-    local user_name="$1"
-    PushDir "${BOX_PROJECT_DIR}"
+    local repo_dir="$(default "$1" "${BOX_PROJECT_DIR}")"
+    trace $LINENO "Repo dir: $repo_dir"
+    local user_name="$(get_user_display_name)"
+    trace $LINENO "User name: $user_name"
+    PushDir "${repo_dir}"
     trace $LINENO
-    git tag -a "${BOX_DEPLOY_LOCK_SLUG}" -m "Deploy lock by ${user_name}" >> $DEPLOY_LOG 2>&1
-    trace $LINENO
+    output="$(git tag -a "${BOX_DEPLOY_LOCK_SLUG}" -m "Deploy lock by ${user_name}" 2>&1)"
     result="$?"
+    trace $LINENO "Git tag add of $BOX_DEPLOY_LOCK_SLUG: $output"
     if [ "0" != "${result}" ]; then
+        trace $LINENO "Result: $result"
         return 1
     fi
     trace $LINENO
-    git push --tags  >> $DEPLOY_LOG 2>&1
-    trace $LINENO
+    output="$(git push --tags  >> $DEPLOY_LOG 2>&1)"
     result="$?"
+    trace $LINENO "Git push tags: $output"
     if [ "0" != "${result}" ]; then
-        git tag -d "${BOX_DEPLOY_LOCK_SLUG}" 2> /dev/null
+        trace $LINENO "Result: $result"
+        output="$(git tag -d "${BOX_DEPLOY_LOCK_SLUG}" 2>&1)"
+        result="$?"
+        trace $LINENO "Result: $result, Git tag delete of $BOX_DEPLOY_LOCK_SLUG: $output"
         return 2
     fi
     PopDir
@@ -130,13 +182,14 @@ function unlock_git_deploy() {
     # This generates error 1 if tag does not exist
     #
     trace $LINENO
-    result="$(git tag -d ${BOX_DEPLOY_LOCK_SLUG} 2>&1)"
-    trace $LINENO
-    if ! [[ "${result}" =~ ^Deleted ]]; then
-        trace $LINENO
-        if [ "${result}" != "error: tag 'deploy-lock' not found." ]; then
-            trace $LINENO
-            return 1
+    output="$(git tag -d ${BOX_DEPLOY_LOCK_SLUG} 2>&1)"
+    result="$?"
+    trace $LINENO "Git local tag delete $BOX_DEPLOY_LOCK_SLUG: $output"
+    if ! [[ "${output}" =~ ^Deleted ]]; then
+        trace $LINENO "Result: $result, Output contains 'deleted'"
+        if [ "${output}" != "error: tag '${BOX_DEPLOY_LOCK_SLUG}' not found." ]; then
+            trace $LINENO "Result: $result, Output does not contain '${BOX_DEPLOY_LOCK_SLUG}'"
+            return $BOX_ERR_GITTAGDELETEFAIL
         fi
         trace $LINENO
     fi
@@ -146,12 +199,12 @@ function unlock_git_deploy() {
     # This does not generate error on non-existent ref
     #
     trace $LINENO
-    git push origin ":refs/tags/${BOX_DEPLOY_LOCK_SLUG}" >> $DEPLOY_LOG 2>&1
+    output="$(git push origin ":refs/tags/${BOX_DEPLOY_LOCK_SLUG}" 2>&1)"
     result="$?"
-    trace $LINENO
+    trace $LINENO "Git remote tag delete $BOX_DEPLOY_LOCK_SLUG: $output"
     if [ "0" != "${result}" ]; then
-        trace $LINENO
-        return 2
+        trace $LINENO "Result: $result"
+        return $BOX_ERR_GITREMOTETAGDELETEFAIL
     fi
     PopDir
 }
@@ -159,18 +212,42 @@ function unlock_git_deploy() {
 #
 # Sorting by length, then by value: https://stackoverflow.com/a/5917762/102699
 #
-function get_git_next_deploy_num() {
-    PushDir "${BOX_PROJECT_DIR}"
-    trace $LINENO
-    local deploy_nums="$(get_git_deploy_tags)"
-    exitOnError
-    trace $LINENO
-    # Sort by https://stackoverflow.com/a/5917762/102699
-    last_deploy="$(echo -e $deploy_nums | sed 's/ /\n/g' | awk '{ print substr($1,8) }' | sort -rn | head -n 1)"
-    trace $LINENO
-    echo $(( last_deploy + 1 ))
+function get_git_raw_deploy_num() {
+    local repo_dir="$(default "$1" "${BOX_PROJECT_DIR}")"
+    local num_no="$(default "$2" 1)"
+    PushDir "${repo_dir}"
+    trace $LINENO "Directory: ${repo_dir}, Reverse deploy#: num_no"
+    local deploy_tags="$(git_raw_sorted_deploy_tags)"
+    result="$?"
+    trace $LINENO "Sorted deploy tags: $deploy_tags"
+    if [ "0" != "${result}" ]; then
+        trace $LINENO "Result: $result"
+        return $result
+    fi
+    tmp="print $"
+    awk="{${tmp}${num_no}}"
+    trace $LINENO "AWK command: $awk"
+    last_deploy="$(echo -e $deploy_tags| awk "${awk}")"
+    trace $LINENO "Last Deploy#: $last_deploy"
+    echo "${last_deploy}"
     trace $LINENO
     PopDir
+}
+
+#
+# Sort by https://stackoverflow.com/a/5917762/102699
+#
+function git_raw_sorted_deploy_tags() {
+    local deploy_tags="$(get_git_raw_deploy_tags)"
+    result="$?"
+    trace $LINENO "Deploy tags: $deploy_tags"
+    if [ "0" != "${result}" ]; then
+        trace $LINENO "Result: $result"
+        return $result
+    fi
+    local deploy_tags="$(echo -e $deploy_tags | sed 's/ /\n/g' | awk '{ print substr($1,8) }' | sort -rn)"
+    trace $LINENO "Deploy tags: $deploy_tags"
+    echo "${deploy_tags}"
 }
 
 function git_raw_tag_deploy() {
@@ -254,6 +331,7 @@ function git_raw_add_commit_push() {
     local host_id="$1"
     local repo_dir="$2"
     local filename="$3"
+    local deploy_log="$4"
     trace $LINENO "Git raw Add/Commit/Push: $host_id, RepoDir: $repo_dir, Filename: $filename"
 
     local user_name="$(get_user_display_name)"
@@ -264,7 +342,10 @@ function git_raw_add_commit_push() {
     exitOnError
     trace $LINENO "Deploy #: $deploy_num"
 
-    local message="Deploy #${deploy_num} by ${user_name}."
+    message="Deploy #${deploy_num} by ${user_name}"
+    if [ "" != "${deploy_log}" ] ; then
+        message="${deploy_log}"
+    fi
 
     PushDir "${repo_dir}"
 

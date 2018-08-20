@@ -20,6 +20,7 @@ declare="${BOX_ERR_GITCOMMITFAIL:=}"
 declare="${BOX_ERR_GITPULLFAIL:=}"
 declare="${BOX_ERR_GITPUSHFAIL:=}"
 declare="${BOX_ERR_GITTAGSPUSHFAIL:=}"
+declare="${BOX_ERR_NODEPLOYFILE:=}"
 
 declare="${BOX_ERR_GITPULLNOTNEEDED:=}"
 declare="${BOX_ERR_GITPULLNEEDED:=}"
@@ -113,27 +114,27 @@ function deploy_host() {
 
     output
 
-    output "   Locking deploy..."
+    output "   Locking deploy"
     lock_deploy
     exitOnError
 
-    output "   Pulling any new commits from origin..."
+    output "   Pulling any new commits from origin"
     trace $LINENO
     git_pull "${BOX_PROJECT_DIR}"
     exitOnError
 
-    output "   Updating repository caches..."
+    output "   Updating repository caches"
 
     cache_repo_locally "${source_url}" "${source_branch}" >> $DEPLOY_LOG 2>&1
 
     cache_repo_locally "${deploy_url}" "${deploy_branch}" >> $DEPLOY_LOG 2>&1
 
-    output "   Running composer install..."
+    output "   Running composer install"
 
     run_composer_install "${source_dir}" >> $DEPLOY_LOG 2>&1
     exitOnError
 
-    output "   Syncing updated and/or new source files..."
+    output "   Syncing updated and/or new source files"
     local wp_source_core_path="$(get_raw_source_wp_core_path)"
     local wp_deploy_core_path="$(get_raw_deploy_wp_core_path)"
 
@@ -176,18 +177,18 @@ function deploy_host() {
         "$(get_raw_source_wp_content_path)" \
         "$(get_raw_deploy_wp_content_path)"  >> $DEPLOY_LOG
 
-    output "   Removing blacklisted files..."
+    output "   Removing blacklisted files"
     remove_deploy_delete_files "${deploy_dir}"  >> $DEPLOY_LOG
     exitOnError
 
-    output "   Copying whitelisted files..."
+    output "   Copying whitelisted files"
     deploy_keep_files "${source_dir}" "${deploy_dir}"  >> $DEPLOY_LOG
     exitOnError
 
     #
     # Write and commit a DEPLOY file with sequential number of latest deploy.
     #
-    output "   Writing 'DEPLOY' files..."
+    output "   Writing 'DEPLOY' files"
     add_next_deploy_file  "${host_id}"
     exitOnError
 
@@ -200,26 +201,30 @@ function deploy_host() {
     copy_file "$(get_deploy_filename)" "${deploy_dir}"
     exitOnError
 
-    # Need to commit files here
+    output "   Generating deploy log"
+    deploy_log="$(get_deploy_log_since_prior_deploy "${deploy_dir}")"
+    exitOnError
 
-    output "   Tagging this deploy..."
+    output "   Pushing deploy to host: ${host_id}"
+    message="$(git_add_commit_push "${host_id}" "${deploy_dir}" "." "${deploy_log}")"
+    exitOnError
+    output "$(echo "   ${message}" | head -n 1)"
+
+    output "   Tagging deploy"
     tag_this_deploy "${host_id}" "${BOX_PROJECT_DIR}"  quiet
     exitOnError
 
     tag_this_deploy "${host_id}" "${deploy_dir}" quiet
     exitOnError
 
-    output "   Deploy tagged as $(get_current_deploy_tag)."
-    output "   Unlocking deploy."
+    output "   Deploy tagged as $(get_current_deploy_tag)"
+
+    output "   Unlocking deploy"
 
     deploy_unlock quiet
     exitOnError
 
-    message="$(git_add_commit_push "${host_id}" "${deploy_dir}" ".")"
-    exitOnError
-    output "   ${message}"
-
-    output "   Deploy complete."
+    output "   Deploy complete"
     output
 
 }
@@ -285,8 +290,9 @@ function git_add_commit_push() {
     local host_id="$1"
     local repo_dir="$2"
     local filename="$3"
+    local deploy_log="$4"
 
-    message="$(git_raw_add_commit_push "${host_id}" "${repo_dir}" "${filename}")"
+    message="$(git_raw_add_commit_push "${host_id}" "${repo_dir}" "${filename}" "${deploy_log}")"
     result="$?"
     trace $LINENO "Message: $message"
     if [ "0" != "${result}" ] ; then
@@ -308,38 +314,39 @@ function git_add_commit_push() {
 function add_next_deploy_file() {
     local host_id="$1"
     PushDir "${BOX_PROJECT_DIR}"
-    local deploy_num="$(get_git_next_deploy_num)"
+    local deploy_num="$(get_git_raw_deploy_num)"
     exitOnError
-    trace $LINENO
+    deploy_num="$(( deploy_num + 1 ))"
+    trace $LINENO "Deploy #: $deploy_num"
     filename="$(get_deploy_filename)"
-    trace $LINENO
+    trace $LINENO "Filename: $filename"
     echo "${deploy_num}" > $filename
     result="$?"
     trace $LINENO
     if [ "0" != "${result}" ] ; then
-        alert 
-        alert "${RED}Could not write DEPLOY file. Deploy failed${RESET}."
-        alert 
-        alert "\t${CYAN}Filename: ${GREEN}${filename}${RESET}"
+        trace $LINENO "Result: $result"
+        alert
+        alert "$(git_error_message "${BOX_ERR_NODEPLOYFILE}" "${filename}")"
         alert 
         suggest_help_on_slack
         PopDir
-        return 1
+        return $BOX_ERR_NODEPLOYFILE
     fi
     trace $LINENO
-    message="$(git_raw_add_commit_push "${host_id}" "${BOX_PROJECT_DIR}" "$(basename "${filename}")")"
-    trace $LINENO
+    output="$(git_raw_add_commit_push "${host_id}" "${BOX_PROJECT_DIR}" "$(basename "${filename}")")"
+    trace $LINENO "Message: $output"
     result="$?"
     trace $LINENO
     if [ "0" != "${result}" ] ; then
-        alert 
+        trace $LINENO "Result: $result"
+        alert
         alert "$(git_error_message "${result}" "${filename}")"
         alert 
         suggest_help_on_slack
     fi
     trace $LINENO
     PopDir
-    return $result
+    return 0
 }
 
 function get_current_deploy_tag() {
@@ -374,7 +381,7 @@ function tag_this_deploy() {
         if [ "" == "${quiet}" ] ; then
             trace $LINENO
             output
-            output "Deploy tagged as ${GREEN}${deploy_tag}${RESET}."
+            output "Deploy tagged as ${GREEN}${deploy_tag}${RESET}"
             output
         fi
     fi
@@ -403,7 +410,7 @@ function lock_deploy() {
             box user show
             exit 1
         fi
-        lock_git_deploy "${user_name}"
+        lock_git_deploy
         if [ "0" != "$?" ] ; then
             result="fail"
         fi
@@ -429,10 +436,11 @@ function lock_deploy() {
 
 function deploy_unlock() {
     local quiet="$1"
-    trace $LINENO
+    trace $LINENO "Quiet: $quiet"
     unlock_git_deploy
-    if [ "0" != "$?" ] ; then
-        trace $LINENO
+    result="$?"
+    if [ "0" != "${result}" ] ; then
+        trace $LINENO "Result: $result"
         alert
         alert "Deploy unlock ${RED}FAILED${RESET}."
         alert "Try these commands and then Google any error messages to diagnose:"
@@ -790,34 +798,57 @@ function ensure_no_uncommitted_files() {
     fi
 }
 
-function get_deploy_message() {
-    #
-    # Find previous build number
-    #
-    announce "...Finding previous build number"
-    PREVIOUS_BUILD_NUM="${CIRCLE_PREVIOUS_BUILD_NUM}"
-    while true; do
-        if [ "${PREVIOUS_BUILD_NUM}" == "${CIRCLE_BUILD_NUM}" ]; then
-            PREVIOUS_BUILD_TAG=""
-            break
-        fi
-        PREVIOUS_BUILD_TAG="build-${PREVIOUS_BUILD_NUM}"
-        if [ "" != "$(cd "${SOURCE_INDEX}" && git tag | grep "${PREVIOUS_BUILD_TAG}")" ]; then
-            break
-        fi
-        PREVIOUS_BUILD_NUM=$((PREVIOUS_BUILD_NUM+1))
-    done
-
-    #
-    # Generating commit message
-    #
-    announce "...Generating commit message"
-    if [ "" != "${PREVIOUS_BUILD_TAG}" ] ; then
-        COMMIT_MSG="$(cd "${SOURCE_INDEX}" && git log "${PREVIOUS_BUILD_TAG}..HEAD" --oneline | cut -d' ' -f2-999)"
-    else
-        COMMIT_MSG="..."
+function get_deploy_log_since_prior_deploy() {
+    local repo_dir="$1"
+    PushDir "${repo_dir}"
+    local prior_deploy_num="$(get_git_raw_deploy_num "${repo_dir}")"
+    result="$?"
+    trace $LINENO "Prior deploy#: $prior_deploy_num"
+    if [ "0" != "${result}" ]; then
+        trace $LINENO "Result: $result"
+        PopDir
+        return $result
     fi
-    echo "${COMMIT_MSG}" >> $ARTIFACTS_FILE 2>&1
+    PopDir
+    local prior_deploy_tag="$(get_deploy_tag "${prior_deploy_num}")"
+    result="$?"
+    trace $LINENO "Prior deploy tag: $prior_deploy_tag"
+    if [ "0" != "${result}" ] ; then
+        trace $LINENO "Result: $result"
+        alert
+        alert "$(git_error_message "${result}" "" "${deploy_tag}")"
+        alert
+        suggest_help_on_slack
+        return 1
+    fi
+
+    local prior_commit_hash="$(get_git_prior_commit_hash "${prior_deploy_tag}")"
+    result="$?"
+    trace $LINENO "Prior commit hash: $prior_commit_hash"
+    if [ "0" != "${result}" ] ; then
+        trace $LINENO "Result: $result"
+        alert
+        alert "$(git_error_message "${result}" "" "${prior_deploy_tag}")"
+        alert
+        suggest_help_on_slack
+        return 2
+    fi
+
+    local commit_msg="$(get_git_raw_deploy_log "${prior_commit_hash}")"
+    result="$?"
+    trace $LINENO "Commit message: $commit_msg"
+    if [ "0" != "${result}" ] ; then
+        trace $LINENO "Result: $result"
+        alert
+        alert "$(git_error_message "${result}" "" "${prior_commit_hash}")"
+        alert
+        suggest_help_on_slack
+        return 3
+    fi
+    trace $LINENO
+    echo "${commit_msg}"
+    return 0
+
 }
 
 

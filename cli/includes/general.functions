@@ -178,8 +178,10 @@ function ensure_git_clone() {
 #       username=$(default "$1", "Luke Skywalker")
 #
 function default() {
+    trace $LINENO "Value: $1, Default: $2"
 
     if [ "" == "$2" ]; then
+        trace $LINENO "Empty default with value: $1"
         echo
         echo "You must specify a default value as the 2nd paramater to default."
         echo
