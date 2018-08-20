@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+
+declare="${DEPLOY_LOG:=}"
 declare="${ECHO_PREFIX:=}"
 declare="${YELLOW:=}"
 declare="${RED:=}"
@@ -509,7 +511,9 @@ function output() {
         return
     fi
     echo -e "$1"
-
+    if [ "" != "$1" ] ; then
+        echo "[$1]===>>>" >> $DEPLOY_LOG 2>&1
+    fi
 }
 
 #
@@ -517,6 +521,9 @@ function output() {
 #
 function alert() {
     (>&2 echo -e "$1")
+    if [ "" != "$1" ] ; then
+        echo "[$1]===>>>" >> $DEPLOY_LOG 2>&1
+    fi
 }
 
 
@@ -527,10 +534,10 @@ function PushDir {
     else
         dir="$1"
     fi
-    pushd "${dir}" >/dev/null
+    pushd "${dir}" >/dev/null 2>&1
 }
 function PopDir {
-    popd  >/dev/null
+    popd  >/dev/null 2>&1
 }
 
 function exitOnError() {
@@ -607,7 +614,7 @@ function StrToUpper() {
 }
 
 function suggest_help_on_slack() {
-    alert "Also feel free to reach out to our Slack support for help:"
+    alert "If you need help resolving an issue please ask for support via Slack:"
     alert ""
     alert "\t${CYAN}Our Slack:      ${GREEN}https://wplib.slack.org${RESET}"
     alert "\t${CYAN}Join our Slack: ${GREEN}https://launchpass/wplib${RESET}"
@@ -618,4 +625,16 @@ function iif() {
     local criteria="$1"
     local if_true="$2"
     local if_false="$3"
+}
+
+function trace() {
+    local line="$1"
+    local info="$2"
+    local len="${#BOX_CLI_DIR}"
+    len=$(( len + 1 ))
+    local cur_file="$(echo ${BASH_SOURCE[@]} | awk '{print $2}')"
+    if [ "" != "${info}" ] ; then
+        info="; ${info}"
+    fi
+    echo "[${cur_file:$len}:${line}${info}]===>>>" >> $DEPLOY_LOG
 }

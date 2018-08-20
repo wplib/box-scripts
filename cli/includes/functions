@@ -64,8 +64,6 @@ export BOX_TMP_DIR="/tmp/box-tmp"
 mkdir -p "${BOX_TMP_DIR}"
 sudo chown --silent --preserve-root --recursive "${BOX_USER}:${BOX_USER}" "${BOX_TMP_DIR}"
 export DEPLOY_LOG="${BOX_TMP_DIR}/deploy.log"
-sudo rm -rf "${DEPLOY_LOG}"
-touch "${DEPLOY_LOG}"
 
 source ${BOX_INCLUDES_DIR}/colors
 
