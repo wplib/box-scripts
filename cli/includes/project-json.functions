@@ -98,7 +98,7 @@ function get_raw_deploy_branch_by() {
     case $by in
 	'host')
         trace $LINENO
-        local deploy="$(get_raw_source | jqr '.deploy')"
+        local deploy="$(get_raw_deploy)"
         result="$?"
         trace $LINENO "Get the deploy configuration: $deploy"
         if [ "0" != "${result}" ]; then
