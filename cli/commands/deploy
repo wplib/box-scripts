@@ -241,7 +241,7 @@ function git_check_repo_status() {
     trace $LINENO
     output="$(git_raw_check_pull_needed "${repo_dir}")"
     result="$?"
-    trace $LINENO "Pull needed: $output"
+    trace $LINENO "Check pull needed: $output"
     case "${result}" in
         $BOX_ERR_GITPULLNOTNEEDED|$BOX_ERR_GITPULLNEEDED)
             # The script will pull later
@@ -529,11 +529,12 @@ function copy_file() {
     local from_file="$1"
     local to_dir="$2"
     trace $LINENO
-    cp "${from_file}" "${to_dir}"
+    output="$(cp "${from_file}" "${to_dir}")"
     result="$?"
-    trace $LINENO
+    trace $LINENO "Copy ${from_file} to ${to_dir}: $output"
     if [ "0" != "${result}" ] ; then
-        alert 
+        trace $LINENO "Result: $result"
+        alert
         alert "${RED}Could not copy the DEPLOY market file to the cached repo directory. Cannot deploy.${RESET}"
         alert 
         alert "\t${CYAN}Copy: ${GREEN}${from_file}${RESET}"
@@ -748,10 +749,23 @@ function get_source_repo_url() {
 
 function get_source_repo_branch() {
     local host_id="$1"
-    local project_branch="$(get_raw_source_branch_by "host" "${host_id}")"
-    exitOnError
+    trace $LINENO
+    local project_branch="$(get_raw_deploy_branch_by "host" "${host_id}")"
+    result="$?"
+    trace $LINENO "Source branch for host ${host_id}: $project_branch"
+    if [ "0" != "${result}" ]; then
+        trace $LINENO "Result: ${result}"
+        return $result
+    fi
+
     local current_branch="$(get_current_git_branch)"
-    exitOnError
+    result="$?"
+    trace $LINENO "Current branch: $current_branch"
+    if [ "0" != "${result}" ]; then
+        trace $LINENO "Result: ${result}"
+        return $result
+    fi
+
     if [ "null" == "${project_branch}" ] ; then
         project_branch="n/a"
     fi

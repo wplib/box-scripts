@@ -89,35 +89,64 @@ function get_raw_deploy_host_branch() {
 }
 
 #
-# .source.hosts.{host_id} contain an object with a .branch property
+# .deploy.hosts.{host_id} contain an object with a .branch property
 #
-function get_raw_source_branch_by() {
+function get_raw_deploy_branch_by() {
     local by="$1"
     local host_id="$2"
-    local branch
+    trace $LINENO
     case $by in
 	'host')
-        local branches="$(get_raw_source | jqr '.branches')"
-         exitOnError "No .source.branches"
+        trace $LINENO
+        local deploy="$(get_raw_source | jqr '.deploy')"
+        result="$?"
+        trace $LINENO "Get the deploy configuration: $deploy"
+        if [ "0" != "${result}" ]; then
+            trace $LINENO "Result: $result"
+            trace $LINENO "No .deploy exists in project.json"
+            return 1
+        fi
 
-        entries="$(echo ${branches}| jqr '.|to_entries[]')"
-        exitOnError "Unexpected: Cannot convert .source.branches to entries"
+        trace $LINENO
+        local hosts="$(echo $deploy | jqr '.hosts')"
+        result="$?"
+        trace $LINENO "Get the list of hosts from the deploy configuration: $hosts"
+        if [ "0" != "${result}" ]; then
+            trace $LINENO "Result: $result"
+            trace $LINENO "No .deploy.hosts exists in project.json"
+            return 2
+        fi
 
-        local host="$(echo "${entries}"| jqr "select(.value.host|match(\"${host_id}\"))")"
-        exitOnError "Cannot find [${host_id}] as a .host in .source.branches"
+        trace $LINENO
+        local host="$(echo $hosts | jqr ".${host_id}")"
+        result="$?"
+        trace $LINENO "Get the hosts ${host_id} from deploy.hosts configuration: $host"
+        if [ "0" != "${result}" ]; then
+            trace $LINENO "Result: $result"
+            trace $LINENO "No .deploy.hosts.${host_id} exists in project.json"
+            return 3
+        fi
 
-        branch="$(echo ${host}| jqr '.key')"
-        exitOnError "Unexpected: No .key in: jq '.source.branches|to_entries'"
+        trace $LINENO
+        local branch="$(echo ${host}| jqr '.branch')"
+        result="$?"
+        trace $LINENO "Get branch for deploy host: $branch"
+        if [ "0" != "${result}" ]; then
+            trace $LINENO "Result: $result"
+            trace $LINENO "No .deploy.hosts.${host_id}.branch exists in project.json"
+            return 4
+        fi
 		;;
 
 	*)
-		alert "The criteria [${by}] is not valid for get_raw_source_branch_by()"
+		alert "The criteria [${by}] is not valid for get_raw_deploy_branch_by()"
 		exit 1
 		;;
 
     esac
     echo "${branch}"
 }
+
 
 function get_raw_deploy_host() {
     local host_id="$1"
