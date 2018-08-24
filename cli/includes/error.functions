@@ -3,7 +3,7 @@
 declare="${RED:=}"
 declare="${GREEN:=}"
 declare="${RESET:=}"
-declare="${DEPLOY_LOG:=}"
+declare="${BOX_LOG_FILE:=}"
 
 #
 # ERROR NUMBER CAN BE 255 MAX

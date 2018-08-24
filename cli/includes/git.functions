@@ -22,7 +22,7 @@ declare="${BOX_ERR_GITDIVERGED:=}"
 declare="${BOX_DEPLOY_LOCK_SLUG:=}"
 declare="${BOX_PROJECT_DIR:=}"
 declare="${BOX_CACHE_DIR:=}"
-declare="${DEPLOY_LOG:=}"
+declare="${BOX_LOG_FILE:=}"
 
 declare="${LESS:=}"
 
@@ -413,7 +413,7 @@ function git_raw_check_pull_needed() {
     trace $LINENO "Repo dir: $repo_dir"
     PushDir "${repo_dir}"
     trace $LINENO
-    git fetch >> $DEPLOY_LOG 2>&1
+    git fetch >> $BOX_LOG_FILE 2>&1
     result="$?"
     trace $LINENO
     if [ "0" != "${result}" ] ; then
@@ -425,13 +425,13 @@ function git_raw_check_pull_needed() {
     local upstream="@{u}"
     trace $LINENO "Upstream: $upstream"
 
-    local local=$(git rev-parse @ 2>> $DEPLOY_LOG)
+    local local=$(git rev-parse @ 2>> $BOX_LOG_FILE)
     trace $LINENO "Local: $local"
 
-    local remote=$(git rev-parse "${upstream}" 2>> $DEPLOY_LOG)
+    local remote=$(git rev-parse "${upstream}" 2>> $BOX_LOG_FILE)
     trace $LINENO "Remote: $remote"
 
-    local base=$(git merge-base @ "${upstream}" 2>> $DEPLOY_LOG)
+    local base=$(git merge-base @ "${upstream}" 2>> $BOX_LOG_FILE)
     trace $LINENO "Base: $base"
 
     PopDir

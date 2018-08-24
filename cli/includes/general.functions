@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-declare="${DEPLOY_LOG:=}"
+declare="${BOX_LOG_FILE:=}"
 declare="${ECHO_PREFIX:=}"
 declare="${YELLOW:=}"
 declare="${RED:=}"
@@ -514,7 +514,7 @@ function output() {
     fi
     echo -e "$1"
     if [ "" != "$1" ] ; then
-        echo "[$1]===>>>" >> $DEPLOY_LOG 2>&1
+        echo "[$1]===>>>" >> $BOX_LOG_FILE 2>&1
     fi
 }
 
@@ -524,7 +524,7 @@ function output() {
 function alert() {
     (>&2 echo -e "$1")
     if [ "" != "$1" ] ; then
-        echo "[$1]===>>>" >> $DEPLOY_LOG 2>&1
+        echo "[$1]===>>>" >> $BOX_LOG_FILE 2>&1
     fi
 }
 
@@ -638,5 +638,5 @@ function trace() {
     if [ "" != "${info}" ] ; then
         info="; ${info}"
     fi
-    echo "[${cur_file:$len}:${line}${info}]===>>>" >> $DEPLOY_LOG
+    echo "[${cur_file:$len}:${line}${info}]===>>>" >> $BOX_LOG_FILE
 }
