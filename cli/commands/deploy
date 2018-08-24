@@ -400,22 +400,17 @@ function get_deploy_filename() {
 }
 
 function lock_deploy() {
-    result="success"
-    if ! [ "" != "${BOX_DEPLOY_LOCK_SLUG}" ]; then
-        result="fail"
-    else
-        trace $LINENO
-        local user_name="$(get_user_display_name)"
-        if [ "" == "${user_name}" ] ; then
-            box user show
-            exit 1
-        fi
-        lock_git_deploy
-        if [ "0" != "$?" ] ; then
-            result="fail"
-        fi
+    trace $LINENO
+    local user_name="$(get_user_display_name)"
+    if [ "" == "${user_name}" ] ; then
+        box user show
+        exit 1
     fi
-    if [ "fail" == "${result}" ] ; then
+    output="$(lock_git_deploy)"
+    result="$?"
+    trace $LINENO "Lock git deploy: $output"
+    if [ "0" != "${result}" ] ; then
+        trace $LINENO "Result: $result"
         alert 
         alert "${RED}Your current Git repository already has a ${GREEN}deploy lock${RED}. Cannot deploy.${RESET}"
         alert 
