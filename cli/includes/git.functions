@@ -163,7 +163,7 @@ function lock_git_deploy() {
         return 1
     fi
     trace $LINENO
-    output="$(git push --tags  >> $DEPLOY_LOG 2>&1)"
+    output="$(git push --tags  >> $BOX_LOG_FILE 2>&1)"
     result="$?"
     trace $LINENO "Git push tags: $output"
     if [ "0" != "${result}" ]; then
