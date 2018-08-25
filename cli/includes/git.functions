@@ -75,7 +75,7 @@ function ensure_cache_dir() {
     sudo chown "${BOX_USER}:${BOX_USER}" "${BOX_CACHE_DIR}"
 }
 
-function get_current_git_branch() {
+function git_get_current_branch() {
     PushDir
     unset LESS
     cd "${BOX_PROJECT_DIR}"
