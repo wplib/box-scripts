@@ -19,12 +19,12 @@ function deploy_help() {
 
 ${YELLOW}WPLib Box ${GREEN}CLI${RESET} ${GREEN}deploy${RESET} usage:
 
-box ${YELLOW}deploy${RESET}	                - Show this help.
-box ${YELLOW}deploy ${GREEN}help${RESET}		        - Show this help.
-box ${YELLOW}deploy ${RESET}[${CYAN}<host>]${RESET}	        - Deploys the host as defined in ${GREEN}project.json${RESET}.
+box ${YELLOW}deploy${RESET}           - Show this help.
+box ${YELLOW}deploy ${GREEN}help${RESET}      - Show this help.
+box ${YELLOW}deploy ${RESET}[${CYAN}<host>]${RESET}  - Deploys the host as defined in ${GREEN}project.json${RESET}.
 
-box ${YELLOW}deploy log${RESET}     	        - Outputs the deploy log using LESS${RESET}
-box ${YELLOW}deploy unlock ${RESET}[${CYAN}<host>]${RESET}	- Unlocks a host locked for deploy ${YELLOW}[CAUTION!]${RESET}
+box ${YELLOW}deploy log${RESET}       - Outputs the deploy log using LESS${RESET}
+box ${YELLOW}deploy unlock ${RESET}   - Unlocks a host locked for deploy ${YELLOW}[CAUTION!]${RESET}
 
 EOF
 }
