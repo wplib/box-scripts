@@ -4,5 +4,18 @@
 #
 #       box version
 #
-cat "${WPLIB_BOX_BASE_DIR}/version"
+declare="${BOX_BASE_DIR:=}"
+declare="${BOX_FUNCTIONS_FILE:=}"
+
+source "${BOX_FUNCTIONS_FILE}"
+
+case $1 in
+	'-s'|'--short')
+		cat "${BOX_BASE_DIR}/version"
+		;;
+
+	*)
+		echo "WPLib: You are running version $(cat "${BOX_BASE_DIR}/version")"
+		;;
+esac
 

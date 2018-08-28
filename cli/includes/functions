@@ -3,71 +3,89 @@
 
 export BOX_NAME="wplib"
 
-export WPLIB_BOX_ARGS_ALL="$*"
+export BOX_ARGS_ALL="$*"
 
-if [ "${PROJECT_BASE}" == "" ]
-then
-	# Defines the root directory of all projects.
-	PROJECT_BASE="/projects"
-fi
+# Defines the root directory of all projects.
+declare="${BOX_PROJECTS_ROOT:=/projects}"
 
-if [ "${CURRENT_PROJECT}" == "" ]
-then
-	# Defines the current project in use for a single project box.
-	CURRENT_PROJECT="wplib.box"
-fi
+# Defines the current project in use for a single project box.
+declare="${BOX_CURRENT_PROJECT:=wplib.box}"
+
+export BOX_CURRENT_PROJECT_DIR="${BOX_PROJECTS_ROOT}/${BOX_CURRENT_PROJECT}"
+export BOX_PROJECT_DIR="${BOX_PROJECTS_ROOT}/${BOX_CURRENT_PROJECT}"
 
 
-export WPLIB_BOX_USER="boxuser"
-export WPLIB_BOX_USER_UID="1000"
-export WPLIB_BOX_USER_GID="1000"
-export WPLIB_BOX_USER_HOME="/home/box"
+export BOX_USER="boxuser"
+export BOX_USER_UID="1000"
+export BOX_USER_GID="1000"
+export BOX_USER_HOME="/home/box"
+export BOX_USER_FILE="${BOX_USER_HOME}/user.json"
 
-export WPLIB_BOX_PROJECT_BASE="${PROJECT_BASE}"
-export WPLIB_BOX_CURRENT_PROJECT="${CURRENT_PROJECT}"
-export WPLIB_BOX_PROJECT_DIR="${PROJECT_BASE}/${CURRENT_PROJECT}"
+export BOX_BASE_DIR="/opt/box"
+export BOX_CONFIG_FILE="${BOX_BASE_DIR}/box.json"
 
-export WPLIB_BOX_BASE_DIR="/opt/box"
-export WPLIB_BOX_VERSION="$(cat ${WPLIB_BOX_BASE_DIR}/version)"
-export WPLIB_BOX_ETC="${WPLIB_BOX_BASE_DIR}/etc"
-export WPLIB_BOX_RELEASES="${WPLIB_BOX_ETC}/releases"
-export WPLIB_BOX_RELEASE_DIR="${WPLIB_BOX_RELEASES}/${WPLIB_BOX_VERSION}"
-export WPLIB_BOX_RELEASE_JSON="${WPLIB_BOX_RELEASE_DIR}/project.json"
-export WPLIB_BOX_CLI_DIR="${WPLIB_BOX_BASE_DIR}/cli"
-export WPLIB_BOX_CLI_CMD="${WPLIB_BOX_BASE_DIR}/bin/box"
-export WPLIB_BOX_WEB_ROOT_DIR="${PROJECT_BASE}/${CURRENT_PROJECT}/www"
-export WPLIB_BOX_WATCHERS_DIR="${WPLIB_BOX_WEB_ROOT_DIR}/watchers"
-export WPLIB_BOX_PHPCLI=${WPLIB_BOX_BASE_DIR}/bin/php
+export BOX_VERSION="$(cat ${BOX_BASE_DIR}/version)"
+export BOX_ETC_DIR="${BOX_BASE_DIR}/etc"
+export BOX_RELEASES_DIR="${BOX_ETC_DIR}/releases"
+export BOX_RELEASE_DIR="${BOX_RELEASES_DIR}/${BOX_VERSION}"
+export BOX_RELEASE_JSON="${BOX_RELEASE_DIR}/project.json"
+export BOX_CLI_DIR="${BOX_BASE_DIR}/cli"
+export BOX_CLI_CMD="${BOX_BASE_DIR}/bin/box"
+export BOX_WEB_ROOT_DIR="${BOX_CURRENT_PROJECT_DIR}/www"
+export BOX_WATCHERS_DIR="${BOX_WEB_ROOT_DIR}/watchers"
+export BOX_PHPCLI=${BOX_BASE_DIR}/bin/php
+export BOX_CACHE_DIR="/tmp/box-cache"
+mkdir -p "${BOX_CACHE_DIR}"
+sudo chown --silent --preserve-root --recursive "${BOX_USER}:${BOX_USER}" "${BOX_CACHE_DIR}"
 
-export WPLIB_BOX_GIT_DIR="${WPLIB_BOX_BASE_DIR}/.git"
-export WPLIB_BOX_LOGS_DIR="${WPLIB_BOX_PROJECT_DIR}/logs"
-export WPLIB_BOX_SQL_DIR="${WPLIB_BOX_PROJECT_DIR}/sql"
-export WPLIB_BOX_COMPOSER_FILE="${WPLIB_BOX_PROJECT_DIR}/composer.json"
-export WPLIB_BOX_PROJECT_FILE="${WPLIB_BOX_PROJECT_DIR}/project.json"
-
-export WPLIB_BOX_COMMANDS_DIR="${WPLIB_BOX_CLI_DIR}/commands"
-export WPLIB_BOX_INCLUDES_DIR="${WPLIB_BOX_CLI_DIR}/includes"
-
-export WPLIB_BOX_COLORS_FILE="${WPLIB_BOX_INCLUDES_DIR}/colors"
-
-export WPLIB_BOX_FILES_DIR="${WPLIB_BOX_CLI_DIR}/files"
-
-export WPLIB_BOX_SCRIPTS_REPO="https://github.com/wplib/box-scripts/"
-
-source ${WPLIB_BOX_INCLUDES_DIR}/colors
-
-source ${WPLIB_BOX_INCLUDES_DIR}/general.functions
-source ${WPLIB_BOX_INCLUDES_DIR}/container.functions
+export BOX_GIT_DIR="${BOX_BASE_DIR}/.git"
+export BOX_LOGS_DIR="${BOX_PROJECT_DIR}/logs"
+export BOX_SQL_DIR="${BOX_PROJECT_DIR}/sql"
+export BOX_SQL_PROVISION_LOCK="${BOX_PROJECT_DIR}.provisioned"
+export BOX_COMPOSER_FILE="${BOX_PROJECT_DIR}/composer.json"
+export BOX_PROJECT_FILE="${BOX_PROJECT_DIR}/project.json"
 
 
-export WPLIB_BOX_CONTENT_DIR=$(find_wp_content_dir)
-export WPLIB_BOX_PLUGINS_DIR=$(find_wp_plugins_dir)
-export WPLIB_BOX_MU_PLUGINS_DIR=$(find_wp_mu_plugins_dir)
-export WPLIB_BOX_VENDOR_DIR=$(find_composer_vendor_dir)
+export BOX_COMMANDS_DIR="${BOX_CLI_DIR}/commands"
+export BOX_INCLUDES_DIR="${BOX_CLI_DIR}/includes"
 
+export BOX_COLORS_FILE="${BOX_INCLUDES_DIR}/colors"
+export BOX_FUNCTIONS_FILE="${BOX_INCLUDES_DIR}/functions"
+
+export BOX_FILES_DIR="${BOX_CLI_DIR}/files"
+
+export BOX_TESTS_DIR="${BOX_CLI_DIR}/tests"
+
+export BOX_SCRIPTS_REPO="https://github.com/wplib/box-scripts/"
+
+export BOX_DEPLOY_LOCK_SLUG="deploy-lock"
+
+export BOX_TMP_DIR="/tmp/box-tmp"
+mkdir -p "${BOX_TMP_DIR}"
+sudo chown --silent --preserve-root --recursive "${BOX_USER}:${BOX_USER}" "${BOX_TMP_DIR}"
+export DEPLOY_LOG="${BOX_TMP_DIR}/deploy.log"
+
+source ${BOX_INCLUDES_DIR}/colors
+
+
+source ${BOX_INCLUDES_DIR}/general.functions
+source ${BOX_INCLUDES_DIR}/container.functions
+
+
+export BOX_CONTENT_DIR=$(find_wp_content_dir)
+export BOX_PLUGINS_DIR=$(find_wp_plugins_dir)
+export BOX_MU_PLUGINS_DIR=$(find_wp_mu_plugins_dir)
+export BOX_VENDOR_DIR=$(find_composer_vendor_dir)
+export BOX_ERROR_FILE="$(mktemp -d "/tmp/errors-XXXXX")/errors.txt"
 
 #
-# These need to be deprecated and replaced with project.json
+# Source functions
 #
-export WPLIB_BOX_CONFIG="${WPLIB_BOX_PROJECT_DIR}/wplib.box.json"
-export WPLIB_BOX_USER_CONFIG="${HOME}/wplib.box.json"
+source "${BOX_INCLUDES_DIR}/general.functions"
+source "${BOX_INCLUDES_DIR}/error.functions"
+source "${BOX_INCLUDES_DIR}/container.functions"
+source "${BOX_INCLUDES_DIR}/project-json.functions"
+source "${BOX_INCLUDES_DIR}/git.functions"
+source "${BOX_INCLUDES_DIR}/user.functions"
+source "${BOX_INCLUDES_DIR}/template.functions"
+

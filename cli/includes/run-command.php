@@ -16,10 +16,10 @@ $GLOBALS['argv'] = $args;
 /*
  * Include the functions file
  */
-include "{$_SERVER['WPLIB_BOX_INCLUDES_DIR']}/functions.php";
+include "{$_SERVER['BOX_INCLUDES_DIR']}/functions.php";
 
 $command = "{$args[0]}";
-$command_file = "{$_SERVER['WPLIB_BOX_COMMANDS_DIR']}/{$command}.php";
+$command_file = "{$_SERVER['BOX_COMMANDS_DIR']}/{$command}.php";
 if ( ! is_file( $command_file ) ) {
 	error_die( "*Command {$command} does not exist.");
 }

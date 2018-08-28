@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+declare="${BOX_COMMANDS_DIR:=}"
+
 if [ -f "$1" ]; then
     name=$(jq -r ".name" ${1})
     containername=$(jq -r ".containername" ${1})
@@ -11,16 +13,16 @@ if [ -f "$1" ]; then
 
     case ${subtype} in
      webserver)
-       source "${WPLIB_BOX_COMMANDS_DIR}/set-webserver" nginx
+       source "${BOX_COMMANDS_DIR}/set-webserver" nginx
        ;;
      database)
-       source "${WPLIB_BOX_COMMANDS_DIR}/set-database" mysql
+       source "${BOX_COMMANDS_DIR}/set-database" mysql
        ;;
      processvm)
-       source "${WPLIB_BOX_COMMANDS_DIR}/set-processvm" php7.0
+       source "${BOX_COMMANDS_DIR}/set-processvm" php7.0
        ;;
      kvstore)
-       source "${WPLIB_BOX_COMMANDS_DIR}/set-kvstore" redis
+       source "${BOX_COMMANDS_DIR}/set-kvstore" redis
        ;;
     esac
 
@@ -36,7 +38,7 @@ if [ -f "$1" ]; then
 
     for command in "${1%\/*}/commands"/*
     do
-      file=${WPLIB_BOX_COMMANDS_DIR}/${command##*\/}
+      file=${BOX_COMMANDS_DIR}/${command##*\/}
       if [ -f ${file} ]; then
         sudo rm ${file}
       fi

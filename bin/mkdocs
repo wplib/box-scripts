@@ -1,12 +1,12 @@
 #!/bin/bash
-
+declare="${STACK:=}"
 
 source /opt/box/cli/includes/functions
 
 # Creates IMAGES and STACK env variables.
 readJSON
 
-MKDOCS="${STACK[mkdocs/webserver]}"
+MKDOCS="${STACK["mkdocs/webserver"]}"
 
-box component shell ${MKDOCS} "$@"
+box component shell ${MKDOCS} interactive "$@"
 

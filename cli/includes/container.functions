@@ -6,6 +6,22 @@
 #	Pull the complete list of WPLib container components from Docker Hub into local JSON files.
 #	Manage containers - stop/start and most importantly creating containers using the embedded JSON string in the image.
 
+declare="${ECHO_PREFIX:=}"
+declare="${YELLOW:=}"
+declare="${RESET:=}"
+declare="${CYAN:=}"
+declare="${RED:=}"
+declare="${IMAGE:=}"
+declare="${GREEN:=}"
+declare="${BOX_PROJECT_FILE:=}"
+declare="${BOX_RELEASE_JSON:=}"
+declare="${ORG_NAME:=}"
+declare="${BOX_ETC_DIR:=}"
+declare="${RETURN_CANT_REMOVE_IMAGE:=}"
+declare="${BOX_SQL_DIR:=}"
+declare="${BOX_NAME:=}"
+declare="${BOX_SQL_PROVISION_LOCK:=}"
+
 
 # Return codes from functions.
 RETURN_OK="0"
@@ -142,17 +158,17 @@ function readJSON()
 
 	if [ "${JSON}" == "" ]
 	then
-		JSON="${WPLIB_BOX_PROJECT_FILE}"
+		JSON="${BOX_PROJECT_FILE}"
 	fi
 
 	if [ ! -f "${JSON}" ]
 	then
-		cp ${WPLIB_BOX_RELEASE_JSON} ${JSON}
+		cp "${BOX_RELEASE_JSON}" "${JSON}"
 	fi
 
 	if [[ ${JSON} -nt ${JSON}.lock ]]
 	then
-		jq -s '.[0] * .[1]' ${WPLIB_BOX_RELEASE_JSON} ${JSON} > ${JSON}.lock
+		jq -s '.[0] * .[1]' "${BOX_RELEASE_JSON}" "${JSON}" > ${JSON}.lock
 	fi
 
 	#IMAGES="$(jq --raw-output ".stack | .[]" ${JSON}.lock)"
@@ -196,6 +212,7 @@ function readJSON()
 function component_info()
 {
 	local DOCKER IFS RETURN
+    IMAGE="$1"
 
 	if [ "${IMAGE}" == "" ]
 	then
@@ -239,7 +256,8 @@ function component_info()
 	CONTAINER_ID=$(docker container ls -qaf name="${CONTAINER_NAME}")
 	if [ "$CONTAINER_ID" != "" ]
 	then
-		DOCKER="$(docker inspect -f '{{.State.Running}};{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}};{{range .NetworkSettings.Networks}}{{(index .Aliases 0)}}{{end}}' $CONTAINER_NAME 2>/dev/null)"
+		# DOCKER="$(docker inspect -f '{{.State.Running}};{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}};{{range .NetworkSettings.Networks}}{{(index .Aliases 0)}}{{end}}' $CONTAINER_NAME 2>/dev/null)"
+		DOCKER="$(docker inspect -f '{{.State.Running}};{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}};{{.Config.Hostname}}' $CONTAINER_NAME 2>/dev/null)"
 		IFS=';' read -r -a state_array <<< "$DOCKER"
 
 		CONTAINER_RUNNING="${state_array[0]}"
@@ -268,9 +286,9 @@ function is_component_in_repo()
 	IMAGE_VERSION="${state_array[2]}"
 
 	# wget -qO /dev/null https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/
-	if [ -f ${WPLIB_BOX_ETC}/images/${IMAGE_NAME}.json ]
+	if [ -f "${BOX_ETC_DIR}/images/${IMAGE_NAME}.json" ]
 	then
-		jq --raw-output ".results | .[] | .name" ${WPLIB_BOX_ETC}/images/${IMAGE_NAME}.json | grep -q "^${IMAGE_VERSION}\$"
+		jq --raw-output ".results | .[] | .name" "${BOX_ETC_DIR}/images/${IMAGE_NAME}.json" | grep -q "^${IMAGE_VERSION}\$"
 		if [ "$?" == "0" ]
 		then
 			RETURN=$RETURN_OK
@@ -288,21 +306,21 @@ function is_component_in_repo()
 function update_components()
 {
 	echo -n "$ECHO_PREFIX ${GREEN}Updating repository list${RESET}."
-	if [ ! -d ${WPLIB_BOX_ETC} ]
+	if [ ! -d "${BOX_ETC_DIR}" ]
 	then
-		sudo mkdir -p ${WPLIB_BOX_ETC}
+		sudo mkdir -p "${BOX_ETC_DIR}"
 	fi
-	if [ ! -d ${WPLIB_BOX_ETC}/images ]
+	if [ ! -d "${BOX_ETC_DIR}/images" ]
 	then
-		sudo mkdir -p ${WPLIB_BOX_ETC}/images
+		sudo mkdir -p "${BOX_ETC_DIR}/images"
 	fi
 
-	sudo wget -qNO ${WPLIB_BOX_ETC}/repositories.json https://hub.docker.com/v2/repositories/${BOX_NAME}/?page_size=256
-	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_ETC}/repositories.json)"
+	sudo wget -qNO "${BOX_ETC_DIR}/repositories.json" "https://hub.docker.com/v2/repositories/${BOX_NAME}/?page_size=256"
+	IMAGES="$(jq -r '.results|.[]|.name' "${BOX_ETC_DIR}/repositories.json")"
 	for IMAGE_NAME in $IMAGES
 	do
 		echo -n "."
-		sudo wget -qNO ${WPLIB_BOX_ETC}/images/${IMAGE_NAME}.json https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/?page_size=256
+		sudo wget -qNO "${BOX_ETC_DIR}/images/${IMAGE_NAME}.json" "https://hub.docker.com/v2/repositories/${BOX_NAME}/${IMAGE_NAME}/tags/?page_size=256"
 	done
 	echo " ${GREEN}OK${RESET}"
 }
@@ -313,12 +331,12 @@ function available_components()
 	local RETURN IMAGES IMAGE_NAME VERSIONS IMAGE_VERSION
 
 	echo "$ECHO_PREFIX ${GREEN}Available component downloads.${RESET}"
-	IMAGES="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_ETC}/repositories.json | sort -u)"
+	IMAGES="$(jq -r '.results|.[]|.name' "${BOX_ETC_DIR}/repositories.json" | sort -u)"
 	for IMAGE_NAME in ${IMAGES}
 	do
-		if [ -f ${WPLIB_BOX_ETC}/images/${IMAGE_NAME}.json ]
+		if [ -f "${BOX_ETC_DIR}/images/${IMAGE_NAME}.json" ]
 		then
-			VERSIONS="$(jq -r '.results|.[]|.name' ${WPLIB_BOX_ETC}/images/${IMAGE_NAME}.json | sort -u)"
+			VERSIONS="$(jq -r '.results|.[]|.name' "${BOX_ETC_DIR}/images/${IMAGE_NAME}.json" | sort -u)"
 			for IMAGE_VERSION in ${VERSIONS}
 			do
 				if [ "${IMAGE_VERSION}" != "latest" ]
@@ -416,10 +434,10 @@ function component_shell()
 				if [ -t 0 ]
 				then
 					# TTY allocated.
-					docker run --name ${CONTAINER_NAME}-shell --rm -i -t ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
+					docker run --name ${CONTAINER_NAME}-shell --rm -i -t ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC_DIR}/container.env ${IMAGE} "$@"
 				else
 					# TTY not allocated.
-					docker run --name ${CONTAINER_NAME}-exec  --rm -i    ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
+					docker run --name ${CONTAINER_NAME}-exec  --rm -i    ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC_DIR}/container.env ${IMAGE} "$@"
 				fi
 
 				#if [ "$?" == "1" ]
@@ -429,10 +447,15 @@ function component_shell()
 			fi
 			;;
 
-#		$RETURN_NO_LOCAL_IMAGE)
-#			error_nfl
-#			;;
-#
+		$RETURN_NO_LOCAL_IMAGE|$RETURN_NO_CONTAINER)
+			component_install $IMAGE
+			RETURN="$?"
+			if [ "$RETURN" == "$RETURN_OK" ]
+			then
+				component_shell $IMAGE "$@"
+			fi
+			;;
+
 		$RETURN_NO_IMAGE_JSON)
 			error_dnc
 			;;
@@ -461,7 +484,7 @@ function component_exec()
 				error_cni
 			else
 				# echo "$ECHO_PREFIX ${GREEN}Shell to component: ${CYAN}${IMAGE}${RESET}" 1>&2
-				docker run --name ${CONTAINER_NAME}-exec --rm ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} "$@"
+				docker run --name ${CONTAINER_NAME}-exec --rm ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC_DIR}/container.env ${IMAGE} "$@"
 				#if [ "$?" == "1" ]
 				#then
 				#	error_ccbi
@@ -469,8 +492,8 @@ function component_exec()
 			fi
 			;;
 
-		$RETURN_NO_LOCAL_IMAGE)
-			error_nfl
+		$RETURN_NO_LOCAL_IMAGE|$RETURN_NO_CONTAINER)
+			component_provision $IMAGE 
 			;;
 
 		$RETURN_NO_IMAGE_JSON)
@@ -500,7 +523,9 @@ function component_create_container()
 			then
 				echo -n "$ECHO_PREFIX ${GREEN}Creating component: ${CYAN}${IMAGE}${RESET} ... "
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
-				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} ${IMAGE} >& $TEMPFILE
+
+				# To be fixed in 0.17.2
+				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC_DIR}/container.env ${IMAGE} &> $TEMPFILE
 
 				if [ "$?" == "1" ]
 				then
@@ -646,15 +671,16 @@ function component_start()
 				else
 					echo "${GREEN}OK${RESET}"
 
+					# A bit of a hack - this really shouldn't be here.
 					if [[ "${IMAGE_NAME}" =~ ^(mysql|mariadb)$ ]]
 					then
-						if [[ -f ${WPLIB_BOX_SQL_DIR}/provision.sql && ! -e ${WPLIB_BOX_SQL_DIR}/provision.sql.lock ]]
+						if [[ -f "${BOX_SQL_DIR}/provision.sql" && ! -e "${BOX_SQL_PROVISION_LOCK}" ]]
 						then
 							# We need to be able to query the DB and see when it's ready for connections.
 							# In the mean time sleep for 10.
 							sleep 10
-							box database import provision.sql
-							touch ${WPLIB_BOX_SQL_DIR}/provision.sql.lock
+							box database import provision.sql --no-backup
+							touch "${BOX_SQL_PROVISION_LOCK}"
 						fi
 					fi
 				fi
@@ -739,7 +765,7 @@ function shutdown()
 
 	echo "$ECHO_PREFIX ${GREEN}Stopping all WPLLib components. ${RESET} ... "
 	TEMPFILE="$(mktemp /tmp/box-container.XXX)"
-	docker container ls -qaf "label=container.project=${BOX_NAME}" | xargs docker stop >& $TEMPFILE
+	docker container ls -qaf "label=container.project=${BOX_NAME}" | xargs docker stop &> $TEMPFILE
 	if [ "$?" == "1" ]
 	then
 		echo "${RED}NOT OK${RESET}"
@@ -751,7 +777,7 @@ function shutdown()
 	rm -f $TEMPFILE
 
 	# Remove lock file.
-	rm -f ${WPLIB_BOX_PROJECT_FILE}.lock
+	rm -f "${BOX_PROJECT_FILE}.lock"
 
 	return $RETURN_OK
 }
@@ -1071,10 +1097,10 @@ function get_latest_patch_version() {
         exit
     fi
     if [ 1 -eq ${#dots} ] ; then
-        # local repo_url="https://registry.hub.docker.com/v1/repositories/${org}/{$repo}/tags"
+        # local repo_url="https://registry.hub.docker.com/v1/repositories/${org}/${repo}/tags"
         # local repo_json="$(curl --silent --fail --max-time 3 --stderr /dev/null "${repo_url}")"
         # local versions=$(echo "${repo_json}" | jq --raw-output ".[] | .name" | grep "${version}")
-        local versions=$(jq --raw-output ".results | .[] | .name" ${WPLIB_BOX_ETC}/images/${repo}.json | grep "^${version}")
+        local versions=$(jq --raw-output ".results | .[] | .name" "${BOX_ETC_DIR}/images/${repo}.json" | grep "^${version}")
 
         if [ "" == "${versions}" ] ; then
             version=""

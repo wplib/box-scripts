@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
+declare="${IMAGES:=}"
+declare="${BOX_FUNCTIONS_FILE:=}"
 
-source /opt/box/cli/includes/functions
+source "${BOX_FUNCTIONS_FILE}"
 
-# Creates IMAGES and STACK env variables.
-#readJSON
-#box container ls ${IMAGES}
+case $1 in
+	'-s'|'--short')
+		# Creates IMAGES and STACK env variables.
+		readJSON
 
-box container ls
+		echo "Components installed:"
+		echo $IMAGES | sed 's/wplib\//\n/g; s/:/\t/g'
+		;;
+
+	*)
+		box container ls
+		;;
+esac
+

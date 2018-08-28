@@ -1,6 +1,32 @@
 #!/usr/bin/env bash
 
 
+declare="${DEPLOY_LOG:=}"
+declare="${ECHO_PREFIX:=}"
+declare="${YELLOW:=}"
+declare="${RED:=}"
+declare="${CYAN:=}"
+declare="${GREEN:=}"
+declare="${RESET:=}"
+declare="${BOX_CLI_DIR:=}"
+declare="${BOX_WEB_ROOT_DIR:=}"
+declare="${BOX_CONTENT_DIR:=}"
+declare="${BOX_LOGS_DIR:=}"
+declare="${BOX_PROJECT_DIR:=}"
+declare="${BOX_ARGS_ALL:=}"
+declare="${BOX_ERROR_FILE:=}"
+
+#
+# Checks if the Virtualbox wplib.box mount point is there.
+# Return: [ /projects/wplib.box | /var/www | "" ]
+#
+function check_mount()
+{
+	MOUNT_DIR="$(mount -v | awk '$3~/^(\/projects\/wplib.box|\/var\/www)$/{print$3}')"
+	echo ${MOUNT_DIR}
+}
+
+
 #
 # Creates a symlink to a file, with checks for directory. Will also update a symlink if it's different.
 #
@@ -19,10 +45,11 @@ function link_file()
 		if [ "${TEMP}" == "" ]
 		then
 			echo "$ECHO_PREFIX ${YELLOW}Adding symlink: ${GREEN}${SRC} -> ${DST}${RESET}"
+			rm ${DST} &>/dev/null
 			ln -s ${SRC} ${DST}
 		else
 			echo "$ECHO_PREFIX ${YELLOW}Updating symlink: ${GREEN}${SRC} -> ${DST}${RESET}"
-			rm ${DST}
+			rm ${DST} &>/dev/null
 			ln -s ${SRC} ${DST}
 		fi
 	fi
@@ -54,7 +81,7 @@ function check_updates_available() {
     if [[ "$1" != *"--ignore-update"* ]];then
 
         local save_dir=$(pwd)
-        cd "${WPLIB_BOX_CLI_DIR}"
+        cd "${BOX_CLI_DIR}"
         local latest_local=$(git log -1 | grep commit | cut -d" " -f2)
         local remote_url=$(git remote -v show | grep "(fetch)" | cut -f 2 | cut -d" " -f1)
         local latest_remote=$(git ls-remote --heads "${remote_url}" | grep "refs/heads/master" | cut --fields 1)
@@ -141,47 +168,6 @@ function ensure_git_clone() {
 }
 
 #
-# Verify that a User Config exists.  If not, output how-to-fix message and return 1
-#
-function verify_user_config() {
-
-    if [[ ! -f "${WPLIB_BOX_USER_CONFIG}" ]]; then
-        echo "{}" > $WPLIB_BOX_USER_CONFIG
-    fi
-    if [[ "" == $(cat "${WPLIB_BOX_USER_CONFIG}") ]]; then
-        echo "{}" > $WPLIB_BOX_USER_CONFIG
-    fi
-    if [[ "" == $(read_user_config "name") ]]; then
-        local missing="name"
-        local what="property"
-        local action="command"
-        local commands="\tbox set-user-name  'Your Full Name'"
-    fi
-    if [[ "" == $(read_user_config "email") ]]; then
-        if [ "" == "${missing}" ];then
-            local missing="email"
-        else
-            local missing="${missing}\n\temail"
-       fi
-        local what="properties"
-        local action="commands"
-        local commands="${commands}\n\tbox set-user-email 'Your Email Address'"
-    fi
-    if [ "" != "${missing}" ]; then
-        echo
-        echo "Your WPLib Box user config file is missing the ${what}:"
-        echo
-        echo -e "\t${missing}"
-        echo
-        echo "You must run the following two ${action} first:"
-        echo
-        echo -e "${commands}"
-        return 1
-    fi
-    return 0
-}
-
-#
 # Usage:
 #
 #       $1 - Argument passing in that might be empty, e.g. "$1", "$3", etc.
@@ -192,8 +178,10 @@ function verify_user_config() {
 #       username=$(default "$1", "Luke Skywalker")
 #
 function default() {
+    trace $LINENO "Value: $1, Default: $2"
 
     if [ "" == "$2" ]; then
+        trace $LINENO "Empty default with value: $1"
         echo
         echo "You must specify a default value as the 2nd paramater to default."
         echo
@@ -203,150 +191,6 @@ function default() {
        echo "$2"
     else
        echo "$1"
-    fi
-}
-
-#
-# Example
-#
-#       box show-user-var "email"
-#
-function show_user_var() {
-
-    if [ "" == "$1" ]; then
-        echo
-        echo "You must specify a property for the box's user when calling show_user_var."
-        echo
-        return 1
-    fi
-
-    local var="$1"
-    local value=$(read_user_config "${var}") || return $?
-    if [ "" == "${value}" ]; then
-        echo "The user.$1 is EMPTY."
-    else
-        echo "The user.$1 is: ${value}."
-    fi
-}
-
-#
-# Usage:
-#
-#       $1 - What to set e.g. user, email, etc.
-#       $1 - Email of box user
-#
-# Example
-#
-#       box set-box-var ".email" "luke@theforce.org"
-#
-function set_user_var() {
-
-    if [ "" == "$1" ]; then
-        echo
-        echo "You must specify a property for the box's user when calling set_user_var."
-        echo
-        return 1
-    fi
-
-    if [ "" == "$2" ]; then
-        echo
-        echo "You must specify a box user's $1 when calling set-box-user-$1."
-        echo
-        return 2
-    fi
-    echo_if_not_quiet "$*" "=Setting user.$2 = '$2'..."
-
-    set_json_file_var "${WPLIB_BOX_USER_CONFIG}" ".$1" "$2" --quiet || return $?
-}
-
-#
-# Reads the config file ${PROJECT_BASE}/${CURRENT_PROJECT}/.wplib.box.json and returns a value
-#
-# $1 - String The json file to update
-# $2 - String The JQ selector
-# $3 - String The value to assign the JQ selector
-#
-# Usage: set_json_file_var ${PROJECT_BASE}/${CURRENT_PROJECT}/wplib.box.json ".user" "Luke Skywalker"
-#
-#   Result: ${PROJECT_BASE}/${CURRENT_PROJECT}/wplib.box.json ==> "{ "user" : "Luke Skywalker" }
-#
-#
-function set_json_file_var() {
-
-    echo_if_not_quiet "$*" "=Setting $1 = '$2' in $3..."
-
-    if [ "" == "$1" ]; then
-        echo
-        echo "You must specify a JSON file name as the 3rd argument when calling set_json_file_var()."
-        echo
-        return 1
-    fi
-
-    if [ "" == "$1" ]; then
-        echo
-        echo "You must specify a JQ selector as the 1st argument when calling set_json_file_var()."
-        echo
-        return 2
-    fi
-
-    if [ "" == "$2" ]; then
-        echo
-        echo "You must specify a value to assign the JQ selector as the 2nd argument when calling set_json_file_var()."
-        echo
-        return 3
-    fi
-
-    if [ ! -f "$1" ]; then
-        echo_if_not_quiet "$*" "=Creating new $1..."
-        echo "{}" > "$1" || return $?
-    fi
-
-    local tmpfile=$(mktemp /tmp/new-json-file.XXXXXX)
-
-    local filter="$2 = \"$3\""
-    jq "${filter}" "$1" >$tmpfile || return $?
-    mv "${tmpfile}" "$1"  || return $?
-
-}
-
-
-#
-# Reads the user config file ${PROJECT_BASE}/${CURRENT_PROJECT}/.wplib.box.json and echos a value
-#
-# $1 - String
-# $2 - String Optional if "require" then error if not there.
-#
-# Usage: username=$(read_config "name")
-#   Result: $username ==> "Luke Skywalker"
-#
-function read_user_config() {
-    read_config "$1" "$2" "${WPLIB_BOX_USER_CONFIG}"
-}
-
-#
-# Reads the config file ${PROJECT_BASE}/${CURRENT_PROJECT}/.wplib.box.json and returns a value
-#
-# $1 - String
-# $2 - String Optional if "require" then error if not there.
-#
-# Usage: git_url=$(read_config "path.test.git_url")
-#   Result: $git_url ==> "ssh://..."
-#
-#
-function read_config() {
-    require="$2"
-    local config_file=$(default "$3" "${WPLIB_BOX_CONFIG}")
-
-    local property=$(cat "${config_file}" | jq --raw-output ".$1"  2>/dev/null)
-    if [[ "null" == "${property}" || "" == "${property}" ]]; then
-        if [ "require" == "${require}" ]; then
-            printf "\tERROR:\n"
-            echo -e "\tThe config file ${config_file}\n"
-            echo -e "\tdoes not have a value for $1.\n"
-            return 1
-        fi
-    else
-        echo "${property}";
     fi
 }
 
@@ -415,7 +259,7 @@ function is_force() {
 }
 
 function is_wp_installed() {
-    if [ "" == "${WPLIB_BOX_CONTENT_DIR}" ]; then
+    if [ "" == "${BOX_CONTENT_DIR}" ]; then
         echo "true"
         return
     fi
@@ -487,25 +331,25 @@ function exit_if_no_force_option() {
 }
 
 function find_composer_vendor_dir() {
-    if [ -d "${WPLIB_BOX_WEB_ROOT_DIR}/vendor" ]; then
-        echo "${WPLIB_BOX_WEB_ROOT_DIR}/vendor"
+    if [ -d "${BOX_WEB_ROOT_DIR}/vendor" ]; then
+        echo "${BOX_WEB_ROOT_DIR}/vendor"
         return
     fi
 
-    if [ -d "${WPLIB_BOX_PROJECT_DIR}/vendor" ]; then
-        echo "${WPLIB_BOX_PROJECT_DIR}/vendor"
+    if [ -d "${BOX_PROJECT_DIR}/vendor" ]; then
+        echo "${BOX_PROJECT_DIR}/vendor"
         return
     fi
 }
 
 function find_wp_content_dir() {
-    if [ -d "${WPLIB_BOX_WEB_ROOT_DIR}/content" ]; then
-        echo "${WPLIB_BOX_WEB_ROOT_DIR}/content"
+    if [ -d "${BOX_WEB_ROOT_DIR}/content" ]; then
+        echo "${BOX_WEB_ROOT_DIR}/content"
         return
     fi
 
-    if [ -d "${WPLIB_BOX_WEB_ROOT_DIR}/wp-content" ]; then
-        echo "${WPLIB_BOX_WEB_ROOT_DIR}/wp-content"
+    if [ -d "${BOX_WEB_ROOT_DIR}/wp-content" ]; then
+        echo "${BOX_WEB_ROOT_DIR}/wp-content"
         return
     fi
 }
@@ -520,48 +364,8 @@ function find_wp_mu_plugins_dir() {
     echo "${content_dir}/mu-plugins"
 }
 
-function how_to_install_wp() {
-    echo "Download and install WordPress from the web,"
-    echo
-    echo -e "\tOR"
-    echo
-    echo "To install from a newly cloned WPLib Box repo use Composer FROM your HOST computer:"
-    echo
-    echo -e "\tcomposer install"
-    echo
-    echo If you are unfamiliar with Composer you can find installations instructions at one of:
-    echo
-    echo -e "\thttps://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx"
-    echo
-    echo -e "\thttps://getcomposer.org/doc/00-intro.md#installation-windows"
-    echo
-    echo On Mac or Linux be sure to remember to move composer.phar to /usr/local/bin:
-    echo
-    echo -e "\tmv composer.phar /usr/local/bin/composer"
-    echo
-}
-
-function delete_exclude_items() {
-    local root_dir="$1"
-	local index=0
-	local basename
-	local item_to_exclude
-	while :; do
-	    item_to_exclude=$(read_config "deployment.exclude[${index}]")
-	    if [ "" == "${item_to_exclude}" ]; then
-	        break
-        fi
-	    item_to_exclude="${root_dir}/${item_to_exclude}"
-	    if [[ ! -f "${item_to_exclude}" &&  ! -d "${item_to_exclude}" ]];then
-	        echo -e "\tNOTICE: ${item_to_exclude} is in exclude list in ${WPLIB_BOX_CONFIG} but does not exist on disk."
-	    else
-	        basename=$(basename "${item_to_exclude}")
-	        echo_if_not_quiet "$*", "=\tDeleting ${basename} from build directory..."
-	        rm -rf "${item_to_exclude}" || return ?*
-	    fi
-	    index=$(( $index+1 ))
-	done
-
+function find_project_dir() {
+    echo "${BOX_PROJECT_DIR}"
 }
 
 #
@@ -614,12 +418,12 @@ function quiet_git() {
 #           echo "Is quiet"
 #       fi
 #
-# Depends on `box` setting $WPLIB_BOX_ARGS_ALL="$*"
+# Depends on `box` setting $BOX_ARGS_ALL="$*"
 #
 # Returns: "1" or ""
 #
 function has_arg() {
-    if [[ "${WPLIB_BOX_ARGS_ALL}" == *"$1"* ]]; then
+    if [[ "${BOX_ARGS_ALL}" == *"$1"* ]]; then
         echo 1
     fi
 }
@@ -709,7 +513,9 @@ function output() {
         return
     fi
     echo -e "$1"
-
+    if [ "" != "$1" ] ; then
+        echo "[$1]===>>>" >> $DEPLOY_LOG 2>&1
+    fi
 }
 
 #
@@ -717,4 +523,120 @@ function output() {
 #
 function alert() {
     (>&2 echo -e "$1")
+    if [ "" != "$1" ] ; then
+        echo "[$1]===>>>" >> $DEPLOY_LOG 2>&1
+    fi
+}
+
+
+function PushDir {
+    local dir
+    if [ "$#" -eq 0 ] ; then
+        dir="$(pwd)"
+    else
+        dir="$1"
+    fi
+    pushd "${dir}" >/dev/null 2>&1
+}
+function PopDir {
+    popd  >/dev/null 2>&1
+}
+
+function exitOnError() {
+    if [ "0" != "$?" ] ; then
+        if [ "" != "$1" ] ; then
+            alert "$1"
+        fi
+        exit 1
+    fi
+}
+
+function initErrorFile() {
+    touch $BOX_ERROR_FILE
+}
+function writeErrorFile() {
+    echo -e "$1" >> $BOX_ERROR_FILE
+}
+function showErrorFile() {
+    echo ===[ERRORS]===
+    cat $BOX_ERROR_FILE
+    echo ==============
+}
+
+function jqr() {
+    local query="$1"
+    output="$(jq -r "${query}")"
+    if [ "0" != "$?" ]; then
+        exitOnError "${RED}JQ ERROR${YELLOW} executing query: ${GREEN}${query}${RESET}"
+    fi
+    echo "${output}"
+}
+
+
+function checkParam() {
+    if [ "" == "$1" ]; then
+        alert
+        alert "${RED}ERROR:${YELLOW} ${2}${RESET}"
+        alert
+        return 1
+    fi
+    return 0
+}
+
+function RTrimSlashes() {
+    local path="$1"
+    if [[ "${path}" =~ ^(.*)/$ ]] ; then
+        path="${BASH_REMATCH[1]}"
+    fi
+    echo "${path}"
+}
+function LTrimSlashes() {
+    local path="$1"
+    if [[ "${path}" =~ ^/(.*)$ ]] ; then
+        path="${BASH_REMATCH[1]}"
+    fi
+    echo "${path}"
+}
+function TrimSlashes() {
+    echo "$(RTrimSlashes "$(LTrimSlashes "$1")" )"
+}
+
+#
+# See: https://stackoverflow.com/a/12973694/102699
+#
+function TrimSpace() {
+    echo "$(echo $1|xargs)"
+}
+
+#
+# See: https://stackoverflow.com/a/12973694/102699
+#
+function StrToUpper() {
+    echo "${1^^}"
+}
+
+function suggest_help_on_slack() {
+    alert "If you need help resolving an issue please ask for support via Slack:"
+    alert ""
+    alert "\t${CYAN}Our Slack:      ${GREEN}https://wplib.slack.org${RESET}"
+    alert "\t${CYAN}Join our Slack: ${GREEN}https://launchpass/wplib${RESET}"
+    alert ""
+}
+
+function iif() {
+    local criteria="$1"
+    local if_true="$2"
+    local if_false="$3"
+}
+
+function trace() {
+    local line="$1"
+    local info="$2"
+    local len="${#BOX_CLI_DIR}"
+    len=$(( len + 1 ))
+    local cur_file="$(echo ${BASH_SOURCE[@]} | awk '{print $2}')"
+    if [ "" != "${info}" ] ; then
+        info="; ${info}"
+    fi
+    echo "[${cur_file:$len}:${line}${info}]===>>>" >> $DEPLOY_LOG
 }

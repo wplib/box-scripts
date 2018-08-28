@@ -4,12 +4,29 @@
 #
 # This HAS to be run as root!
 
+declare="${ECHO_PREFIX:=}"
+declare="${GREEN:=}"
+declare="${YELLOW:=}"
+declare="${RESET:=}"
+declare="${BOX_BASE_DIR:=}"
+declare="${BOX_ETC_DIR:=}"
+declare="${BOX_USER:=}"
+declare="${BOX_USER_HOME:=}"
+declare="${BOX_USER_UID:=}"
+declare="${BOX_USER_GID:=}"
+declare="${BOX_PROJECTS_ROOT:=}"
+declare="${BOX_PROJECT_DIR:=}"
+declare="${BOX_PROJECT_FILE:=}"
+declare="${BOX_RELEASE_JSON:=}"
+declare="${BOX_SQL_DIR:=}"
+declare="${BOX_RELEASE_DIR:=}"cd
+declare="${BOX_FUNCTIONS_FILE:=}"
 
-source /opt/box/cli/includes/functions
+source "${BOX_FUNCTIONS_FILE}"
 
 function ctrl_c()
 {
-        tput sgr0
+	tput sgr0
 	echo ""
 	echo "$ECHO_PREFIX Aborting script."
 	exit
@@ -33,9 +50,9 @@ function provision_fix()
 {
 
 	# First ensure home directory exists
-	if [ ! -d "${WPLIB_BOX_PROJECT_DIR}/" ]
+	if [ ! -d "${BOX_PROJECT_DIR}/" ]
 	then
-		mkdir -p ${WPLIB_BOX_PROJECT_DIR}
+		mkdir -p ${BOX_PROJECT_DIR}
 	fi
 
 	if [ ! -d /var/www ]
@@ -43,12 +60,9 @@ function provision_fix()
 		mkdir -p /var/www
 	fi
 
-	# Create symlinks
-	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-completion.bash /etc/bash_completion.d/box-completion.bash
-	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-profile.sh /etc/profile.d/box-profile.sh
-	link_file ${WPLIB_BOX_BASE_DIR} /box
 
-#	# Offer forwards / backwards compat.
+	# Offer forwards / backwards compat.
+	link_file ${BOX_BASE_DIR} /box
 #	if [ -L /vagrant ]
 #	then
 #		# We have a new layout - offer backwards compat.
@@ -59,47 +73,108 @@ function provision_fix()
 #	#	link_file /vagrant /projects/wplib.box
 #	fi
 
+
 	# cron jobs
-	ln -sf ${WPLIB_BOX_ETC}/cron/${WPLIB_BOX_USER} /var/spool/cron/crontabs/${WPLIB_BOX_USER}
+	sudo ln -sf "${BOX_ETC_DIR}/cron/${BOX_USER}" "/var/spool/cron/crontabs/${BOX_USER}"
+
+
+	# init
+	# Disabled until we move off Vagrant.
+	# link_file ${BOX_ETC_DIR}/upstart/wplib-box-start.conf /etc/init/wplib-box-start.conf
+	# link_file ${BOX_ETC_DIR}/upstop/wplib-box-stop.conf /etc/init/wplib-box-stop.conf
+
+
+	# Software
+	link_file "${BOX_ETC_DIR}/apt/sources.list.d/docker.list" /etc/apt/sources.list.d/docker.list
+	grep -q ^docker: /etc/group
+	if [ "$?" == "1" ]
+	then
+		echo "Adding docker group"
+		groupadd docker
+	fi
+
+	JQBIN="$(which jq)"
+	if [ "${JQBIN}" == "" ]
+	then
+		JQINSTALL="Y"
+	else
+		JQVERS="$(jq --version)"
+		if [ "${JQVERS}" != "jq-1.5" ]
+		then
+			rm ${JQBIN}
+			JQINSTALL="Y"
+		fi
+	fi
+	if [ "${JQINSTALL}" == "Y" ]
+	then
+		echo "Installing JQ-1.5"
+		wget -qO /usr/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && chmod +x /usr/bin/jq
+	fi
+
 
 	# Setup boxuser, if not there.
-	USERID="$(id -u ${WPLIB_BOX_USER})"
+	#
+	#  QUESTION:  Why ${BOX_USER}, ${USERID} AND ${BOX_USER_UID}?
+	#
+	#             Seems this is ripe for confusion. It confused me.
+	#
+	#
+	USERID="$(id -u "${BOX_USER}")"
 	if [ "${USERID}" == "" ]
 	then
-		useradd -o -d ${WPLIB_BOX_USER_HOME} -c "WPLib Box user" -u ${WPLIB_BOX_USER_UID} -g ${WPLIB_BOX_USER_GID} -N -s /bin/bash ${WPLIB_BOX_USER}
-		usermod -aG docker ${WPLIB_BOX_USER}
+		echo "Adding boxuser"
+		sudo useradd -o -d "${BOX_USER_HOME}" -c "WPLib Box user" -u "${BOX_USER_UID}" -g "${BOX_USER_GID}" -N -s /bin/bash "${BOX_USER}"
 	fi
-	if [ ! -d ${WPLIB_BOX_USER_HOME}/.ssh ]
+	if [ "${USERID}" != "${BOX_USER_UID}" ]
 	then
-		mkdir -pm 700 ${WPLIB_BOX_USER_HOME}/.ssh
+		echo "Updating boxuser"
+		sudo usermod -o -d "${BOX_USER_HOME}" -c "WPLib Box user" -u "${BOX_USER_UID}" -g "${BOX_USER_GID}" -s /bin/bash "${BOX_USER}"
 	fi
+	sudo usermod -aG adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare,docker "${BOX_USER}"
+	sudo chmod 775 "${BOX_USER_HOME}"
 
-	if [ ! -f ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys ]
+	if [ ! -d "${BOX_USER_HOME}/.ssh" ]
 	then
-		wget -q --no-check-certificate 'https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub' -O ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys >&/dev/null
-		chmod 0600 ${WPLIB_BOX_USER_HOME}/.ssh/authorized_keys
+		sudo mkdir -pm 700 "${BOX_USER_HOME}/.ssh"
 	fi
-	touch ${WPLIB_BOX_USER_HOME}/.Xauthority
+	if [ ! -f "${BOX_USER_HOME}/.ssh/authorized_keys" ]
+	then
+		sudo wget -q --no-check-certificate "https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub" -O "${BOX_USER_HOME}/.ssh/authorized_keys" &>/dev/null
+		sudo chmod 0600 "${BOX_USER_HOME}/.ssh/authorized_keys"
+	fi
+	sudo touch "${BOX_USER_HOME}/.Xauthority"
+	link_file /opt/box/sbin/shutdown /home/box/shutdown.sh
 
 	# Change permissions.
-	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_USER_HOME}
-	chown -R ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_BASE_DIR}
-	chown ${WPLIB_BOX_USER_UID}:${WPLIB_BOX_USER_GID} ${WPLIB_BOX_PROJECT_BASE} ${WPLIB_BOX_PROJECT_BASE}/*
+	sudo chown -R "${BOX_USER_UID}:${BOX_USER_GID}" "${BOX_USER_HOME}"
+	sudo chown -R "${BOX_USER_UID}:${BOX_USER_GID}" "${BOX_BASE_DIR}"
+	sudo chown "${BOX_USER_UID}:${BOX_USER_GID}" "${BOX_PROJECT_DIR}" "${BOX_PROJECT_DIR}"/*
 
-	cp ${WPLIB_BOX_ETC}/environment /etc/environment
-	cp ${WPLIB_BOX_ETC}/inputrc /etc/inputrc
-	cp ${WPLIB_BOX_BASE_DIR}/etc/box-aptget /etc/apt/apt.conf.d/42wplib
-	rm -f /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade >& /dev/null
-	link_file ${WPLIB_BOX_BASE_DIR}/etc/box-motd /etc/motd
+	# Fix user shell.
+	link_file "${BOX_ETC_DIR}/box-completion.bash" /etc/bash_completion.d/box-completion.bash
+	link_file "${BOX_ETC_DIR}/box-profile.sh" /etc/profile.d/box-profile.sh
+	sudo cp "${BOX_ETC_DIR}/environment" /etc/environment
+	sudo cp "${BOX_ETC_DIR}/inputrc" /etc/inputrc
+	sudo cp "${BOX_ETC_DIR}/box-aptget" /etc/apt/apt.conf.d/42wplib
+	sudo rm -f /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade >& /dev/null
+	link_file "${BOX_ETC_DIR}/box-motd" /etc/motd
 
-	if [ ! -f "${WPLIB_BOX_PROJECT_FILE}" ]
+
+	# Make sure default project.json exists.
+	if [ ! -f "${BOX_PROJECT_FILE}" ]
 	then
-		cp ${WPLIB_BOX_RELEASE_JSON} ${WPLIB_BOX_PROJECT_FILE}
+		sudo cp ${BOX_RELEASE_JSON} ${BOX_PROJECT_FILE}
 	fi
 
-	if [ ! -f "${WPLIB_BOX_SQL_DIR}/provision.sql" ]
+
+	# Make sure default provision.sql file exists.
+	if [ ! -d "${BOX_SQL_DIR}" ]
 	then
-		cp ${WPLIB_BOX_RELEASE_DIR}/sql/provision.sql ${WPLIB_BOX_SQL_DIR}/provision.sql
+		sudo mkdir -p "${BOX_SQL_DIR}"
+	fi
+	if [ ! -f "${BOX_SQL_DIR}/provision.sql" ]
+	then
+		sudo cp "${BOX_RELEASE_DIR}/sql/provision.sql" "${BOX_SQL_DIR}/provision.sql"
 	fi
 }
 

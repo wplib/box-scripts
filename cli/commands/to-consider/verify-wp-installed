@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-exit_if_wp_not_installed "$1"
-
-echo_if_not_quiet "$*" "=WordPress IS installed."
-
-

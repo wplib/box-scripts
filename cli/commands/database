@@ -4,6 +4,17 @@
 #
 # Usage: box database {sub-command} [{command-options}] [--dryrun] [--quiet]
 #
+declare="${ECHO_PREFIX:=}"
+declare="${GREEN:=}"
+declare="${YELLOW:=}"
+declare="${RESET:=}"
+declare="${BOX_PROJECTS_ROOT:=}"
+declare="${BOX_PROJECT_PATH:=}"
+declare="${BOX_PROJECT_FILE:=}"
+declare="${BOX_SQL_DIR:=}"
+declare="${STACK:=}"
+
+
 
 DEFAULT_PROJECT="wplib"
 
@@ -25,7 +36,7 @@ function ctrl_c()
 #
 # Usage: box database import [{dump_file}] [{global-options}]
 #
-#   Result ==> Imports from ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/{dump_file}.sql
+#   Result ==> Imports from ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/sql/{dump_file}.sql
 #
 function database_unchunk() {
 
@@ -42,12 +53,12 @@ function database_unchunk() {
     #
     # First change to the SQL dir
     #
-    cd "${WPLIB_BOX_SQL_DIR}"
+    cd "${BOX_SQL_DIR}"
 
     #
-    # Force import from  ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/
+    # Force import from  ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/sql/
     #
-    chunked_file="${WPLIB_BOX_SQL_DIR}/${basefile}.${ext}"
+    chunked_file="${BOX_SQL_DIR}/${basefile}.${ext}"
 
     #
     # Check to see if we the chunked_file exists
@@ -62,7 +73,7 @@ function database_unchunk() {
         return 2
     fi
 
-    temp_dir="$(mktemp "${WPLIB_BOX_SQL_DIR}/${basefile}-XXXXX.${ext}")"
+    temp_dir="$(mktemp "${BOX_SQL_DIR}/${basefile}-XXXXX.${ext}")"
     if [ $? -ne 0 ]; then
         output "Cannot create temp directory ${temp_dir}"
         return 3
@@ -95,11 +106,11 @@ function database_unchunk() {
 }
 
 #
-# Import a database from ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/$1.sql
+# Import a database from ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/sql/$1.sql
 #
 # Usage: box database import [{dump_file}] [{global-options}]
 #
-#   Result ==> Imports from ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/{dump_file}.sql
+#   Result ==> Imports from ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/sql/{dump_file}.sql
 #
 function database_import() {
 
@@ -121,9 +132,9 @@ function database_import() {
     basefile="${importfile%%.*}"
 
     #
-    # Force import from  ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/
+    # Force import from  ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/sql/
     #
-    importfilepath="${WPLIB_BOX_SQL_DIR}/${importfile}"
+    importfilepath="${BOX_SQL_DIR}/${importfile}"
 
     #
     # Check to see if we the importfilepath exists
@@ -139,7 +150,7 @@ function database_import() {
         tempfile=""
     else
 
-        tempfile="$(mktemp "${WPLIB_BOX_SQL_DIR}/${basefile}-XXXXX.${ext}")"
+        tempfile="$(mktemp "${BOX_SQL_DIR}/${basefile}-XXXXX.${ext}")"
         if [ $? -ne 0 ]; then
             output "Cannot create temp file ${tempfile}"
             return 2
@@ -148,7 +159,7 @@ function database_import() {
         output "Unchunking ${importfile}"
         cat "${importfilepath}/${basefile}"-???."${ext}.chunk" > $tempfile
         if [ $? -ne 0 ]; then
-            output "Could not generate unchunked file ${chunked_file}"
+            output "Could not generate unchunked file ${importfile}"
             return 3
         fi
 
@@ -157,7 +168,7 @@ function database_import() {
     fi
 
     if [ ! $(has_arg --no-backup) ]; then
-        database_backup "${basefile}.bak"
+        database_backup
         if [ $? -ne 0 ]; then
             output "Error when backing up to ${basefile}.bak"
             return 4
@@ -214,7 +225,7 @@ function database_import() {
 #
 # Usage: box database chunk {sql_file} [{global-options}]
 #
-#   Result ==> Generates ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/{sql_file}.sql/{sql_file}-??.sql.chunk
+#   Result ==> Generates ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/sql/{sql_file}.sql/{sql_file}-??.sql.chunk
 #
 #   --quiet - Omits output
 function database_chunk() {
@@ -222,7 +233,7 @@ function database_chunk() {
     #
     # First change to the SQL dir
     #
-    cd "${WPLIB_BOX_SQL_DIR}"
+    cd "${BOX_SQL_DIR}"
 
     #
     # Split file up into chunks of 25Mb or smaller
@@ -253,9 +264,9 @@ function database_chunk() {
     sql_filename="${sql_basename}.sql"
 
     #
-    # Calculate the SQL filepath from  ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/
+    # Calculate the SQL filepath from  ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/sql/
     #
-    sql_filepath="${WPLIB_BOX_SQL_DIR}/${sql_filename}"
+    sql_filepath="${BOX_SQL_DIR}/${sql_filename}"
 
     #
     # Check to see if we need to modify exists
@@ -268,7 +279,7 @@ function database_chunk() {
     #
     # Create temp dir and move our SQL file to temp dir
     #
-    backup_file="$(mktemp "${WPLIB_BOX_SQL_DIR}/${sql_basename}.XXXXX.sql.bak")"
+    backup_file="$(mktemp "${BOX_SQL_DIR}/${sql_basename}.XXXXX.sql.bak")"
     rm -f "${backup_file}"
     if [ $? -ne 0 ]; then
         alert "Could not make backup sql file ${backup_file}"
@@ -354,7 +365,7 @@ ${checksums: : -1}
 JSON
 
     if [ $? -ne 0 ]; then
-        alert "Could not generate ${sql_filepath}/{$sql_basename}.chunks.json"
+        alert "Could not generate ${sql_filepath}/${sql_basename}.chunks.json"
         return 12
     fi
 
@@ -371,7 +382,7 @@ If was generated with the 'box database chunk "${sql_filename}"' command from th
 for WPLib Box[2].
 
 You can reconstitute the orginal file ${sql_filename} if the chuncks are located in
-${PROJECT_BASE}/${CURRENT_PROJECT}/sql/ as ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/${sql_filename}/ and the files have not been modified
+${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/sql/ as ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/sql/${sql_filename}/ and the files have not been modified
 since they were generated using the 'box database unchunk "${sql_filename}"' command
 when inside of WPLib Box which you can acccess from your host computer using the
 bash or batch/Powershell command 'vagrant ssh'.
@@ -398,7 +409,7 @@ Copyright (C) 2018 NewClarity Consulting LLC; All rights reserved worldwide
 EOF
 
     if [ $? -ne 0 ]; then
-        alert "Could not generate ${sql_filepath}/{$sql_basename}.README.fcps"
+        alert "Could not generate ${sql_filepath}/${sql_basename}.README.fcps"
         return 13
     fi
 
@@ -412,11 +423,11 @@ EOF
 }
 
 #
-# Backup the database to ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/backup.sql
+# Backup the database to ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/sql/backup.sql
 #
 # Usage: box database backup [{backup_file}] [{global-options}]
 #
-#   Result ==> Backs up to ${PROJECT_BASE}/${CURRENT_PROJECT}/sql/{backup_file}.sql
+#   Result ==> Backs up to ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/sql/{backup_file}.sql
 #
 #   --quiet - Omits status messages
 #   --dryrun - Do everything except actually run it
@@ -425,7 +436,7 @@ EOF
 #
 function database_backup() {
 
-    bakfile="${WPLIB_BOX_SQL_DIR}/backup.sql"
+    bakfile="${BOX_SQL_DIR}/backup.sql"
 
     #
     # Check to see if we need to save a prior backup
@@ -445,7 +456,7 @@ function database_backup() {
 
     if [ ! $(has_arg --dryrun) ]; then
 
-        mkdir -p "${WPLIB_BOX_SQL_DIR}/"
+        mkdir -p "${BOX_SQL_DIR}/"
 
         box component exec ${database} mysqldump -h "${DB_HOST_IP}" -u wordpress -pwordpress wordpress 2>&1 | grep -v "Warning: Using a password on the command line interface can be insecure." > ${bakfile}
         result="$?"
@@ -484,12 +495,12 @@ shift
 # Creates IMAGES and STACK env variables.
 readJSON
 
-if [ "${STACK[wordpress/dbserver]}" == "" ]
+if [ "${STACK["wordpress/dbserver"]}" == "" ]
 then
 	echo "WARNING: Cannot find database component in JSON file."
 	exit
 fi
-database="${STACK[wordpress/dbserver]}"
+database="${STACK["wordpress/dbserver"]}"
 
 case $CMD in
     'help')
@@ -512,7 +523,7 @@ case $CMD in
 		;;
 
     'backup'|'dump'|'save')
-        database_backup "$1"
+        database_backup
 		;;
 
     'import'|'restore'|'undump')
