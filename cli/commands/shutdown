@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 declare="${BOX_FUNCTIONS_FILE:=}"
+declare="${IMAGES:=}"
+
 source "${BOX_FUNCTIONS_FILE}"
-source "${IMAGES:=}"
 
 # Creates IMAGES and STACK env variables.
 readJSON
