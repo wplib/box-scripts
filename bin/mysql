@@ -1,5 +1,6 @@
 #!/bin/bash
 
+declare="${STACK:=}"
 
 source /opt/box/cli/includes/functions
 
@@ -8,7 +9,7 @@ readJSON
 
 DBHOST="172.42.0.1"
 
-DB="${STACK[wordpress/dbserver]}"
+DB="${STACK["wordpress/dbserver"]}"
 
 # echo "box container shell ${DB} mysql -h ${DBHOST} $@"
 box container shell ${DB} mysql -h ${DBHOST} "$@"
