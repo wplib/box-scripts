@@ -236,7 +236,7 @@ function component_info()
 	IMAGE_CLASS="${state_array[5]}"
 	IMAGE_NETWORK="${state_array[6]}"
 	IMAGE_PORTS="${state_array[7]}"
-	IMAGE_VOLUMES="${state_array[8]}"
+	IMAGE_VOLUMES="$(echo "${state_array[8]}" | sed "s#{PWD}#${PWD}#g")"
 	IMAGE_RESTART="${state_array[9]}"
 	IMAGE_ARGS="${state_array[10]}"
 	IMAGE_ENV="${state_array[11]}"
