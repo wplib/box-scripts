@@ -225,7 +225,7 @@ function component_info()
 		return $RETURN_NO_LOCAL_IMAGE
 	fi
 
-	DOCKER=$(docker inspect --format='{{index .Config.Labels "container.project"}};{{index .Config.Labels "container.name"}};{{index .Config.Labels "container.version"}};{{index .Config.Labels "container.majorversion"}};{{index .Config.Labels "container.latest"}};{{index .Config.Labels "container.class"}};{{index .Config.Labels "container.network"}};{{index .Config.Labels "container.ports"}};{{index .Config.Labels "container.volumes"}};{{index .Config.Labels "container.restart"}};{{index .Config.Labels "container.args"}};{{index .Config.Labels "container.env"}}' ${IMAGE})
+	DOCKER=$(docker inspect --format='{{index .Config.Labels "container.project"}};{{index .Config.Labels "container.name"}};{{index .Config.Labels "container.version"}};{{index .Config.Labels "container.majorversion"}};{{index .Config.Labels "container.latest"}};{{index .Config.Labels "container.class"}};{{index .Config.Labels "container.network"}};{{index .Config.Labels "container.ports"}};{{index .Config.Labels "container.volumes"}};{{index .Config.Labels "container.restart"}};{{index .Config.Labels "container.args"}};{{index .Config.Labels "container.workdir"}};{{index .Config.Labels "container.env"}}' ${IMAGE})
 	IFS=';' read -r -a state_array <<< "$DOCKER"
 
 	PROJECT="${state_array[0]}"
@@ -236,10 +236,11 @@ function component_info()
 	IMAGE_CLASS="${state_array[5]}"
 	IMAGE_NETWORK="${state_array[6]}"
 	IMAGE_PORTS="${state_array[7]}"
-	IMAGE_VOLUMES="${state_array[8]}"
+	IMAGE_VOLUMES="$(echo "${state_array[8]}" | sed "s#{PWD}#${PWD}#g")"
 	IMAGE_RESTART="${state_array[9]}"
 	IMAGE_ARGS="${state_array[10]}"
-	IMAGE_ENV="${state_array[11]}"
+	IMAGE_WORKDIR="$(echo "${state_array[11]}" | sed "s#{PWD}#${PWD}#g")"
+	IMAGE_ENV="${state_array[12]}"
 
 	if [ "$PROJECT" == "" ]
 	then
@@ -434,10 +435,10 @@ function component_shell()
 				if [ -t 0 ]
 				then
 					# TTY allocated.
-					docker run --name ${CONTAINER_NAME}-shell --rm -i -t ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC_DIR}/container.env ${IMAGE} "$@"
+					docker run --name ${CONTAINER_NAME}-shell --rm -i -t ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC_DIR}/container.env ${IMAGE_WORKDIR} ${IMAGE} "$@"
 				else
 					# TTY not allocated.
-					docker run --name ${CONTAINER_NAME}-exec  --rm -i    ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC_DIR}/container.env ${IMAGE} "$@"
+					docker run --name ${CONTAINER_NAME}-exec  --rm -i    ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC_DIR}/container.env ${IMAGE_WORKDIR} ${IMAGE} "$@"
 				fi
 
 				#if [ "$?" == "1" ]
@@ -484,7 +485,7 @@ function component_exec()
 				error_cni
 			else
 				# echo "$ECHO_PREFIX ${GREEN}Shell to component: ${CYAN}${IMAGE}${RESET}" 1>&2
-				docker run --name ${CONTAINER_NAME}-exec --rm ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC_DIR}/container.env ${IMAGE} "$@"
+				docker run --name ${CONTAINER_NAME}-exec --rm ${IMAGE_NETWORK} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC_DIR}/container.env ${IMAGE_WORKDIR} ${IMAGE} "$@"
 				#if [ "$?" == "1" ]
 				#then
 				#	error_ccbi
@@ -525,7 +526,7 @@ function component_create_container()
 				TEMPFILE="$(mktemp /tmp/box-container.XXX)"
 
 				# To be fixed in 0.17.2
-				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC_DIR}/container.env ${IMAGE} &> $TEMPFILE
+				docker create --name ${CONTAINER_NAME} ${IMAGE_RESTART} ${IMAGE_NETWORK} ${IMAGE_PORTS} ${IMAGE_ARGS} ${IMAGE_VOLUMES} --env-file ${BOX_ETC_DIR}/container.env ${IMAGE_WORKDIR} ${IMAGE} &> $TEMPFILE
 
 				if [ "$?" == "1" ]
 				then
@@ -735,7 +736,7 @@ function component_stop()
 
 				RETURN="$RETURN_OK"
 			else
-				echo "$ECHO_PREFIX ${GREEN}Stopping component: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already stopped.${RESET}"
+				# echo "$ECHO_PREFIX ${GREEN}Stopping component: ${CYAN}${IMAGE}${RESET} ... ${GREEN}already stopped.${RESET}"
 				RETURN="$RETURN_ALREADY_STOPPED"
 			fi
 			;;

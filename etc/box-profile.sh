@@ -5,8 +5,6 @@ then
 	/opt/box/cli/commands/check-mounts
 fi
 
-PATH="/opt/box/bin:/opt/box/sbin:$HOME/bin:$PATH"
-
 if ! shopt -oq posix
 then
 	if [ -f /usr/share/bash-completion/bash_completion ]
@@ -31,4 +29,6 @@ export DEFAULT_PROJECT
 
 # Change inital SSH directory to be /project/wplib.box
 cd ${BOX_PROJECTS_ROOT}/${DEFAULT_PROJECT}
+
+PATH="/opt/box/bin:/opt/box/sbin:$HOME/bin:${BOX_PROJECTS_ROOT}/${DEFAULT_PROJECT}/.project/bin:$PATH"
 

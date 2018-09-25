@@ -1,0 +1,13 @@
+#!/bin/bash
+
+declare="${STACK:=}"
+
+source /opt/box/cli/includes/functions
+
+# Creates IMAGES and STACK env variables.
+readJSON
+
+NODE="wplib/node:10.10.0"
+
+box component shell ${NODE} npm "$@"
+
