@@ -5,3 +5,4 @@
 etc/vm_box_build_time
 SYNCED
 var/
+lost+found/
