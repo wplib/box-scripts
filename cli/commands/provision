@@ -123,12 +123,12 @@ function provision_fix()
 	if [ "${USERID}" == "" ]
 	then
 		echo "Adding boxuser"
-		sudo useradd -o -d "${BOX_USER_HOME}" -c "WPLib Box user" -u "${BOX_USER_UID}" -g "${BOX_USER_GID}" -N -s /bin/bash "${BOX_USER}"
+		sudo useradd -o -d "${BOX_USER_HOME}" -c "GearBox user" -u "${BOX_USER_UID}" -g "${BOX_USER_GID}" -N -s /bin/bash "${BOX_USER}"
 	fi
 	if [ "${USERID}" != "${BOX_USER_UID}" ]
 	then
 		echo "Updating boxuser"
-		sudo usermod -o -d "${BOX_USER_HOME}" -c "WPLib Box user" -u "${BOX_USER_UID}" -g "${BOX_USER_GID}" -s /bin/bash "${BOX_USER}"
+		sudo usermod -o -d "${BOX_USER_HOME}" -c "GearBox user" -u "${BOX_USER_UID}" -g "${BOX_USER_GID}" -s /bin/bash "${BOX_USER}"
 	fi
 	sudo usermod -aG adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare,docker "${BOX_USER}"
 	sudo chmod 775 "${BOX_USER_HOME}"

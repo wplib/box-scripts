@@ -7,7 +7,7 @@
      \/  \/   |_|    |______|_|_.__/  |____/ \___/_/\_\
 ```
 
-![WPLib-Box](https://github.com/wplib/box-scripts/blob/master/WPLib-Box-100x.png)
+![GearBox](https://github.com/wplib/box-scripts/blob/master/GearBox-100x.png)
 
 # W007 - Warning project not supported.
 
@@ -16,11 +16,11 @@ Usually a critical error returned from the `box` command with any of the sub-com
 The 'wplib' project definition was changed within the `container` script.
 
 ## Common fixes
-Consult WPLib-Box support.
+Consult GearBox support.
 
 ### 
 
 
 ## See Also
-[Complete Error code repository for WPLib Box](https://github.com/wplib/box-scripts/tree/master/docs/errors)
+[Complete Error code repository for GearBox](https://github.com/wplib/box-scripts/tree/master/docs/errors)
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Update WPLib Box scripts.
+# Update GearBox scripts.
 #
 # This script will handle having itself updated by creating a secondary script that contains
 # all the git commands.
@@ -31,7 +31,7 @@ fi
 if [ ! -d "${BOX_BASE_DIR}" ]
 then
 	cat <<EOF > /tmp/self-update.$$
-echo "# WPLib-Box: Initializing ${BOX_BASE_DIR} with version ${VERSION}"
+echo "# GearBox: Initializing ${BOX_BASE_DIR} with version ${VERSION}"
 sudo git clone -q "${BOX_SCRIPTS_REPO}" "${BOX_BASE_DIR}" > /dev/null
 
 EOF
@@ -40,7 +40,7 @@ fi
 
 cat <<EOF >> /tmp/self-update.$$
 cd "${BOX_BASE_DIR}"
-echo -n "# WPLib-Box: Updating ${BOX_BASE_DIR} with version ${VERSION} ... "
+echo -n "# GearBox: Updating ${BOX_BASE_DIR} with version ${VERSION} ... "
 # Fetch the latest tags/branches.
 git fetch -q --all
 # Reset branch - force local changes to be removed.
@@ -55,7 +55,7 @@ git pull -q
 git checkout -q "${VERSION}" 2>/dev/null
 echo "Done"
 
-echo -n "# WPLib-Box: Fixing links ... "
+echo -n "# GearBox: Fixing links ... "
 /opt/box/bin/box provision fix
 echo "Done"
 

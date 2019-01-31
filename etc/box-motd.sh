@@ -18,7 +18,7 @@ fi
 clear
 clear
 
-echo "Welcome to WPLib Box $VERSION."
+echo "Welcome to GearBox $VERSION."
 echo ""
 
 tput setaf 2

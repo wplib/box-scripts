@@ -10,10 +10,10 @@ check_image()
 		wget -q -O /dev/null https://index.docker.io/v1/repositories/wplib/composer/tags/$REQVERS
 		if [ "$?" == "0" ]
 		then
-			echo "WPLib Box: Need to retrieve $VERSION from repository. Please wait..."
+			echo "GearBox: Need to retrieve $VERSION from repository. Please wait..."
 			/usr/bin/docker pull $VERSION
 		else
-			echo "WPLib Box: ERROR: Version $VERSION doesn't exist in repository."
+			echo "GearBox: ERROR: Version $VERSION doesn't exist in repository."
 			exit
 		fi
 	fi

@@ -7,21 +7,21 @@
      \/  \/   |_|    |______|_|_.__/  |____/ \___/_/\_\
 ```
 
-![WPLib-Box](https://github.com/wplib/box-scripts/blob/master/WPLib-Box-100x.png)
+![GearBox](https://github.com/wplib/box-scripts/blob/master/GearBox-100x.png)
 
 # W010 - Error image doesn't conform to JSON config format in 0.16 or later.
 
 ## Cause
 Usually an error returned from the `box` command with any of the sub-commands `install`, `start`, `stop`, `rm`, `clean` and `refresh`.
-The specified container image is not using the WPLib-Box JSON string that is present in all images from WPLib-Box version 0.16 and onwards.
+The specified container image is not using the GearBox JSON string that is present in all images from GearBox version 0.16 and onwards.
 
 ## Common fixes
-You may have to upgrade to WPLib-Box 0.16 or later.
+You may have to upgrade to GearBox 0.16 or later.
 Alternatively start the container manually.
 
 ### 
 
 
 ## See Also
-[Complete Error code repository for WPLib Box](https://github.com/wplib/box-scripts/tree/master/docs/errors)
+[Complete Error code repository for GearBox](https://github.com/wplib/box-scripts/tree/master/docs/errors)
 

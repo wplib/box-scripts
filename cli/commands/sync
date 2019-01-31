@@ -20,7 +20,7 @@ trap "exit 0" SIGINT SIGTERM
 sync_help() {
 	cat <<EOF
 
-${YELLOW}WPLib Box ${GREEN}CLI${RESET} ${GREEN}sync${RESET} usage:
+${YELLOW}GearBox ${GREEN}CLI${RESET} ${GREEN}sync${RESET} usage:
 
 box ${YELLOW}sync${RESET}	        - Show this help.
 

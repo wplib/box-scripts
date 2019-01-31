@@ -7,12 +7,12 @@
      \/  \/   |_|    |______|_|_.__/  |____/ \___/_/\_\
 ```
 
-![WPLib-Box](https://github.com/wplib/box-scripts/blob/master/WPLib-Box-100x.png)
+![GearBox](https://github.com/wplib/box-scripts/blob/master/GearBox-100x.png)
 
 # W020 - 500 Internal Server Error.
 
 ## Cause
-There is an issue with the PHP code running on WPLib Box.
+There is an issue with the PHP code running on GearBox.
 
 ## Common fixes
 Check for files and plugins that may have been added or modified since it was working last.
@@ -21,5 +21,5 @@ Check for files and plugins that may have been added or modified since it was wo
 
 
 ## See Also
-[Complete Error code repository for WPLib Box](https://github.com/wplib/box-scripts/tree/master/docs/errors)
+[Complete Error code repository for GearBox](https://github.com/wplib/box-scripts/tree/master/docs/errors)
 

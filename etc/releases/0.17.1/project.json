@@ -1,6 +1,6 @@
 {
 	"readme": [
-		"This file allows you to configure WPLib Box.",
+		"This file allows you to configure GearBox.",
 		"Find available components by typing 'vagrant ssh' in terminal followed by 'box component available'.",
 		"You can delete this `readme` section assuming it is still valid JSON after deletion."
 	],
@@ -12,7 +12,7 @@
 		"mailhog.{hostname}"
 	],
 	"localdev": {
-		"name": "WPLib Box",
+		"name": "GearBox",
 		"version": "0.17.0",
 		"website": "wplib.org/box"
 	},

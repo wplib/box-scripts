@@ -16,7 +16,7 @@ source "${BOX_TESTS_DIR}/includes/framework"
 self_test_help() {
 	cat <<EOF
 
-${YELLOW}WPLib Box ${GREEN}CLI${RESET} ${GREEN}self-test${RESET} usage:
+${YELLOW}GearBox ${GREEN}CLI${RESET} ${GREEN}self-test${RESET} usage:
 
 box ${YELLOW}self-test${RESET}			- Show this help.
 

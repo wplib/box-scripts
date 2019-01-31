@@ -379,15 +379,15 @@ File Chunk Packaging Scheme (FCPS)
 ----------------------------------
 This directory should contain ${chunk_count} chunks of the original file ${sql_filename}.
 If was generated with the 'box database chunk "${sql_filename}"' command from the CLI[1]
-for WPLib Box[2].
+for GearBox[2].
 
 You can reconstitute the orginal file ${sql_filename} if the chuncks are located in
 ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/sql/ as ${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}/sql/${sql_filename}/ and the files have not been modified
 since they were generated using the 'box database unchunk "${sql_filename}"' command
-when inside of WPLib Box which you can acccess from your host computer using the
+when inside of GearBox which you can acccess from your host computer using the
 bash or batch/Powershell command 'vagrant ssh'.
 
-In the case you do not have WPLib Box and cannot install it you can reconstitute the
+In the case you do not have GearBox and cannot install it you can reconstitute the
 original SQL file in Bash (e.g. Mac and Linux) using this command when run from the
 directory with contains the XXX subdirectory containing the chunks:
 

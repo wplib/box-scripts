@@ -7,7 +7,7 @@
      \/  \/   |_|    |______|_|_.__/  |____/ \___/_/\_\
 ```
 
-![WPLib-Box](https://github.com/wplib/box-scripts/blob/master/WPLib-Box-100x.png)
+![GearBox](https://github.com/wplib/box-scripts/blob/master/GearBox-100x.png)
 
 # W013 - Error container can't be installed.
 
@@ -23,5 +23,5 @@ Remove the container with the same name.
 
 
 ## See Also
-[Complete Error code repository for WPLib Box](https://github.com/wplib/box-scripts/tree/master/docs/errors)
+[Complete Error code repository for GearBox](https://github.com/wplib/box-scripts/tree/master/docs/errors)
 

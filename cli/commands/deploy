@@ -37,7 +37,7 @@ trap deploy_onexit INT TERM EXIT
 function deploy_help() {
 	cat <<EOF
 
-${YELLOW}WPLib Box ${GREEN}CLI${RESET} ${GREEN}deploy${RESET} usage:
+${YELLOW}GearBox ${GREEN}CLI${RESET} ${GREEN}deploy${RESET} usage:
 
 box ${YELLOW}deploy${RESET}	                - Show this help.
 box ${YELLOW}deploy ${GREEN}help${RESET}		        - Show this help.

@@ -1,8 +1,8 @@
 #License for github.com/wplib/box-scripts
 
-Box Scripts for WPLib Box is free to use with absolutely no warranty.
+Box Scripts for GearBox is free to use with absolutely no warranty.
 
-However Box Scripts for WPLib Box is currently NOT open-source and thus not free to distribute.
+However Box Scripts for GearBox is currently NOT open-source and thus not free to distribute.
 
 Although we strong believe in open-source software, we choose this approach _at this time_
 to protect ourselves against a [WooCommercing](https://yoast.com/open-source-forking-branding/) 
