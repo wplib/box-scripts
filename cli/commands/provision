@@ -130,7 +130,7 @@ function provision_fix()
 		echo "Updating boxuser"
 		sudo usermod -o -d "${BOX_USER_HOME}" -c "GearBox user" -u "${BOX_USER_UID}" -g "${BOX_USER_GID}" -s /bin/bash "${BOX_USER}"
 	fi
-	sudo usermod -aG adm,cdrom,sudo,dip,plugdev,lpadmin,sambashare,docker "${BOX_USER}"
+	sudo usermod -aG adm,cdrom,sudo,docker "${BOX_USER}"
 	sudo chmod 775 "${BOX_USER_HOME}"
 
 	if [ ! -d "${BOX_USER_HOME}/.ssh" ]
