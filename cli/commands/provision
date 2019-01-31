@@ -143,7 +143,7 @@ function provision_fix()
 		sudo chmod 0600 "${BOX_USER_HOME}/.ssh/authorized_keys"
 	fi
 	sudo touch "${BOX_USER_HOME}/.Xauthority"
-	link_file /opt/gearbox/sbin/shutdown /home/box/shutdown.sh
+	# link_file /opt/gearbox/sbin/shutdown /home/box/shutdown.sh
 
 	# Change permissions.
 	sudo chown -R "${BOX_USER_UID}:${BOX_USER_GID}" "${BOX_USER_HOME}"
@@ -151,13 +151,13 @@ function provision_fix()
 	sudo chown "${BOX_USER_UID}:${BOX_USER_GID}" "${BOX_PROJECT_DIR}" "${BOX_PROJECT_DIR}"/*
 
 	# Fix user shell.
-	link_file "${BOX_ETC_DIR}/box-completion.bash" /etc/bash_completion.d/box-completion.bash
-	link_file "${BOX_ETC_DIR}/box-profile.sh" /etc/profile.d/box-profile.sh
-	sudo cp "${BOX_ETC_DIR}/environment" /etc/environment
-	sudo cp "${BOX_ETC_DIR}/inputrc" /etc/inputrc
-	sudo cp "${BOX_ETC_DIR}/box-aptget" /etc/apt/apt.conf.d/42wplib
-	sudo rm -f /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade >& /dev/null
-	link_file "${BOX_ETC_DIR}/box-motd" /etc/motd
+	# link_file "${BOX_ETC_DIR}/box-completion.bash" /etc/bash_completion.d/box-completion.bash
+	# link_file "${BOX_ETC_DIR}/box-profile.sh" /etc/profile.d/box-profile.sh
+	# sudo cp "${BOX_ETC_DIR}/environment" /etc/environment
+	# sudo cp "${BOX_ETC_DIR}/inputrc" /etc/inputrc
+	# sudo cp "${BOX_ETC_DIR}/box-aptget" /etc/apt/apt.conf.d/42wplib
+	# sudo rm -f /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/91-release-upgrade >& /dev/null
+	# link_file "${BOX_ETC_DIR}/box-motd" /etc/motd
 
 
 	# Make sure default project.json exists.
