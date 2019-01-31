@@ -15,7 +15,7 @@ case $1 in
 		;;
 
 	*)
-		echo "WPLib: You are running version $(cat "${BOX_BASE_DIR}/version")"
+		echo "GearBox: You are running version $(cat "${BOX_BASE_DIR}/version")"
 		;;
 esac
 
