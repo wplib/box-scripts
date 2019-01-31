@@ -9,7 +9,7 @@
 
 # Don't reference common variables as they may not exist.
 BOX_SCRIPTS_REPO="https://github.com/wplib/box-scripts"
-BOX_BASE_DIR="/opt/box"
+BOX_BASE_DIR="/opt/gearbox"
 DEFAULT_VERSION="master"
 
 
@@ -56,7 +56,7 @@ git checkout -q "${VERSION}" 2>/dev/null
 echo "Done"
 
 echo -n "# GearBox: Fixing links ... "
-/opt/box/bin/box provision fix
+/opt/gearbox/bin/box provision fix
 echo "Done"
 
 rm /tmp/self-update.$$

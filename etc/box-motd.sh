@@ -7,9 +7,9 @@ if [ -z "$DISTRIB_DESCRIPTION" ] && [ -x /usr/bin/lsb_release ]; then
 	DISTRIB_DESCRIPTION=$(lsb_release -s -d)
 fi
 
-if [ -e /opt/box/version ]
+if [ -e /opt/gearbox/version ]
 then
-        VERSION="`cat /opt/box/version`"
+        VERSION="`cat /opt/gearbox/version`"
 else
         VERSION="Unknown"
 fi

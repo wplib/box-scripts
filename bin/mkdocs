@@ -1,7 +1,7 @@
 #!/bin/bash
 declare="${STACK:=}"
 
-source /opt/box/cli/includes/functions
+source /opt/gearbox/cli/includes/functions
 
 # Creates IMAGES and STACK env variables.
 readJSON

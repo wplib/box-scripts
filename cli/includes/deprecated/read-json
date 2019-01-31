@@ -13,7 +13,7 @@ declare="${BOX_PROJECT_PATH:=}"
 
 DEFAULT_PROJECT="wplib"
 BOX_PROJECT_DIR=${BOX_PROJECTS_ROOT}/${BOX_PROJECT_PATH}
-BOX_BASE_DIR=/opt/box
+BOX_BASE_DIR=/opt/gearbox
 
 # Colour codes.
 GRAY="[30m"

@@ -21,7 +21,7 @@ export BOX_USER_GID="1000"
 export BOX_USER_HOME="/home/box"
 export BOX_USER_FILE="${BOX_USER_HOME}/user.json"
 
-export BOX_BASE_DIR="/opt/box"
+export BOX_BASE_DIR="/opt/gearbox"
 export BOX_CONFIG_FILE="${BOX_BASE_DIR}/box.json"
 
 export BOX_VERSION="$(cat ${BOX_BASE_DIR}/version)"

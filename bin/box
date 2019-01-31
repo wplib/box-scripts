@@ -3,7 +3,7 @@
 # @todo: http://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
 #
 
-declare="${BOX_FUNCTIONS_FILE:=/opt/box/cli/includes/functions}"
+declare="${BOX_FUNCTIONS_FILE:=/opt/gearbox/cli/includes/functions}"
 source "${BOX_FUNCTIONS_FILE}"
 
 declare="${error:=}"

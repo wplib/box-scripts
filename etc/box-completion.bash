@@ -13,13 +13,13 @@ _box()
 
 	case "${COMP_WORDS[1]}" in
 		'component')
-			# /opt/box/bin/box component help
+			# /opt/gearbox/bin/box component help
 			_box_component
 			return 0
 			;;
 
 		'container')
-			# /opt/box/bin/box component help
+			# /opt/gearbox/bin/box component help
 			_box_component
 			return 0
 			;;
@@ -60,8 +60,8 @@ _box()
 			;;
 
 		'self-update')
-			# compgen -W "$(git --git-dir=/opt/box/.git tag)" -- $cur
-			local REPLY="$(git --git-dir=/opt/box/.git for-each-ref --format='%(refname:short)' | cut -d/ -f2- | sort -u | grep '\.')"
+			# compgen -W "$(git --git-dir=/opt/gearbox/.git tag)" -- $cur
+			local REPLY="$(git --git-dir=/opt/gearbox/.git for-each-ref --format='%(refname:short)' | cut -d/ -f2- | sort -u | grep '\.')"
 			COMPREPLY=($(compgen -W "$REPLY" -- $cur))
 			return 0
 			;;
@@ -152,12 +152,12 @@ _box_component_dockerhub()
 	local REPLY
 	local cur=${COMP_WORDS[COMP_CWORD]}
 
-	IMAGES="$(jq -r '.results|.[]|.name' /opt/box/etc/repositories.json | sort -u)"
+	IMAGES="$(jq -r '.results|.[]|.name' /opt/gearbox/etc/repositories.json | sort -u)"
 	for IMAGE_NAME in $IMAGES
 	do
-		if [ -f /opt/box/etc/images/${IMAGE_NAME}.json ]
+		if [ -f /opt/gearbox/etc/images/${IMAGE_NAME}.json ]
 		then
-			VERSIONS="$(jq -r '.results|.[]|.name' /opt/box/etc/images/${IMAGE_NAME}.json)"
+			VERSIONS="$(jq -r '.results|.[]|.name' /opt/gearbox/etc/images/${IMAGE_NAME}.json)"
 			for IMAGE_VERSION in $VERSIONS
 			do
 				if [ "${IMAGE_VERSION}" != "latest" ]
@@ -204,7 +204,7 @@ _box_test_files()
 {
 	local cur=${COMP_WORDS[COMP_CWORD]}
 
-	COMPREPLY=($(compgen -W "$(find /opt/box/cli/tests -maxdepth 1 -type f -printf '%f\n')" -- $cur))
+	COMPREPLY=($(compgen -W "$(find /opt/gearbox/cli/tests -maxdepth 1 -type f -printf '%f\n')" -- $cur))
 	return 0
 }
 

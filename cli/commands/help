@@ -22,7 +22,7 @@ box ${GREEN}restart${RESET}		- Restart service components found in project.json'
 box ${GREEN}shutdown${RESET}		- Shutdown all Docker containers.
 
 box ${GREEN}self-update${RESET}		- Update this CLI tool to the latest version for this Box version.
-box ${GREEN}sync${RESET}                - Update box scripts in guest:/opt/box from host:/{project}/wplib.box/box
+box ${GREEN}sync${RESET}                - Update box scripts in guest:/opt/gearbox from host:/{project}/wplib.box/box
 
 box ${GREEN}deploy${RESET}              - Deploy the current Git repo using information in your project.json file
 box ${GREEN}cache${RESET}               - Clear the cache used by the 'box deploy' command.

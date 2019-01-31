@@ -12,7 +12,7 @@ source "${BOX_FUNCTIONS_FILE}"
 
 if [ ! -f /projects/wplib.box/box/SYNCED ] ; then
     mkdir /projects/wplib.box/box
-    rsync --archive --hard-links --perms --one-file-system /opt/box/ /projects/wplib.box/box
+    rsync --archive --hard-links --perms --one-file-system /opt/gearbox/ /projects/wplib.box/box
     sudo touch /projects/wplib.box/box/SYNCED
 fi
 trap "exit 0" SIGINT SIGTERM
@@ -40,8 +40,8 @@ sync_run_once() {
         endMessage="Done."
     fi
     printf "${startMessage}"
-    rsync --dry-run --archive --hard-links --perms --recursive --links --safe-links --keep-dirlinks --times --delete-after /projects/wplib.box/box/ /opt/box
-    rsync --archive --hard-links --perms --recursive --links --safe-links --keep-dirlinks --times --delete-after /projects/wplib.box/box/ /opt/box
+    rsync --dry-run --archive --hard-links --perms --recursive --links --safe-links --keep-dirlinks --times --delete-after /projects/wplib.box/box/ /opt/gearbox
+    rsync --archive --hard-links --perms --recursive --links --safe-links --keep-dirlinks --times --delete-after /projects/wplib.box/box/ /opt/gearbox
     if ! [ -z "${endMessage}" ] ; then
         echo -e "${endMessage}"
     fi

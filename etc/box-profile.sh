@@ -1,11 +1,11 @@
 #!/bin/bash
 
-if [ -x /opt/box/cli/commands/check-mounts ]
+if [ -x /opt/gearbox/cli/commands/check-mounts ]
 then
-	/opt/box/cli/commands/check-mounts
+	/opt/gearbox/cli/commands/check-mounts
 fi
 
-PATH="/opt/box/bin:/opt/box/sbin:$HOME/bin:$PATH"
+PATH="/opt/gearbox/bin:/opt/gearbox/sbin:$HOME/bin:$PATH"
 
 if ! shopt -oq posix
 then

@@ -22,7 +22,7 @@ check_image()
 
 SCRIPT="`basename $0`"
 REQVERS="`echo $SCRIPT | sed -r 's/composer-([0-9]*\.[0-9]*)/\1/'`"
-EXEC="/opt/box/bin/composer-$REQVERS"
+EXEC="/opt/gearbox/bin/composer-$REQVERS"
 
 
 if [ -x "$EXEC" ]

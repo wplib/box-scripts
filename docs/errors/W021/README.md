@@ -12,13 +12,13 @@
 # W021 - box-scripts not present.
 
 ## Cause
-The /opt/box scripts are not present on the Box.
+The /opt/gearbox scripts are not present on the Box.
 
 ## Common fixes
 Pull down the latest box-scripts by doing the following:
-* sudo git clone -q https://github.com/wplib/box-scripts/ /opt/box
+* sudo git clone -q https://github.com/wplib/box-scripts/ /opt/gearbox
 Run an update:
-* /opt/box/bin/box self-update
+* /opt/gearbox/bin/box self-update
 
 
 ### 
