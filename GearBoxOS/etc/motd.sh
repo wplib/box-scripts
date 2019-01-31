@@ -7,10 +7,6 @@ else
         VERSION="Unknown"
 fi
 
-
-clear
-clear
-
 echo "Welcome to GearBox $VERSION."
 echo ""
 
@@ -23,7 +19,6 @@ tput setaf 6
 echo "        The Best Local Dev Server for WordPress Developers"
 tput sgr0
 echo ""
-echo ""
 
 echo -n "Run "
 tput setaf 3
@@ -32,7 +27,7 @@ tput sgr0
 echo " for help, or see the docs at:"
 echo ""
 tput setaf 3
-echo "   - http://gearbox.github.io/gearbox/"
+echo "   - http://gearbox.github.io/"
 tput sgr0
 echo ""
 
