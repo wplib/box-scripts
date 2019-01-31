@@ -65,7 +65,7 @@ DOCKERBIN="$(which docker)"
 if [ "${DOCKERBIN}" == "" ]
 then
 	echo "$ECHO_PREFIX ${RED}ERROR: docker command does not exist.${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W022/${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W022/${RESET}"
 	exit 1
 fi
 

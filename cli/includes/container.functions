@@ -41,7 +41,7 @@ function error_pns()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${YELLOW}Warning project not supported.${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W007/${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W007/${RESET}"
 	#return $RETURN
 }
 
@@ -49,7 +49,7 @@ function error_nip()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: Invalid command.${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W008/${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W008/${RESET}"
 	#return $RETURN
 }
 
@@ -57,7 +57,7 @@ function error_nfl()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: component not found locally: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W009/${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W009/${RESET}"
 	#return $RETURN
 }
 
@@ -65,7 +65,7 @@ function error_dnc()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: component doesn't conform to JSON config format in 0.16 or later: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W010/${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W010/${RESET}"
 	#return $RETURN
 }
 
@@ -73,7 +73,7 @@ function error_dni()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: component does not exist in repository: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W011/${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W011/${RESET}"
 	#return $RETURN
 }
 
@@ -81,7 +81,7 @@ function error_ccbr()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: component can't be removed: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W012/${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W012/${RESET}"
 	#return $RETURN
 }
 
@@ -89,7 +89,7 @@ function error_ccbi()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: component can't be installed: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W013/${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W013/${RESET}"
 	#return $RETURN
 }
 
@@ -97,7 +97,7 @@ function error_ccbs()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: component can't be started: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W014/${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W014/${RESET}"
 	#return $RETURN
 }
 
@@ -105,7 +105,7 @@ function error_ccbd()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: component can't be stopped: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W015/${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W015/${RESET}"
 	#return $RETURN
 }
 
@@ -113,7 +113,7 @@ function error_cai()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${GREEN}Container already installed: ${CYAN}${IMAGE}${RESET}"
-	# echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W016/${RESET}"
+	# echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W016/${RESET}"
 	#return $RETURN
 }
 
@@ -121,7 +121,7 @@ function error_car()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${GREEN}Container already running: ${CYAN}${IMAGE}${RESET}"
-	# echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W017/${RESET}"
+	# echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W017/${RESET}"
 	#return $RETURN
 }
 
@@ -129,7 +129,7 @@ function error_cas()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${GREEN}Container already stopped: ${CYAN}${IMAGE}${RESET}"
-	# echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W018/${RESET}"
+	# echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W018/${RESET}"
 	#return $RETURN
 }
 
@@ -137,7 +137,7 @@ function error_csac()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${RED}ERROR: not all components could be stopped.${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W019/${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W019/${RESET}"
 	#return $RETURN
 }
 
@@ -145,7 +145,7 @@ function error_cni()
 {
 	#RETURN="$?"
 	echo "$ECHO_PREFIX ${YELLOW}Warning component not installed: ${CYAN}${IMAGE}${RESET}"
-	echo "Look for possible fixes here: ${CYAN}http://wplib.github.io/wplib-box/errors/W020/${RESET}"
+	echo "Look for possible fixes here: ${CYAN}http://gearbox.github.io/errors/W020/${RESET}"
 	#return $RETURN
 }
 
