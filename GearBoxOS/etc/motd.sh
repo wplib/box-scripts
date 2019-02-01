@@ -31,19 +31,16 @@ echo "   - http://gearbox.github.io/"
 tput sgr0
 echo ""
 
-echo ""
-echo "Connect to GearBox:"
-tput setaf 3
-if [ -s /tmp/udhcpc.ip ]
+ip="$(ip addr show eth1 | awk '/inet /{gsub(/\/.*/, "", $2); print$2}')"
+if [ "${ip}" != "" ]
 then
+	echo ""
+	tput setaf 3
+	echo "Connect to your GearBox:"
 	echo "   - http://$(cat /tmp/udhcpc.ip)/"
+	tput sgr0
+	echo ""
 fi
-if [ -s /tmp/udhcpc.name ]
-then
-	echo "   - http://$(cat /tmp/udhcpc.name)/"
-fi
-tput sgr0
-echo ""
 
 exit 0
 
