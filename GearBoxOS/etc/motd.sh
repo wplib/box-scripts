@@ -34,10 +34,9 @@ echo ""
 ip="$(ip addr show eth1 | awk '/inet /{gsub(/\/.*/, "", $2); print$2}')"
 if [ "${ip}" != "" ]
 then
-	echo ""
 	tput setaf 3
 	echo "Connect to your GearBox:"
-	echo "   - http://$(cat /tmp/udhcpc.ip)/"
+	echo "   - http://${ip}/"
 	tput sgr0
 	echo ""
 fi
