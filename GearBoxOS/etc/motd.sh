@@ -34,8 +34,14 @@ echo ""
 echo ""
 echo "Connect to GearBox:"
 tput setaf 3
-echo "   - http://$(cat /tmp/udhcpc.ip)/"
-echo "   - http://$(cat /tmp/udhcpc.name)/"
+if [ -s /tmp/udhcpc.ip ]
+then
+	echo "   - http://$(cat /tmp/udhcpc.ip)/"
+fi
+if [ -s /tmp/udhcpc.name ]
+then
+	echo "   - http://$(cat /tmp/udhcpc.name)/"
+fi
 tput sgr0
 echo ""
 
