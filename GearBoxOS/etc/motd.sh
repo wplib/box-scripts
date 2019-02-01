@@ -31,5 +31,13 @@ echo "   - http://gearbox.github.io/"
 tput sgr0
 echo ""
 
+echo ""
+echo "Connect to GearBox:"
+tput setaf 3
+echo "   - http://$(cat /tmp/udhcpc.ip)/"
+echo "   - http://$(cat /tmp/udhcpc.name)/"
+tput sgr0
+echo ""
+
 exit 0
 
