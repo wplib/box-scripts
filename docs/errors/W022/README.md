@@ -15,7 +15,7 @@
 The VM does not contain the Docker infrastructure.
 
 ## Common fixes
-Contact WPLib-Box support.
+Contact WPLib Box support.
 
 
 ### 

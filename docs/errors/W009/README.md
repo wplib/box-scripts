@@ -13,7 +13,7 @@
 
 ## Cause
 Usually an error returned from the `box` command with any of the sub-commands `install`, `start`, `stop`, `rm`, `clean` and `refresh`.
-The specified container image hasn't been pulled from the WPLib-Box repository.
+The specified container image hasn't been pulled from the WPLib Box repository.
 
 ## Common fixes
 Run a `box container create <image name>` to download and install the container.

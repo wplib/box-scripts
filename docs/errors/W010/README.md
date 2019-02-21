@@ -13,10 +13,10 @@
 
 ## Cause
 Usually an error returned from the `box` command with any of the sub-commands `install`, `start`, `stop`, `rm`, `clean` and `refresh`.
-The specified container image is not using the WPLib-Box JSON string that is present in all images from WPLib-Box version 0.16 and onwards.
+The specified container image is not using the WPLib Box JSON string that is present in all images from WPLib Box version 0.16 and onwards.
 
 ## Common fixes
-You may have to upgrade to WPLib-Box 0.16 or later.
+You may have to upgrade to WPLib Box 0.16 or later.
 Alternatively start the container manually.
 
 ### 

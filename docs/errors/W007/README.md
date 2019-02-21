@@ -16,7 +16,7 @@ Usually a critical error returned from the `box` command with any of the sub-com
 The 'wplib' project definition was changed within the `container` script.
 
 ## Common fixes
-Consult WPLib-Box support.
+Consult WPLib Box support.
 
 ### 
 

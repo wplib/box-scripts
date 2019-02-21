@@ -15,7 +15,7 @@
 Usually an error returned from the `box` command with any of the sub-commands `install`, `start`, `stop`, `rm`, `clean` and `refresh`.
 
 ## Common fixes
-Provide a WPLib-Box container image to use.
+Provide a WPLib Box container image to use.
 
 
 ### 

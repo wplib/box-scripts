@@ -28,7 +28,7 @@ WHITE="(B[m[38m"
 RESET="(B[m"
 
 # Prefix used by all echo lines.
-ECHO_PREFIX="$WHITE# WPLib-Box:$RESET"
+ECHO_PREFIX="$WHITE# WPLib Box:$RESET"
 
 # Return codes from functions.
 RETURN_OK="0"

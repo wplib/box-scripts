@@ -13,7 +13,7 @@
 
 ## Cause
 Usually an error returned from the `box` command with any of the sub-commands `install`, `start`, `stop`, `rm`, `clean` and `refresh`.
-The specified container image does not exist in the WPLib-Box respository.
+The specified container image does not exist in the WPLib Box respository.
 
 ## Common fixes
 Check the name and version number exists on [GitHub](https://github.com/wplib) or [Docker hub](https://hub.docker.com/r/wplib/).
