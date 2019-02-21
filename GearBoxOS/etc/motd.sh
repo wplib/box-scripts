@@ -16,7 +16,7 @@ EOF
 tput sgr0
 
 tput setaf 6
-echo "        The Best Local Dev Server for WordPress Developers"
+echo "        Next Generation Developer Productivity Platform"
 tput sgr0
 echo ""
 
@@ -30,6 +30,16 @@ tput setaf 3
 echo "   - http://gearbox.github.io/"
 tput sgr0
 echo ""
+
+tput setaf 3
+echo "Connect to your GearBox:"
+echo "   - https://gearbox.local/"
+echo "   - http://gearbox.local/"
+tput sgr0
+echo ""
+
+exit 0
+
 
 ip="$(ip addr show eth1 | awk '/inet /{gsub(/\/.*/, "", $2); print$2}')"
 if [ "${ip}" != "" ]
