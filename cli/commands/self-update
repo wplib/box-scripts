@@ -8,7 +8,7 @@
 
 
 # Don't reference common variables as they may not exist.
-BOX_SCRIPTS_REPO="https://github.com/wplib/box-scripts"
+BOX_SCRIPTS_REPO="https://github.com/gearboxworks/box-scripts"
 BOX_BASE_DIR="/opt/gearbox"
 DEFAULT_VERSION="master"
 
